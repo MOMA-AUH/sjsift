@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest
+
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Check whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA" "$GITHUB_SHA"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install ".[dev]"
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - name: Install and smoke-test wheel in a clean environment
+        run: |
+          python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install --no-deps dist/*.whl
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
