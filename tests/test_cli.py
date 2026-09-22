@@ -69,14 +69,39 @@ def test_required_arguments_are_enforced() -> None:
     assert "--definitions" in result.stderr
 
 
-def test_quantification_is_explicitly_deferred() -> None:
-    result = run_console_script(
-        "--junctions",
-        "sample.SJ.out.tab",
-        "--definitions",
-        "definitions.toml",
+def test_exact_defining_junction_is_reported(tmp_path: Path) -> None:
+    definitions = tmp_path / "definitions.toml"
+    definitions.write_text(
+        """\
+schema_version = 1
+genome_assembly = "GRCh38"
+
+[[variants]]
+id = "EGFRvIII"
+chromosome = "chr7"
+intron_start = 55019366
+intron_end = 55155829
+strand = "+"
+""",
+        encoding="utf-8",
+    )
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text(
+        "chr7\t55019366\t55155829\t1\t1\t1\t23\t4\t71\n",
+        encoding="utf-8",
     )
 
-    assert result.returncode == 2
-    assert result.stdout == ""
-    assert result.stderr == "sjsift: error: quantification is not implemented yet\n"
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+    )
+
+    assert result.returncode == 0
+    assert result.stdout == (
+        "variant_id\tgenome_assembly\tchromosome\tintron_start\tintron_end\tstrand\t"
+        "unique_support\tmultimapping_support\ttotal_support\n"
+        "EGFRvIII\tGRCh38\tchr7\t55019366\t55155829\t+\t23\t4\t27\n"
+    )
+    assert result.stderr == ""
