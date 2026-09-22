@@ -56,7 +56,7 @@ This log records the decisions made during the design interview. It is intention
 
 23. **The CLI is the supported external seam.** Internal catalog, quantification, and report modules remain small and cohesive; v0.1 does not promise a public Python library interface.
 
-24. **CI is an endpoint matrix, not an exhaustive matrix.** Pytest runs on Python 3.11 and 3.14. A separate required package check builds, validates, installs, imports, and smoke-tests the CLI. No formatter, linter, type checker, OS matrix, or coverage gate is initially required.
+24. **CI covers every currently supported Python minor version.** Pytest runs on Python 3.11, 3.12, 3.13, and 3.14. A separate required package check builds, validates, installs, imports, and smoke-tests the CLI. No formatter, linter, type checker, OS matrix, or coverage gate is initially required.
 
 25. **All changes use pull requests into protected `master`.** Required CI must pass; direct pushes, force pushes, and branch deletion are blocked. No reviewer approval is required.
 
