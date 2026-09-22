@@ -145,3 +145,72 @@ chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
         "ARv7\tGRCh38\tchrX\t67686127\t67694672\t+\t7\t1\t8\n"
     )
     assert result.stderr == ""
+
+
+@pytest.mark.parametrize(
+    ("catalog_text", "expected_message"),
+    [
+        (
+            'schema_version = "one"\n'
+            'genome_assembly = "GRCh38"\n'
+            "[[variants]]\n"
+            'id = "test"\n'
+            'chromosome = "chr1"\n'
+            "intron_start = 1\n"
+            "intron_end = 2\n"
+            'strand = "+"\n',
+            "schema_version",
+        ),
+        (
+            'schema_version = 1\n'
+            'genome_assembly = "GRCh38"\n'
+            "[[variants]]\n"
+            'id = "test"\n'
+            "intron_start = 1\n"
+            "intron_end = 2\n"
+            'strand = "+"\n',
+            "variant 1 ('test'): missing field(s) 'chromosome'",
+        ),
+        ('schema_version = 1\ngenome_assembly = "GRCh38"\nvariants = [', "invalid TOML"),
+    ],
+)
+def test_invalid_catalog_is_a_concise_cli_error(
+    tmp_path: Path, catalog_text: str, expected_message: str
+) -> None:
+    definitions = tmp_path / "invalid.toml"
+    definitions.write_text(catalog_text, encoding="utf-8")
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text("", encoding="utf-8")
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(definitions) in result.stderr
+    assert expected_message in result.stderr
+    assert "Traceback" not in result.stderr
+    assert "variant_id" not in result.stderr
+
+
+def test_unreadable_catalog_is_a_concise_cli_error(tmp_path: Path) -> None:
+    definitions = tmp_path / "missing.toml"
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text("", encoding="utf-8")
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(definitions) in result.stderr
+    assert "cannot read catalog" in result.stderr
+    assert "Traceback" not in result.stderr
