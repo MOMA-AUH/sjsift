@@ -35,6 +35,7 @@ ARv7	GRCh38	chrX	67686127	67694672	+	3	0	3
 ```
 
 Unsupported variants remain in the output with zero counts. A zero is a junction-quantification result, not a clinical interpretation.
+`METx14del` names the MET exon 14-skipping RNA splice event; it does not assert a deletion in genomic DNA.
 
 ## Documentation
 
