@@ -2,8 +2,13 @@
 
 import argparse
 from collections.abc import Sequence
+from pathlib import Path
+import sys
 
 from . import __version__
+from .catalog import load_catalog
+from .quantify import quantify
+from .report import write_tsv
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -40,5 +45,9 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the sjsift command-line interface."""
     parser = _parser()
-    parser.parse_args(argv)
-    parser.exit(2, f"{parser.prog}: error: quantification is not implemented yet\n")
+    arguments = parser.parse_args(argv)
+
+    catalog = load_catalog(Path(arguments.definitions))
+    results = quantify(catalog, Path(arguments.junctions))
+    write_tsv(catalog.genome_assembly, results, sys.stdout)
+    return 0
