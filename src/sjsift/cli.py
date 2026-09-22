@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 from . import __version__
-from .catalog import load_catalog
+from .catalog import CatalogError, load_catalog
 from .quantify import quantify
 from .report import write_tsv
 
@@ -47,7 +47,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
     arguments = parser.parse_args(argv)
 
-    catalog = load_catalog(Path(arguments.definitions))
+    try:
+        catalog = load_catalog(Path(arguments.definitions))
+    except CatalogError as error:
+        parser.error(str(error))
     results = quantify(catalog, Path(arguments.junctions))
     write_tsv(catalog.genome_assembly, results, sys.stdout)
     return 0
