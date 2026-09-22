@@ -2,7 +2,7 @@
 
 ## Development baseline
 
-sjsift uses Python 3.11 or newer, a `src/` package layout, setuptools as its PEP 517 build backend, and `pyproject.toml` for project metadata. This follows useful conventions observed in [`MOMA-AUH/skua`](https://github.com/MOMA-AUH/skua/tree/4b2162c4d2df11830ba030420899af7cb6165d04) while omitting its BAM-oriented dependencies, subcommand hierarchy, broad test matrix, and advanced domain machinery.
+sjsift uses Python 3.11 or newer, a `src/` package layout, setuptools as its PEP 517 build backend, and `pyproject.toml` for project metadata. This follows useful conventions observed in [`MOMA-AUH/skua`](https://github.com/MOMA-AUH/skua/tree/4b2162c4d2df11830ba030420899af7cb6165d04) while omitting its BAM-oriented dependencies, subcommand hierarchy, and advanced domain machinery.
 
 The Python Packaging User Guide recommends declaring the build backend in `[build-system]` and new-project metadata in `[project]` ([PyPA guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)). Python 3.11 is the minimum because it supplies `tomllib` in the standard library.
 
@@ -113,11 +113,10 @@ Every normative rule in [`MVP_SPEC.md`](MVP_SPEC.md) must have a named test or a
 
 GitHub Actions supports Python version matrices and standard build/test steps ([GitHub's Python Actions guide](https://docs.github.com/en/actions/tutorials/build-and-test-code/python)). Keep the initial workflow modest:
 
-1. `tests (3.11)` installs the package with development dependencies and runs pytest.
-2. `tests (3.14)` repeats pytest on the newest supported stable Python.
-3. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help` and `sjsift --version`.
+1. `tests (3.11)` through `tests (3.14)` each install the package with development dependencies and run pytest.
+2. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help` and `sjsift --version`.
 
-Run CI for pull requests targeting `master` and for pushes to `master`. The three stable check names above become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing to v0.1.
+Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks and `package` become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing to v0.1.
 
 Dependabot may check GitHub Actions weekly, matching the lightweight convention used by skua.
 
@@ -144,7 +143,7 @@ GitHub requires a candidate status check to have completed successfully in the r
 
 1. Activate the ruleset's pull-request, linear-history, force-push, deletion, and no-bypass rules, and configure squash-only merging.
 2. Add `.github/workflows/ci.yml` on a branch and merge that bootstrap pull request only after all of its checks pass, even though their names cannot yet be selected as required.
-3. Immediately add `tests (3.11)`, `tests (3.14)`, and `package` to the ruleset's required checks.
+3. Immediately add `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, and `package` to the ruleset's required checks.
 4. Do not merge any later pull request while any required check is failing or pending.
 
 Step 2 is the sole required-check bootstrap exception; it is not an exception to branch, pull-request, or passing-CI requirements.
@@ -164,7 +163,7 @@ Committed files create check runs, but they cannot make those checks mandatory o
 Create an active branch ruleset targeting the default branch `master`. GitHub documents that multiple applicable rulesets accumulate and provides visibility into which rules apply ([ruleset documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)). Configure it to:
 
 - require a pull request before merging;
-- require `tests (3.11)`, `tests (3.14)`, and `package` to pass;
+- require `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, and `package` to pass;
 - require linear history;
 - block force pushes;
 - block deletion of `master`;

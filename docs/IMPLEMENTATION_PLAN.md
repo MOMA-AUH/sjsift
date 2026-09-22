@@ -23,7 +23,7 @@ Protect `master` before implementation work and establish the one-time path for 
 
 - The ruleset is active with no bypass actors.
 - The initial CI workflow must be added by pull request.
-- After that workflow produces named checks, `tests (3.11)`, `tests (3.14)`, and `package` are added as required checks before later pull requests merge.
+- After that workflow produces named checks, `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, and `package` are added as required checks before later pull requests merge.
 
 ### Explicitly out of scope
 
@@ -57,9 +57,9 @@ Create an installable Python package with a console entry point, version/help be
 
 ### Completion criteria
 
-- Tests pass on Python 3.11 and 3.14.
+- Tests pass on Python 3.11, 3.12, 3.13, and 3.14.
 - The `package` job validates both sdist and wheel and installs the wheel cleanly.
-- The three check names are configured as required checks in GitHub before the next milestone merges.
+- The four test check names and `package` are configured as required checks in GitHub before the next milestone merges.
 
 ### Explicitly out of scope
 
