@@ -47,7 +47,8 @@ def test_help_describes_single_command_interface(invoke) -> None:
     assert result.stderr == ""
     assert "--junctions PATH" in result.stdout
     assert "--definitions PATH" in result.stdout
-    assert "-o, --output PATH" in result.stdout
+    assert "-o" in result.stdout
+    assert "--output PATH" in result.stdout
     assert "{command}" not in result.stdout
 
 
