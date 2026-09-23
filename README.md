@@ -13,8 +13,8 @@ junction per variant.
 
 ## Installation
 
-Install sjsift from the [`MOMA-AUH` Anaconda
-channel](https://anaconda.org/MOMA-AUH/sjsift):
+The recommended way to install **sjsift** is via
+[conda](https://docs.conda.io/), using the `MOMA-AUH` channel:
 
 ```bash
 conda install MOMA-AUH::sjsift
