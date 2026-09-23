@@ -25,6 +25,14 @@ class VariantSupport:
         return self.unique + self.multimapping
 
 
+@dataclass(frozen=True)
+class Quantification:
+    """Ordered support results and input-compatibility information."""
+
+    results: tuple[VariantSupport, ...]
+    compatibility_warning: bool
+
+
 def _fail(path: Path, line_number: int | None, message: str) -> NoReturn:
     location = str(path)
     if line_number is not None:
@@ -87,7 +95,7 @@ def _parse_row(
     return chromosome, intron_start, intron_end, strand, unique, multimapping
 
 
-def quantify(catalog: Catalog, junctions_path: Path) -> tuple[VariantSupport, ...]:
+def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
     """Validate STAR rows and copy support from exact defining-junction matches."""
     star_strands = {"+": 1, "-": 2}
     targets = {
@@ -101,6 +109,8 @@ def quantify(catalog: Catalog, junctions_path: Path) -> tuple[VariantSupport, ..
     }
     counts = [(0, 0) for _ in catalog.variants]
     matched_targets: set[int] = set()
+    catalog_chromosomes = {variant.chromosome for variant in catalog.variants}
+    compatible_chromosome_seen = False
 
     try:
         with junctions_path.open(encoding="utf-8", newline="") as stream:
@@ -111,6 +121,8 @@ def quantify(catalog: Catalog, junctions_path: Path) -> tuple[VariantSupport, ..
                 chromosome, start, end, strand, unique, multimapping = _parse_row(
                     junctions_path, line_number, line
                 )
+                if chromosome in catalog_chromosomes:
+                    compatible_chromosome_seen = True
                 key = (chromosome, start, end, strand)
                 if key not in targets:
                     continue
@@ -131,7 +143,10 @@ def quantify(catalog: Catalog, junctions_path: Path) -> tuple[VariantSupport, ..
         detail = error.strerror or str(error)
         _fail(junctions_path, None, f"cannot read STAR junction file: {detail}")
 
-    return tuple(
-        VariantSupport(variant, unique, multimapping)
-        for variant, (unique, multimapping) in zip(catalog.variants, counts)
+    return Quantification(
+        results=tuple(
+            VariantSupport(variant, unique, multimapping)
+            for variant, (unique, multimapping) in zip(catalog.variants, counts)
+        ),
+        compatibility_warning=not compatible_chromosome_seen,
     )

@@ -21,21 +21,33 @@ The repository includes [`definitions/grch38.toml`](definitions/grch38.toml), a 
 ```bash
 sjsift \
   --junctions sample.SJ.out.tab \
-  --definitions definitions/grch38.toml \
-  --output sample.sjsift.tsv
+  --definitions definitions/grch38.toml
 ```
+
+The complete TSV report is written to standard output. To create a new output
+file instead, add `--output sample.sjsift.tsv` (or `-o sample.sjsift.tsv`). An
+existing output path is never overwritten.
 
 Representative output:
 
 ```text
 variant_id	genome_assembly	chromosome	intron_start	intron_end	strand	unique_support	multimapping_support	total_support
+EGFRvIVa	GRCh38	chr7	55200414	55205255	+	0	0	0
 EGFRvIII	GRCh38	chr7	55019366	55155829	+	14	2	16
+EGFRvIIIb	GRCh38	chr7	55109959	55155829	+	0	0	0
+EGFRvIVb	GRCh38	chr7	55200414	55202516	+	0	0	0
+EGFRvII	GRCh38	chr7	55161632	55171174	+	0	0	0
+EGFRvIIb	GRCh38	chr7	55161632	55170306	+	0	0	0
 METx14del	GRCh38	chr7	116771655	116774880	+	0	0	0
 ARv7	GRCh38	chrX	67686127	67694672	+	3	0	3
 ```
 
 Unsupported variants remain in the output with zero counts. A zero is a junction-quantification result, not a clinical interpretation.
 `METx14del` names the MET exon 14-skipping RNA splice event; it does not assert a deletion in genomic DNA.
+The junction filename is not included in the report. If the STAR file is empty,
+or none of its chromosome identifiers occur in the catalog, sjsift writes the
+complete zero-support report and emits one compatibility warning to standard
+error.
 
 ## Documentation
 
