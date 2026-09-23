@@ -1,0 +1,109 @@
+name: Publish Conda Package
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-distributions:
+    name: Build And Test Python Distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+      - name: Verify tag matches package version
+        if: github.event_name == 'push'
+        run: |
+          PACKAGE_VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "$GITHUB_REF_NAME" = "v${PACKAGE_VERSION}"
+      - run: python -m pytest
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - name: Smoke-test wheel in a clean environment
+        run: |
+          python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install --no-deps dist/*.whl
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
+      - uses: actions/upload-artifact@v7
+        with:
+          name: python-distributions
+          path: dist/*
+          if-no-files-found: error
+
+  conda-package:
+    name: Build And Test Conda Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          auto-update-conda: true
+          activate-environment: sjsift-build
+          channels: conda-forge,defaults
+          channel-priority: strict
+          python-version: "3.14"
+          use-mamba: true
+      - name: Install conda-build
+        shell: bash -el {0}
+        run: conda install --yes --channel conda-forge conda-build
+      - name: Build package
+        shell: bash -el {0}
+        run: conda-build conda-recipe/
+      - name: Locate and test package
+        id: package
+        shell: bash -el {0}
+        run: |
+          PACKAGE_PATH="$(conda-build conda-recipe/ --output)"
+          test -n "$PACKAGE_PATH"
+          test -f "$PACKAGE_PATH"
+          conda-build --test "$PACKAGE_PATH"
+          echo "path=${PACKAGE_PATH}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: conda-package
+          path: ${{ steps.package.outputs.path }}
+          if-no-files-found: error
+
+  publish-conda:
+    name: Publish To MOMA-AUH Anaconda
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [python-distributions, conda-package]
+    runs-on: ubuntu-latest
+    environment:
+      name: conda
+      url: https://anaconda.org/MOMA-AUH/sjsift
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: conda-package
+          path: dist
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          auto-update-conda: true
+          activate-environment: sjsift-publish
+          python-version: "3.14"
+      - name: Install upload tooling
+        shell: bash -el {0}
+        run: conda install --yes --channel defaults anaconda-client
+      - name: Publish package without replacing an existing artifact
+        shell: bash -el {0}
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+        run: |
+          PACKAGE_PATH="$(find dist -type f \( -name '*.conda' -o -name '*.tar.bz2' \) -print -quit)"
+          test -n "$PACKAGE_PATH"
+          anaconda upload --skip-existing --user MOMA-AUH "$PACKAGE_PATH"

@@ -1,0 +1,34 @@
+{% set name = "sjsift" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  noarch: python
+
+requirements:
+  host:
+    - python >=3.11
+    - pip
+    - setuptools >=77
+  run:
+    - python >=3.11
+
+test:
+  imports:
+    - sjsift
+  commands:
+    - sjsift --help
+    - sjsift --version
+
+about:
+  home: https://github.com/MOMA-AUH/sjsift
+  summary: Quantify predefined RNA splice variants from STAR junctions
+  license: MIT
+  license_file: LICENSE

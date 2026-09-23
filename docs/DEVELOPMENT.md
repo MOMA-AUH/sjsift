@@ -189,15 +189,31 @@ These ruleset and merge settings cannot be enforced solely by files committed to
 
 Use semantic versions and `vMAJOR.MINOR.PATCH` Git tags, following skua's release convention.
 
-1. On a release branch, update the version in `pyproject.toml` and `conda-recipe/meta.yaml`, update user-facing documentation, and add or update release tests.
-2. Open and squash-merge the release pull request after all required checks pass.
-3. From the resulting `master` commit, create and push an annotated version tag.
-4. The tag-triggered publish workflow rebuilds and tests the Python distributions and conda package from that exact checkout.
-5. Retain build artifacts in GitHub Actions.
-6. Publish the conda package only after its build and recipe tests pass.
-7. Create the corresponding GitHub Release and summarize user-visible changes.
+1. On a release branch, update the version in both `pyproject.toml` and the Jinja `version` value in `conda-recipe/meta.yaml`, update user-facing documentation, and add or update release tests. `tests/test_release.py` rejects a version mismatch.
+2. Open and squash-merge the release pull request after all required checks pass. Do not tag a release-branch commit: the tag must identify the resulting protected-`master` commit.
+3. Fast-forward local `master`, create an annotated tag whose value is exactly `v` followed by the synchronized package version, and push that tag:
 
-Manual workflow dispatch may build and test release artifacts but must not publish them.
+   ```bash
+   git switch master
+   git pull --ff-only origin master
+   git tag -a v0.1.0 -m "Release v0.1.0"
+   git push origin v0.1.0
+   ```
+
+4. The tag-triggered publish workflow checks that the tag matches `pyproject.toml`, rebuilds and tests the Python distributions and conda package from that exact checkout, and retains both artifact sets in GitHub Actions.
+5. The publish job runs only after both validation jobs succeed. It uploads with the `ANACONDA_API_TOKEN` secret and `--skip-existing`, so retrying an existing version does not replace its artifact.
+6. Inspect the completed workflow and its `python-distributions` and `conda-package` artifacts before creating the corresponding GitHub Release and summarizing user-visible changes.
+
+Before tagging, use **Actions → Publish Conda Package → Run workflow** on `master` for a dry run. A manual dispatch builds, tests, and retains the same `python-distributions` and `conda-package` artifacts, but its publish job is skipped. Download the artifacts from the workflow summary and confirm that they contain the expected sdist, wheel, and one `noarch` conda package. The workflow's clean-environment checks already verify `import sjsift`, `sjsift --help`, and `sjsift --version` against the built packages.
+
+After publication, verify the intended user installation path in a clean environment:
+
+```bash
+conda create --name sjsift-check --channel MOMA-AUH --channel conda-forge sjsift
+conda run --name sjsift-check sjsift --version
+```
+
+The shorter installation command for users with appropriate default channels is `conda install --channel MOMA-AUH sjsift`.
 
 ## MOMA-AUH Anaconda publishing outline
 
@@ -210,6 +226,6 @@ Use a conventional `conda-recipe/meta.yaml` and mark the package `noarch: python
 - test `sjsift --help` and `sjsift --version`;
 - carry license and source metadata consistent with `pyproject.toml`.
 
-The publish job installs `conda-build` and `anaconda-client`, builds the recipe, and uploads the resulting artifact with `anaconda upload --skip-existing --user MOMA-AUH`. This matches conda-build's documented build/upload flow ([conda-build tutorial](https://docs.conda.io/projects/conda-build/en/stable/user-guide/tutorials/build-pkgs.html#optional-uploading-new-packages-to-anaconda-org)) and the established [`skua` publish workflow](https://github.com/MOMA-AUH/skua/blob/4b2162c4d2df11830ba030420899af7cb6165d04/.github/workflows/publish.yml).
+The publish job installs `conda-build` and `anaconda-client`, builds the recipe, and uploads the resulting artifact with `anaconda upload --skip-existing --user MOMA-AUH`. This matches conda-build's documented build/upload flow ([conda-build tutorial](https://docs.conda.io/projects/conda-build/en/stable/user-guide/tutorials/build-pkgs.html#optional-uploading-new-packages-to-anaconda-org)) and the established [`skua` publish workflow](https://github.com/MOMA-AUH/skua/blob/4b2162c4d2df11830ba030420899af7cb6165d04/.github/workflows/publish.yml). The token is passed only through the upload step's environment; it is not written to a file or included in the command line.
 
 Store `ANACONDA_API_TOKEN` as a GitHub Actions secret available only to the publish job. The token, repository ruleset, required-check selection, merge-method settings, and automatic branch deletion are external GitHub/Anaconda configuration and cannot be committed to the repository.
