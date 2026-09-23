@@ -91,7 +91,7 @@ Implement the complete TOML schema and return an ordered, immutable in-memory ca
 - Duplicate IDs fail.
 - Duplicate defining junctions under different IDs fail.
 - Unsupported schema versions fail explicitly.
-- [`definitions/grch38.toml`](../definitions/grch38.toml) contains exactly the six supported EGFR variants, `METx14del`, and `ARv7` with the specified coordinates and strand.
+- [`definitions/grch38.toml`](../definitions/grch38.toml) contains exactly the six supported EGFR variants, `METx14skip`, and `ARv7` with the specified coordinates and strand.
 
 ### Completion criteria
 

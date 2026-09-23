@@ -249,7 +249,7 @@ chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
         "EGFRvIVb\tGRCh38\tchr7\t55200414\t55202516\t+\t3\t4\t7\n"
         "EGFRvII\tGRCh38\tchr7\t55161632\t55171174\t+\t11\t2\t13\n"
         "EGFRvIIb\tGRCh38\tchr7\t55161632\t55170306\t+\t0\t0\t0\n"
-        "METx14del\tGRCh38\tchr7\t116771655\t116774880\t+\t19\t0\t19\n"
+        "METx14skip\tGRCh38\tchr7\t116771655\t116774880\t+\t19\t0\t19\n"
         "ARv7\tGRCh38\tchrX\t67686127\t67694672\t+\t7\t1\t8\n"
     )
     assert result.stderr == ""

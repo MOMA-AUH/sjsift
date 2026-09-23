@@ -1,7 +1,4 @@
 # GRCh38 junction coordinates use STAR's 1-based inclusive intron convention.
-# EGFR and MET entries use the agreed sjsift v0.1 GRCh38 definitions.
-# ARv7 follows the GRCh38 STAR-style junction documented by Illumina DRAGEN 4.4.
-# https://help.connected.illumina.com/dragen/dragen-v4.4/product-guide/dragen-v4.4/dragen-rna-pipeline/splice-variant-caller
 
 schema_version = 1
 genome_assembly = "GRCh38"
@@ -49,7 +46,7 @@ intron_end = 55170306
 strand = "+"
 
 [[variants]]
-id = "METx14del"
+id = "METx14skip"
 chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
