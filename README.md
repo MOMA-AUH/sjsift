@@ -16,7 +16,7 @@ This command describes the v0.1 distribution target; it will become usable after
 
 ## Example
 
-The repository includes [`definitions/grch38.toml`](definitions/grch38.toml), a versioned GRCh38 catalog containing six known EGFR variants plus `METx14del` and `ARv7`.
+The repository includes [`definitions/grch38.toml`](definitions/grch38.toml), a versioned GRCh38 catalog containing six known EGFR variants plus `METx14skip` and `ARv7`.
 
 ```bash
 sjsift \
@@ -38,12 +38,11 @@ EGFRvIIIb	GRCh38	chr7	55109959	55155829	+	0	0	0
 EGFRvIVb	GRCh38	chr7	55200414	55202516	+	0	0	0
 EGFRvII	GRCh38	chr7	55161632	55171174	+	0	0	0
 EGFRvIIb	GRCh38	chr7	55161632	55170306	+	0	0	0
-METx14del	GRCh38	chr7	116771655	116774880	+	0	0	0
+METx14skip	GRCh38	chr7	116771655	116774880	+	0	0	0
 ARv7	GRCh38	chrX	67686127	67694672	+	3	0	3
 ```
 
 Unsupported variants remain in the output with zero counts. A zero is a junction-quantification result, not a clinical interpretation.
-`METx14del` names the MET exon 14-skipping RNA splice event; it does not assert a deletion in genomic DNA.
 The junction filename is not included in the report. If the STAR file is empty,
 or none of its chromosome identifiers occur in the catalog, sjsift writes the
 complete zero-support report and emits one compatibility warning to standard
