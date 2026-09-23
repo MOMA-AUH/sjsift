@@ -46,7 +46,7 @@ intron_end = 55170306
 strand = "+"
 
 [[variants]]
-id = "METx14skip"
+id = "METex14"
 chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
