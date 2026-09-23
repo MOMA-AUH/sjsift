@@ -214,3 +214,52 @@ def test_unreadable_catalog_is_a_concise_cli_error(tmp_path: Path) -> None:
     assert str(definitions) in result.stderr
     assert "cannot read catalog" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("junction_text", "expected_message"),
+    [
+        ("chr7\t10\t20\t1\n", "exactly 9 tab-separated fields"),
+        ("chr7\tbad\t20\t1\t0\t0\t0\t0\t0\n", "intron start must be an integer"),
+        (
+            "chr7\t10\t20\t1\t0\t0\t1\t2\t3\n"
+            "chr7\t10\t20\t1\t0\t0\t4\t5\t6\n",
+            "duplicate STAR row",
+        ),
+    ],
+)
+def test_invalid_star_input_is_a_concise_cli_error(
+    tmp_path: Path, junction_text: str, expected_message: str
+) -> None:
+    definitions = tmp_path / "definitions.toml"
+    definitions.write_text(
+        """\
+schema_version = 1
+genome_assembly = "GRCh38"
+
+[[variants]]
+id = "test"
+chromosome = "chr7"
+intron_start = 10
+intron_end = 20
+strand = "+"
+""",
+        encoding="utf-8",
+    )
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text(junction_text, encoding="utf-8")
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(junctions) in result.stderr
+    assert "line " in result.stderr
+    assert expected_message in result.stderr
+    assert "Traceback" not in result.stderr
+    assert "variant_id" not in result.stderr
