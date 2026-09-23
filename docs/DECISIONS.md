@@ -32,9 +32,9 @@ This log records the decisions made during the design interview. It is intention
 
 13. **Six EGFR variants are supported.** The v0.1 reference catalog includes `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb` as first-party sjsift definitions.
 
-14. **`METx14skip` is the stable identifier.** It denotes the MET exon 13-to-exon 15 RNA junction.
+14. **`METex14` is the stable identifier.** It denotes the MET exon 13-to-exon 15 RNA junction.
 
-15. **Reference coordinates use GRCh38 and `chr` prefixes.** The committed catalog also contains `METx14skip` and `ARv7`. All eight definitions are expected to produce STAR plus strand on the standard GRCh38 sequence.
+15. **Reference coordinates use GRCh38 and `chr` prefixes.** The committed catalog also contains `METex14` and `ARv7`. All eight definitions are expected to produce STAR plus strand on the standard GRCh38 sequence.
 
 ## CLI and report
 

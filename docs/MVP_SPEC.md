@@ -53,7 +53,7 @@ intron_end = 55155829
 strand = "+"
 
 [[variants]]
-id = "METx14skip"
+id = "METex14"
 chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
@@ -91,7 +91,7 @@ The required assembly label makes the catalog self-describing, but `SJ.out.tab` 
 
 ## Versioned GRCh38 reference catalog
 
-[`definitions/grch38.toml`](../definitions/grch38.toml) is the v0.1 reference catalog. It contains the agreed GRCh38 definitions for six known EGFR variants, `METx14skip`, and `ARv7`. The GRCh38 STAR-style junctions for `EGFRvIII`, `METx14skip`, and `ARv7` are also documented by Illumina ([DRAGEN 4.4 documentation](https://help.connected.illumina.com/dragen/dragen-v4.4/product-guide/dragen-v4.4/dragen-rna-pipeline/splice-variant-caller#knowns-list)).
+[`definitions/grch38.toml`](../definitions/grch38.toml) is the v0.1 reference catalog. It contains the agreed GRCh38 definitions for six known EGFR variants, `METex14`, and `ARv7`. The GRCh38 STAR-style junctions for `EGFRvIII`, `METex14`, and `ARv7` are also documented by Illumina ([DRAGEN 4.4 documentation](https://help.connected.illumina.com/dragen/dragen-v4.4/product-guide/dragen-v4.4/dragen-rna-pipeline/splice-variant-caller#knowns-list)).
 
 | Variant ID | Chromosome | Intron start | Intron end | Strand |
 |---|---|---:|---:|:---:|
@@ -101,10 +101,10 @@ The required assembly label makes the catalog self-describing, but `SJ.out.tab` 
 | `EGFRvIVb` | `chr7` | 55200414 | 55202516 | `+` |
 | `EGFRvII` | `chr7` | 55161632 | 55171174 | `+` |
 | `EGFRvIIb` | `chr7` | 55161632 | 55170306 | `+` |
-| `METx14skip` | `chr7` | 116771655 | 116774880 | `+` |
+| `METex14` | `chr7` | 116771655 | 116774880 | `+` |
 | `ARv7` | `chrX` | 67686127 | 67694672 | `+` |
 
-The supported EGFR variants are `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`. `METx14skip` is the stable project identifier for MET exon 14 skipping.
+The supported EGFR variants are `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`. `METex14` is the stable project identifier for MET exon 14 skipping.
 
 The catalog is explicit input, not a hidden default. Users may copy or replace it with another schema-compatible catalog.
 
@@ -193,7 +193,7 @@ Version 0.1 is acceptable when automated tests demonstrate that:
 - total support is the unweighted arithmetic sum;
 - unmatched variants, an empty STAR file, and an all-zero sample retain every catalog row;
 - catalog order determines output order;
-- the full reference catalog, including all six supported EGFR variants, `METx14skip`, and `ARv7`, is accepted;
+- the full reference catalog, including all six supported EGFR variants, `METex14`, and `ARv7`, is accepted;
 - malformed and duplicate matching STAR records fail rather than being silently combined;
 - stdout, stderr, output-file refusal, and exit statuses follow the CLI contract;
 - a built wheel installs cleanly, imports, and runs `sjsift --help` and `sjsift --version`.

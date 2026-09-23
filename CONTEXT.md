@@ -41,7 +41,7 @@ A human-maintained collection of known splice variants whose defining splice jun
 _Avoid_: Variant database, genome library
 
 **GRCh38 reference catalog**:
-The versioned sjsift catalog containing six known EGFR variants together with `METx14skip` and `ARv7`. It remains an explicit input rather than a hidden application default.
+The versioned sjsift catalog containing six known EGFR variants together with `METex14` and `ARv7`. It remains an explicit input rather than a hidden application default.
 _Avoid_: Built-in database, comprehensive splice-variant catalog
 
 ## Initial variant identifiers
@@ -54,7 +54,7 @@ _Avoid_: EGFR variant III
 The six EGFR variants included in the v0.1 reference catalog: `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`.
 _Avoid_: EGFR variant set
 
-**METx14skip**:
+**METex14**:
 The project identifier for MET exon 14 skipping, defined by the exon 13-to-exon 15 junction.
 _Avoid_: MET exon 14 deletion, when describing the RNA event
 
