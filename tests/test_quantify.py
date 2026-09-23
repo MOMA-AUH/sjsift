@@ -20,7 +20,7 @@ CATALOG = Catalog(
 def quantify_text(tmp_path: Path, text: str) -> tuple[VariantSupport, ...]:
     path = tmp_path / "sample.SJ.out.tab"
     path.write_text(text, encoding="utf-8")
-    return quantify(CATALOG, path)
+    return quantify(CATALOG, path).results
 
 
 def assert_invalid(tmp_path: Path, text: str, *messages: str) -> None:

@@ -8,7 +8,7 @@ import sys
 from . import __version__
 from .catalog import CatalogError, load_catalog
 from .quantify import QuantifyError, quantify
-from .report import write_tsv
+from .report import ReportError, write_report
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -42,18 +42,40 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    """Run the sjsift command-line interface."""
-    parser = _parser()
-    arguments = parser.parse_args(argv)
-
+def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
     try:
         catalog = load_catalog(Path(arguments.definitions))
     except CatalogError as error:
         parser.error(str(error))
     try:
-        results = quantify(catalog, Path(arguments.junctions))
+        quantification = quantify(catalog, Path(arguments.junctions))
     except QuantifyError as error:
         parser.error(str(error))
-    write_tsv(catalog.genome_assembly, results, sys.stdout)
+    try:
+        write_report(
+            catalog.genome_assembly,
+            quantification.results,
+            Path(arguments.output) if arguments.output is not None else None,
+            sys.stdout,
+        )
+    except ReportError as error:
+        parser.error(str(error))
+    if quantification.compatibility_warning:
+        print(
+            f"sjsift: warning: {arguments.junctions}: no catalog chromosome "
+            "identifiers found; check genome assembly and chromosome naming "
+            "compatibility",
+            file=sys.stderr,
+        )
     return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the sjsift command-line interface."""
+    parser = _parser()
+    arguments = parser.parse_args(argv)
+    try:
+        return _run(parser, arguments)
+    except Exception as error:
+        print(f"{parser.prog}: internal error: {error}", file=sys.stderr)
+        return 1
