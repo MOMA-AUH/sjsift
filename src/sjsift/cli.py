@@ -20,7 +20,7 @@ def _parser() -> argparse.ArgumentParser:
         "--junctions",
         metavar="PATH",
         required=True,
-        help="STAR SJ.out.tab file",
+        help="STAR SJ.out.tab file (plain text or gzip-compressed)",
     )
     parser.add_argument(
         "--definitions",

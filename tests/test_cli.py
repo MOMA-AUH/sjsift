@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import io
 import os
 from importlib.metadata import version
@@ -98,7 +99,11 @@ def test_required_arguments_are_enforced() -> None:
     assert "--definitions" in result.stderr
 
 
-def test_exact_defining_junction_is_reported(tmp_path: Path) -> None:
+@pytest.mark.parametrize("compressed", [False, True], ids=["plain", "gzip"])
+@pytest.mark.parametrize("suffix", [".tab", ".tab.gz"])
+def test_exact_defining_junction_is_reported(
+    tmp_path: Path, compressed: bool, suffix: str
+) -> None:
     definitions = tmp_path / "definitions.toml"
     definitions.write_text(
         """\
@@ -114,11 +119,14 @@ strand = "+"
 """,
         encoding="utf-8",
     )
-    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions = tmp_path / f"sample.SJ.out{suffix}"
     junctions.write_text(
         "chr7\t55019366\t55155829\t1\t1\t1\t23\t4\t71\n",
         encoding="utf-8",
     )
+
+    if compressed:
+        junctions.write_bytes(gzip.compress(junctions.read_bytes()))
 
     result = run_console_script(
         "--junctions",
@@ -352,6 +360,38 @@ def test_unreadable_star_file_is_a_concise_cli_error(tmp_path: Path) -> None:
     assert str(junctions) in result.stderr
     assert "cannot read STAR junction file" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("data", "message"),
+    [
+        (gzip.compress(b"\ninvalid\n"), "line 2: expected exactly 9"),
+        (gzip.compress(b"\xff\n"), "invalid UTF-8"),
+        (gzip.compress(b"")[:-4], "cannot read STAR junction file"),
+        (gzip.compress(b"\n")[:-8] + b"\x00" * 8, "cannot read STAR junction file"),
+        (b"\x1f\x8b\x08\x00" + b"\x00" * 6 + b"\x07", "cannot read STAR junction file"),
+    ],
+    ids=["invalid-row", "invalid-utf8", "truncated", "bad-crc", "bad-deflate"],
+)
+def test_invalid_gzip_input_is_a_concise_error_without_output(
+    tmp_path: Path, data: bytes, message: str
+) -> None:
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    junctions.write_bytes(data)
+    output = tmp_path / "report.tsv"
+
+    result = run_console_script(
+        "--junctions", str(junctions), "--definitions", str(definitions),
+        "--output", str(output),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(junctions) in result.stderr
+    assert message in result.stderr
+    assert "Traceback" not in result.stderr
+    assert "internal error" not in result.stderr
+    assert not output.exists()
 
 
 def test_output_creation_failure_is_a_concise_cli_error(tmp_path: Path) -> None:

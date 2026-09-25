@@ -13,7 +13,7 @@ Exactly two inputs are required:
 1. One STAR `SJ.out.tab` file for one sample.
 2. One TOML variant-definition catalog.
 
-Both inputs are UTF-8 text files addressed by filesystem paths. Standard input, BAM, CRAM, SAM, compressed inputs, directories, URLs, and multiple-sample input are not supported in v0.1.
+Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Standard input, BAM, CRAM, SAM, other compression formats, directories, URLs, and multiple-sample input are not supported in v0.1.
 
 ### STAR junction file
 

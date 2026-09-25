@@ -180,7 +180,7 @@ Serialize the fixed TSV schema and connect catalog loading, quantification, warn
 
 ### Explicitly out of scope
 
-- Input from stdin or compressed files
+- Input from stdin (gzip junction input was added in v0.1.3)
 - Sample-name inference
 - JSON, CSV, VCF, or visualization output
 - Overwrite flags or interactive prompts

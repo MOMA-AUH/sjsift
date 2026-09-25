@@ -83,7 +83,7 @@ None. The matching, counting, schema, CLI, output, validation, test, packaging, 
 - Additional assemblies or maintained catalogs
 - Explicit chromosome-alias maps or coordinate liftover
 - Opt-in handling of STAR strand `0`
-- Standard-input or compressed-file support
+- Standard-input support (gzip junction input was added in v0.1.3)
 - Multiple samples per invocation
 - BAM/CRAM processing or alignment-level filtering
 - Reference-versus-alternative junction ratios, thresholds, or classifications

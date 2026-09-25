@@ -1,8 +1,13 @@
 """Match catalog definitions against STAR junction support."""
 
 from dataclasses import dataclass
+from contextlib import contextmanager
+from collections.abc import Iterator
+import gzip
+import io
 from pathlib import Path
-from typing import NoReturn
+from typing import NoReturn, TextIO
+import zlib
 
 from .catalog import Catalog, VariantDefinition
 
@@ -95,6 +100,15 @@ def _parse_row(
     return chromosome, intron_start, intron_end, strand, unique, multimapping
 
 
+@contextmanager
+def _open_junctions(path: Path) -> Iterator[TextIO]:
+    """Stream UTF-8 junctions, detecting gzip by its header rather than suffix."""
+    with path.open("rb") as raw:
+        binary = gzip.GzipFile(fileobj=raw) if raw.peek(2)[:2] == b"\x1f\x8b" else raw
+        with io.TextIOWrapper(binary, encoding="utf-8", newline="") as stream:
+            yield stream
+
+
 def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
     """Validate STAR rows and copy support from exact defining-junction matches."""
     star_strands = {"+": 1, "-": 2}
@@ -113,7 +127,7 @@ def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
     compatible_chromosome_seen = False
 
     try:
-        with junctions_path.open(encoding="utf-8", newline="") as stream:
+        with _open_junctions(junctions_path) as stream:
             for line_number, raw_line in enumerate(stream, start=1):
                 line = raw_line.rstrip("\r\n")
                 if not line:
@@ -142,6 +156,8 @@ def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
     except OSError as error:
         detail = error.strerror or str(error)
         _fail(junctions_path, None, f"cannot read STAR junction file: {detail}")
+    except (EOFError, zlib.error) as error:
+        _fail(junctions_path, None, f"cannot read STAR junction file: {error}")
 
     return Quantification(
         results=tuple(
