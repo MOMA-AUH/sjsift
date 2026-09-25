@@ -52,7 +52,8 @@ files are never overwritten.
 
 [`definitions/grch38.toml`](definitions/grch38.toml) contains GRCh38
 definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
-`EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, and `ARv7`.
+`EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
+`ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
 Catalog coordinates use STAR's 1-based, inclusive intron convention and are
 matched exactly. Chromosome names are also literal: for example, `chr7` does

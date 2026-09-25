@@ -4,6 +4,62 @@ schema_version = 1
 genome_assembly = "GRCh38"
 
 [[variants]]
+id = "ARv7"
+chromosome = "chrX"
+intron_start = 67686127
+intron_end = 67694672
+strand = "+"
+
+[[variants]]
+id = "ARv567es"
+chromosome = "chrX"
+intron_start = 67711690
+intron_end = 67723685
+strand = "+"
+
+[[variants]]
+id = "BRAFdel2-10"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140924565
+strand = "-"
+
+[[variants]]
+id = "BRAFdel2-8"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140924565
+strand = "-"
+
+[[variants]]
+id = "BRAFdel3-10"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140850110
+strand = "-"
+
+[[variants]]
+id = "BRAFdel3-8"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140850110
+strand = "-"
+
+[[variants]]
+id = "BRAFdel4-10"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140834608
+strand = "-"
+
+[[variants]]
+id = "BRAFdel4-8"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140834608
+strand = "-"
+
+[[variants]]
 id = "EGFRvIVa"
 chromosome = "chr7"
 intron_start = 55200414
@@ -46,15 +102,22 @@ intron_end = 55170306
 strand = "+"
 
 [[variants]]
+id = "FGFR2-E18-C3"
+chromosome = "chr10"
+intron_start = 121482178
+intron_end = 121483697
+strand = "-"
+
+[[variants]]
+id = "METex7-8"
+chromosome = "chr7"
+intron_start = 116755516
+intron_end = 116758458
+strand = "+"
+
+[[variants]]
 id = "METex14"
 chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
-strand = "+"
-
-[[variants]]
-id = "ARv7"
-chromosome = "chrX"
-intron_start = 67686127
-intron_end = 67694672
 strand = "+"

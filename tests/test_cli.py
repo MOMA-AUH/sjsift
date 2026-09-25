@@ -226,6 +226,9 @@ def test_reference_catalog_reports_every_variant_in_catalog_order(
         """\
 chrX\t67686127\t67694672\t1\t1\t0\t7\t1\t48
 chr7\t116771655\t116774880\t1\t1\t1\t19\t0\t62
+chr7\t116755516\t116758458\t1\t1\t0\t5\t1\t40
+chr7\t140787585\t140834608\t2\t1\t0\t13\t2\t37
+chr10\t121482178\t121483697\t2\t1\t0\t4\t0\t35
 chr7\t55161632\t55171174\t1\t2\t1\t11\t2\t35
 chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
 """,
@@ -243,14 +246,23 @@ chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
     assert result.stdout == (
         "variant_id\tgenome_assembly\tchromosome\tintron_start\tintron_end\tstrand\t"
         "unique_support\tmultimapping_support\ttotal_support\n"
+        "ARv7\tGRCh38\tchrX\t67686127\t67694672\t+\t7\t1\t8\n"
+        "ARv567es\tGRCh38\tchrX\t67711690\t67723685\t+\t0\t0\t0\n"
+        "BRAFdel2-10\tGRCh38\tchr7\t140781694\t140924565\t-\t0\t0\t0\n"
+        "BRAFdel2-8\tGRCh38\tchr7\t140787585\t140924565\t-\t0\t0\t0\n"
+        "BRAFdel3-10\tGRCh38\tchr7\t140781694\t140850110\t-\t0\t0\t0\n"
+        "BRAFdel3-8\tGRCh38\tchr7\t140787585\t140850110\t-\t0\t0\t0\n"
+        "BRAFdel4-10\tGRCh38\tchr7\t140781694\t140834608\t-\t0\t0\t0\n"
+        "BRAFdel4-8\tGRCh38\tchr7\t140787585\t140834608\t-\t13\t2\t15\n"
         "EGFRvIVa\tGRCh38\tchr7\t55200414\t55205255\t+\t0\t0\t0\n"
         "EGFRvIII\tGRCh38\tchr7\t55019366\t55155829\t+\t0\t0\t0\n"
         "EGFRvIIIb\tGRCh38\tchr7\t55109959\t55155829\t+\t0\t0\t0\n"
         "EGFRvIVb\tGRCh38\tchr7\t55200414\t55202516\t+\t3\t4\t7\n"
         "EGFRvII\tGRCh38\tchr7\t55161632\t55171174\t+\t11\t2\t13\n"
         "EGFRvIIb\tGRCh38\tchr7\t55161632\t55170306\t+\t0\t0\t0\n"
+        "FGFR2-E18-C3\tGRCh38\tchr10\t121482178\t121483697\t-\t4\t0\t4\n"
+        "METex7-8\tGRCh38\tchr7\t116755516\t116758458\t+\t5\t1\t6\n"
         "METex14\tGRCh38\tchr7\t116771655\t116774880\t+\t19\t0\t19\n"
-        "ARv7\tGRCh38\tchrX\t67686127\t67694672\t+\t7\t1\t8\n"
     )
     assert result.stderr == ""
 
