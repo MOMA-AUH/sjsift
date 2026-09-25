@@ -79,6 +79,7 @@ def test_help_describes_single_command_interface(invoke) -> None:
     assert "--definitions PATH" in result.stdout
     assert "-o" in result.stdout
     assert "--output PATH" in result.stdout
+    assert "--context-output PATH" in result.stdout
     assert "{command}" not in result.stdout
 
 
@@ -171,6 +172,124 @@ def test_output_option_writes_the_stdout_report_byte_for_byte(
     assert file_result.stdout == ""
     assert file_result.stderr == ""
     assert output.read_bytes() == stdout_result.stdout.encode("utf-8")
+
+
+def test_context_output_reports_reference_junctions_in_catalog_and_role_order(
+    tmp_path: Path,
+) -> None:
+    definitions = tmp_path / "definitions.toml"
+    definitions.write_text(
+        '''\
+schema_version = 2
+genome_assembly = "GRCh38"
+
+[[variants]]
+id = "skip"
+chromosome = "chr7"
+intron_start = 10
+intron_end = 30
+strand = "+"
+
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 10
+intron_end = 20
+strand = "+"
+
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 21
+intron_end = 30
+strand = "+"
+''',
+        encoding="utf-8",
+    )
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text(
+        "chr7\t21\t30\t1\t0\t0\t7\t8\t0\n"
+        "chr7\t10\t30\t1\t0\t0\t1\t2\t0\n"
+        "chr7\t10\t20\t1\t0\t0\t3\t4\t0\n",
+        encoding="utf-8",
+    )
+    context_output = tmp_path / "context.tsv"
+    output = tmp_path / "report.tsv"
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+        "--context-output",
+        str(context_output),
+        "--output",
+        str(output),
+    )
+
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert result.stderr == ""
+    assert output.read_text(encoding="utf-8") == (
+        "variant_id\tgenome_assembly\tchromosome\tintron_start\tintron_end\tstrand\t"
+        "unique_support\tmultimapping_support\ttotal_support\n"
+        "skip\tGRCh38\tchr7\t10\t30\t+\t1\t2\t3\n"
+    )
+    assert context_output.read_text(encoding="utf-8") == (
+        "variant_id\tgenome_assembly\tcontext_role\tchromosome\tintron_start\t"
+        "intron_end\tstrand\tunique_support\tmultimapping_support\ttotal_support\n"
+        "skip\tGRCh38\tsame_donor\tchr7\t10\t20\t+\t3\t4\t7\n"
+        "skip\tGRCh38\tsame_acceptor\tchr7\t21\t30\t+\t7\t8\t15\n"
+    )
+
+
+def test_context_output_for_a_version_one_catalog_contains_only_its_header(
+    tmp_path: Path,
+) -> None:
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    context_output = tmp_path / "context.tsv"
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+        "--context-output",
+        str(context_output),
+    )
+
+    assert result.returncode == 0
+    assert context_output.read_text(encoding="utf-8") == (
+        "variant_id\tgenome_assembly\tcontext_role\tchromosome\tintron_start\t"
+        "intron_end\tstrand\tunique_support\tmultimapping_support\ttotal_support\n"
+    )
+
+
+def test_existing_context_output_is_refused_without_creating_main_output(
+    tmp_path: Path,
+) -> None:
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    output = tmp_path / "report.tsv"
+    context_output = tmp_path / "context.tsv"
+    context_output.write_text("do not replace me\n", encoding="utf-8")
+
+    result = run_console_script(
+        "--junctions",
+        str(junctions),
+        "--definitions",
+        str(definitions),
+        "--output",
+        str(output),
+        "--context-output",
+        str(context_output),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(context_output) in result.stderr
+    assert "already exists" in result.stderr
+    assert not output.exists()
+    assert context_output.read_text(encoding="utf-8") == "do not replace me\n"
 
 
 def test_existing_output_is_refused_without_modification(tmp_path: Path) -> None:

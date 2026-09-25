@@ -58,11 +58,19 @@ Reference junctions may be shared by multiple variants. A reference junction
 may not duplicate its own variant's defining junction. STAR rows matching any
 catalogue target must remain unique, because `SJ.out.tab` is already collapsed.
 
-## First implementation slice
+## Command-line output
 
 `load_catalog` returns ordered reference-junction definitions and `quantify`
-returns their STAR support with each `VariantSupport`. The stable command-line
-TSV is intentionally unchanged in this slice. Before exposing the values, the
-report design needs a decision between wide role-specific columns and a
-separate long-form context table. A long-form table is the more extensible
-choice because variants may have differing context roles.
+returns their STAR support with each `VariantSupport`. The existing main TSV is
+unchanged. Pass `--context-output PATH` to write an additional long-form TSV:
+
+```text
+variant_id	genome_assembly	context_role	chromosome	intron_start	intron_end	strand	unique_support	multimapping_support	total_support
+METex14	GRCh38	same_donor	chr7	…	…	+	34	2	36
+METex14	GRCh38	same_acceptor	chr7	…	…	+	29	1	30
+```
+
+The file has a header even when the catalog contains no reference junctions.
+Rows are ordered first by catalog variant and then by the variant's declared
+reference-junction order. A long-form table is used because variants may have
+different context roles.

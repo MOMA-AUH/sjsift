@@ -52,6 +52,23 @@ Omit `--output` to write the report to standard output:
 sjsift --junctions sample.SJ.out.tab --definitions grch38.toml
 ```
 
+To write local reference-junction context as a separate long-form TSV, pass
+`--context-output`:
+
+```bash
+sjsift \
+  --junctions sample.SJ.out.tab \
+  --definitions definitions-with-context.toml \
+  --output sample.sjsift.tsv \
+  --context-output sample.sjsift.context.tsv
+```
+
+The main TSV remains unchanged. The context TSV has one row for each named
+reference junction configured for a variant. Version 1 catalogs have no
+reference junctions and therefore produce a header-only context TSV. See
+[reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for the
+version 2 catalog schema and interpretation.
+
 Run `sjsift --help` for the complete command-line reference. Existing output
 files are never overwritten.
 
