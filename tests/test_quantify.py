@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from sjsift.catalog import Catalog, VariantDefinition
-from sjsift.quantify import QuantifyError, VariantSupport, quantify
+from sjsift.catalog import Catalog, ReferenceJunction, VariantDefinition
+from sjsift.quantify import QuantifyError, ReferenceJunctionSupport, VariantSupport, quantify
 
 
 CATALOG = Catalog(
@@ -50,6 +50,56 @@ def test_exact_matches_copy_support_and_calculate_unweighted_total(
         VariantSupport(CATALOG.variants[1], unique=7, multimapping=11),
     )
     assert tuple(result.total for result in results) == (27, 18)
+
+
+def test_reference_junctions_are_quantified_in_catalog_order(tmp_path: Path) -> None:
+    variant = VariantDefinition(
+        "skip", "chr7", 10, 30, "+",
+        (
+            ReferenceJunction("same_donor", "chr7", 10, 20, "+"),
+            ReferenceJunction("same_acceptor", "chr7", 21, 30, "+"),
+        ),
+    )
+    catalog = Catalog("GRCh38", (variant,))
+    path = tmp_path / "sample.SJ.out.tab"
+    path.write_text(
+        "chr7\t21\t30\t1\t0\t0\t7\t8\t0\n"
+        "chr7\t10\t30\t1\t0\t0\t1\t2\t0\n"
+        "chr7\t10\t20\t1\t0\t0\t3\t4\t0\n",
+        encoding="utf-8",
+    )
+
+    result = quantify(catalog, path).results[0]
+
+    assert result == VariantSupport(
+        variant,
+        1,
+        2,
+        (
+            ReferenceJunctionSupport(variant.reference_junctions[0], 3, 4),
+            ReferenceJunctionSupport(variant.reference_junctions[1], 7, 8),
+        ),
+    )
+    assert tuple(context.total for context in result.reference_junctions) == (7, 15)
+
+
+def test_shared_reference_junction_support_is_available_to_each_variant(
+    tmp_path: Path,
+) -> None:
+    shared = ReferenceJunction("same_donor", "chr7", 10, 20, "+")
+    catalog = Catalog(
+        "GRCh38",
+        (
+            VariantDefinition("first", "chr7", 10, 30, "+", (shared,)),
+            VariantDefinition("second", "chr7", 10, 40, "+", (shared,)),
+        ),
+    )
+    path = tmp_path / "sample.SJ.out.tab"
+    path.write_text("chr7\t10\t20\t1\t0\t0\t3\t4\t0\n", encoding="utf-8")
+
+    results = quantify(catalog, path).results
+
+    assert tuple(result.reference_junctions[0].total for result in results) == (7, 7)
 
 
 @pytest.mark.parametrize(

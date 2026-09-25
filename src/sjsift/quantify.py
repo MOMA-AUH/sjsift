@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import NoReturn, TextIO
 import zlib
 
-from .catalog import Catalog, VariantDefinition
+from .catalog import Catalog, ReferenceJunction, VariantDefinition
 
 
 class QuantifyError(ValueError):
@@ -21,6 +21,21 @@ class VariantSupport:
     """STAR support associated with a known splice variant."""
 
     definition: VariantDefinition
+    unique: int
+    multimapping: int
+    reference_junctions: tuple["ReferenceJunctionSupport", ...] = ()
+
+    @property
+    def total(self) -> int:
+        """Return unweighted total STAR support."""
+        return self.unique + self.multimapping
+
+
+@dataclass(frozen=True)
+class ReferenceJunctionSupport:
+    """STAR support associated with one catalogued reference junction."""
+
+    definition: ReferenceJunction
     unique: int
     multimapping: int
 
@@ -112,7 +127,7 @@ def _open_junctions(path: Path) -> Iterator[TextIO]:
 def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
     """Validate STAR rows and copy support from exact defining-junction matches."""
     star_strands = {"+": 1, "-": 2}
-    targets = {
+    defining_targets = {
         (
             variant.chromosome,
             variant.intron_start,
@@ -122,8 +137,24 @@ def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
         for index, variant in enumerate(catalog.variants)
     }
     counts = [(0, 0) for _ in catalog.variants]
-    matched_targets: set[int] = set()
-    catalog_chromosomes = {variant.chromosome for variant in catalog.variants}
+    reference_targets: dict[tuple[str, int, int, int], list[tuple[int, int]]] = {}
+    reference_counts = [
+        [(0, 0) for _ in variant.reference_junctions] for variant in catalog.variants
+    ]
+    for variant_index, variant in enumerate(catalog.variants):
+        for reference_index, reference in enumerate(variant.reference_junctions):
+            key = (
+                reference.chromosome,
+                reference.intron_start,
+                reference.intron_end,
+                star_strands[reference.strand],
+            )
+            reference_targets.setdefault(key, []).append((variant_index, reference_index))
+
+    matched_junctions: set[tuple[str, int, int, int]] = set()
+    catalog_chromosomes = {
+        junction[0] for junction in defining_targets | reference_targets
+    }
     compatible_chromosome_seen = False
 
     try:
@@ -138,19 +169,25 @@ def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
                 if chromosome in catalog_chromosomes:
                     compatible_chromosome_seen = True
                 key = (chromosome, start, end, strand)
-                if key not in targets:
+                if key not in defining_targets and key not in reference_targets:
                     continue
 
-                target = targets[key]
-                if target in matched_targets:
-                    identifier = catalog.variants[target].identifier
+                if key in matched_junctions:
+                    if key in defining_targets:
+                        identifier = catalog.variants[defining_targets[key]].identifier
+                        detail = f" for catalog variant {identifier!r}"
+                    else:
+                        detail = " for a catalog reference junction"
                     _fail(
                         junctions_path,
                         line_number,
-                        f"duplicate STAR row for catalog variant {identifier!r}",
+                        f"duplicate STAR row{detail}",
                     )
-                counts[target] = (unique, multimapping)
-                matched_targets.add(target)
+                matched_junctions.add(key)
+                if key in defining_targets:
+                    counts[defining_targets[key]] = (unique, multimapping)
+                for variant_index, reference_index in reference_targets.get(key, []):
+                    reference_counts[variant_index][reference_index] = (unique, multimapping)
     except UnicodeDecodeError as error:
         _fail(junctions_path, None, f"invalid UTF-8: {error}")
     except OSError as error:
@@ -161,8 +198,20 @@ def quantify(catalog: Catalog, junctions_path: Path) -> Quantification:
 
     return Quantification(
         results=tuple(
-            VariantSupport(variant, unique, multimapping)
-            for variant, (unique, multimapping) in zip(catalog.variants, counts)
+            VariantSupport(
+                variant,
+                unique,
+                multimapping,
+                tuple(
+                    ReferenceJunctionSupport(reference, reference_unique, reference_multi)
+                    for reference, (reference_unique, reference_multi) in zip(
+                        variant.reference_junctions, reference_counts[index]
+                    )
+                ),
+            )
+            for index, (variant, (unique, multimapping)) in enumerate(
+                zip(catalog.variants, counts)
+            )
         ),
         compatibility_warning=not compatible_chromosome_seen,
     )
