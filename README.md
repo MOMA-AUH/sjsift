@@ -39,6 +39,13 @@ sjsift \
   --output sample.sjsift.tsv
 ```
 
+`--junctions` accepts plain text or gzip-compressed data, detected from the
+file contents regardless of filename extension. For example:
+
+```bash
+sjsift --junctions sample.SJ.out.tab.gz --definitions grch38.toml
+```
+
 Omit `--output` to write the report to standard output:
 
 ```bash
@@ -101,7 +108,8 @@ the report.
 
 ## Scope
 
-sjsift accepts one uncompressed, nine-column STAR `SJ.out.tab` file at a time.
+sjsift accepts one plain-text or gzip-compressed, nine-column STAR
+`SJ.out.tab` file at a time.
 It does not process BAM, CRAM, or SAM files; normalize chromosome names; lift
 coordinates between assemblies; apply thresholds; or combine multiple
 junctions into a call. For the full input, matching, validation, and exit-status

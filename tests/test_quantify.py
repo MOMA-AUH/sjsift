@@ -1,5 +1,6 @@
 """Tests for validating and quantifying STAR splice junctions."""
 
+import gzip
 from pathlib import Path
 
 import pytest
@@ -179,3 +180,31 @@ def test_malformed_unmatched_rows_are_still_rejected(tmp_path: Path) -> None:
         "line 1",
         "intron start must be an integer",
     )
+
+
+@pytest.mark.parametrize("data", [b"", b"\r\n", b"chr2\t1\t2\t0\t0\t0\t5\t6\t7\r\n"])
+def test_gzip_empty_and_unmatched_input_matches_plain_text(
+    tmp_path: Path, data: bytes
+) -> None:
+    plain = tmp_path / "plain.tab"
+    compressed = tmp_path / "compressed.tab.gz"
+    plain.write_bytes(data)
+    compressed.write_bytes(gzip.compress(data))
+
+    assert quantify(CATALOG, compressed) == quantify(CATALOG, plain)
+
+
+def test_concatenated_gzip_members_preserve_rows_and_line_numbers(tmp_path: Path) -> None:
+    path = tmp_path / "sample.tab.gz"
+    first = b"chr7\t10\t20\t1\t0\t0\t23\t4\t0\r\n"
+    second = b"chrX\t30\t40\t2\t6\t1\t7\t11\t99\n"
+    path.write_bytes(gzip.compress(first) + gzip.compress(second))
+
+    assert quantify(CATALOG, path).results == (
+        VariantSupport(CATALOG.variants[0], unique=23, multimapping=4),
+        VariantSupport(CATALOG.variants[1], unique=7, multimapping=11),
+    )
+
+    path.write_bytes(gzip.compress(first) + gzip.compress(first))
+    with pytest.raises(QuantifyError, match="line 2: duplicate"):
+        quantify(CATALOG, path)
