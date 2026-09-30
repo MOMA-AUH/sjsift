@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>$title</title>
+  <style>$styles</style>
+</head>
+<body>
+<header>
+  <p class="eyebrow">sjsift · junction report</p>
+  <h1>Junction support, with local context</h1>
+  <p class="intro">Compare each defining junction with its selected reference junctions.</p>
+  <dl class="provenance">
+    <div><dt>Input file</dt><dd>$junctions</dd></div>
+    <div><dt>Catalog</dt><dd>$definitions</dd></div>
+    <div><dt>Assembly</dt><dd>$assembly</dd></div>
+    <div><dt>sjsift version</dt><dd>$version</dd></div>
+  </dl>
+  $warning
+  <div class="summary">
+    <div><strong>$count</strong><span>catalog variants</span></div>
+    <div><strong>$observed</strong><span>with defining-junction support</span></div>
+    <div id="visible-summary" hidden><strong id="visible-count">$count</strong><span>matching filters</span></div>
+  </div>
+</header>
+<main>
+  <div id="controls" class="controls" hidden>
+    <label>Find a variant <input id="search" type="search" placeholder="Variant ID" autocomplete="off"></label>
+    <label>Order <select id="order"><option value="support">Variant unique support</option><option value="catalog">Catalog order</option></select></label>
+    <label class="checkbox"><input id="observed-only" type="checkbox"> Variants with any support only</label>
+  </div>
+  <p class="legend"><span class="swatch variant"></span>Variant unique <span class="swatch reference"></span>Reference unique <span class="swatch multimapping"></span>Multimapping</p>
+  <section id="overview" aria-labelledby="overview-heading">
+    <h2 id="overview-heading" tabindex="-1">All variants</h2>
+    <div class="table-scroll panel table-panel">
+      <table id="overview-table">
+        <caption>Unique and multimapping support from STAR. Select a variant to inspect its junctions.</caption>
+        <thead><tr><th scope="col">Variant</th><th scope="col">Defining junction</th>$reference_headers<th scope="col">Observed evidence</th></tr></thead>
+        <tbody>$overview_rows</tbody>
+      </table>
+    </div>
+    <p id="no-matches" hidden>No variants match these filters. Clear the search or show variants without support.</p>
+    <p class="scale-note">Bars share one linear scale across the entire catalog, including when filtered. Numeric counts are exact.</p>
+  </section>
+  <section id="details" aria-label="Variant details">
+    <nav id="detail-navigation" class="detail-navigation" aria-label="Choose a variant" hidden>
+      <a href="#overview">← All variants</a>
+      <label>Variant <select id="variant-picker"></select></label>
+      <button id="previous" type="button">Previous</button>
+      <button id="next" type="button">Next</button>
+    </nav>
+    $detail_sections
+  </section>
+  <p id="view-status" class="sr-only" role="status" aria-live="polite"></p>
+</main>
+<footer>
+  <p>Support means unique or multimapping support in this STAR file. Evidence descriptions apply no threshold or clinical classification.
+  Zero means zero reported support in this already-filtered file. “Not configured” means the catalog provides no reference for that role.</p>
+  <p>Compare reference junctions individually. They may be shared between variants and must not be summed into gene expression or a whole-transcript fraction.</p>
+  <noscript><p>JavaScript is disabled. The complete overview and all variant details are shown below their headings; variant links still work.</p></noscript>
+</footer>
+<script>$script</script>
+</body>
+</html>

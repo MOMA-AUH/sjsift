@@ -38,6 +38,12 @@ jobs:
           "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
+          touch "$RUNNER_TEMP/sjsift-empty.SJ.out.tab"
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" \
+            --junctions "$RUNNER_TEMP/sjsift-empty.SJ.out.tab" \
+            --definitions definitions/grch38.toml \
+            --output "$RUNNER_TEMP/sjsift-smoke.tsv" \
+            --html-output "$RUNNER_TEMP/sjsift-smoke.html"
       - uses: actions/upload-artifact@v7
         with:
           name: python-distributions

@@ -5,7 +5,7 @@ This context defines the language used to quantify predefined RNA splice variant
 ## Language
 
 **Known splice variant**:
-A predefined RNA splicing event represented in version 0.1 by exactly one defining splice junction.
+A predefined RNA splicing event represented by exactly one defining splice junction.
 _Avoid_: Candidate variant, discovered variant
 
 **Genome assembly**:
@@ -13,7 +13,7 @@ The named reference coordinate system to which every junction in one variant-def
 _Avoid_: Genome version, reference version
 
 **Reference coordinate namespace**:
-The combination of a genome assembly and its exact chromosome identifiers. Version 0.1 documentation examples use GRCh38 with `chr`-prefixed identifiers.
+The combination of a genome assembly and its exact chromosome identifiers. Documentation examples use GRCh38 with `chr`-prefixed identifiers.
 _Avoid_: Assembly, when chromosome naming is also intended
 
 **Chromosome identifier**:
@@ -25,11 +25,11 @@ The first and last intronic bases, expressed as 1-based inclusive coordinates ex
 _Avoid_: Exon-boundary coordinates, BED coordinates
 
 **Defining splice junction**:
-The assembly-specific combination of chromosome identifier, junction coordinates, and transcript strand that identifies one known splice variant. Version 0.1 supports only definitions expected to have a STAR-defined strand; a STAR junction with strand `0` does not match.
+The assembly-specific combination of chromosome identifier, junction coordinates, and transcript strand that identifies one known splice variant. sjsift supports only definitions expected to have a STAR-defined strand; a STAR junction with strand `0` does not match.
 _Avoid_: Coordinate-only junction, signature region
 
 **Junction support**:
-The counts already reported by STAR for one defining splice junction, retained as unique support and multimapping support. Total support is their arithmetic sum, not an independent recount, weighted value, or classification score.
+The counts already reported by STAR for one defining or reference splice junction, retained as unique support and multimapping support. Total support is their arithmetic sum, not an independent recount, weighted value, or classification score.
 _Avoid_: Variant score, filtered support, recounted support
 
 **Unsupported variant**:
@@ -41,17 +41,21 @@ A human-maintained collection of known splice variants whose defining splice jun
 _Avoid_: Variant database, genome library
 
 **GRCh38 reference catalog**:
-The versioned sjsift catalog containing six known EGFR variants together with `METex14` and `ARv7`. It remains an explicit input rather than a hidden application default.
+The versioned sjsift catalog containing 17 variants across AR, BRAF, EGFR, FGFR2, and MET, with curated reference junctions. It remains an explicit input rather than a hidden application default.
 _Avoid_: Built-in database, comprehensive splice-variant catalog
 
-## Initial variant identifiers
+**Reference junction**:
+A catalogued splice junction whose support provides local context for a variant's defining junction. Each has a role unique within that variant, such as `same_donor` or `same_acceptor` in transcript orientation. References remain separate observations and may be shared across variants.
+_Avoid_: Gene expression, full-length transcript count
+
+## Selected variant identifiers
 
 **EGFRvIII**:
 The EGFR splice variant defined by the exon 1-to-exon 8 junction.
 _Avoid_: EGFR variant III
 
 **Supported EGFR variants**:
-The six EGFR variants included in the v0.1 reference catalog: `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`.
+The six EGFR variants included in the reference catalog: `EGFRvII`, `EGFRvIIb`, `EGFRvIII`, `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`.
 _Avoid_: EGFR variant set
 
 **METex14**:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from sjsift.catalog import CatalogError, VariantDefinition, load_catalog
+from sjsift.catalog import CatalogError, ReferenceJunction, VariantDefinition, load_catalog
 
 
 VALID_CATALOG = """\
@@ -55,6 +55,80 @@ def test_valid_catalog_preserves_entry_order(tmp_path: Path) -> None:
     )
 
 
+def test_version_two_catalog_loads_ordered_named_reference_junctions(
+    tmp_path: Path,
+) -> None:
+    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
+    text = text.replace(
+        'strand = "+"',
+        'strand = "+"\nreference_junctions = []',
+        1,
+    ).replace(
+        'strand = "-"',
+        '''strand = "-"
+
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chrX"
+intron_start = 41
+intron_end = 50
+strand = "-"
+
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chrX"
+intron_start = 21
+intron_end = 29
+strand = "-"''',
+        1,
+    )
+
+    _, catalog = load_text(tmp_path, text)
+
+    assert catalog.variants[0].reference_junctions == ()
+    assert catalog.variants[1].reference_junctions == (
+        ReferenceJunction("same_donor", "chrX", 41, 50, "-"),
+        ReferenceJunction("same_acceptor", "chrX", 21, 29, "-"),
+    )
+
+
+def test_version_two_requires_reference_junctions_for_every_variant(
+    tmp_path: Path,
+) -> None:
+    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
+
+    assert_invalid(tmp_path, text, "variant 1 ('first')", "'reference_junctions'")
+
+
+def test_reference_junction_validation_has_variant_and_junction_context(
+    tmp_path: Path,
+) -> None:
+    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
+    text = text.replace(
+        'strand = "+"',
+        '''strand = "+"
+
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 10
+intron_end = 20
+strand = "+"''',
+        1,
+    ).replace(
+        'strand = "-"',
+        'strand = "-"\nreference_junctions = []',
+        1,
+    )
+
+    assert_invalid(
+        tmp_path,
+        text,
+        "variant 1 ('first'), reference junction 1 ('same_donor')",
+        "must not duplicate the defining junction",
+    )
+
+
 @pytest.mark.parametrize("field", ["schema_version", "genome_assembly", "variants"])
 def test_missing_top_level_field_is_rejected(tmp_path: Path, field: str) -> None:
     lines = VALID_CATALOG.splitlines()
@@ -89,8 +163,10 @@ def test_schema_version_must_be_an_integer(tmp_path: Path, value: str) -> None:
 
 
 def test_unsupported_schema_version_is_explicit(tmp_path: Path) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
-    assert_invalid(tmp_path, text, "unsupported catalog schema version 2", "expected 1")
+    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 3")
+    assert_invalid(
+        tmp_path, text, "unsupported catalog schema version 3", "expected 1 or 2"
+    )
 
 
 @pytest.mark.parametrize(

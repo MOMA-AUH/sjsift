@@ -52,8 +52,57 @@ Omit `--output` to write the report to standard output:
 sjsift --junctions sample.SJ.out.tab --definitions grch38.toml
 ```
 
+To write local reference-junction context as a separate long-form TSV, pass
+`--context-output`:
+
+```bash
+sjsift \
+  --junctions sample.SJ.out.tab \
+  --definitions definitions/grch38.toml \
+  --output sample.sjsift.tsv \
+  --context-output sample.sjsift.context.tsv
+```
+
+The main TSV remains unchanged. The context TSV has one row for each named
+reference junction configured for a variant. The repository's GRCh38 catalog
+provides 32 context rows across all 17 variants, curated against GENCODE v49.
+The [curation record](docs/REFERENCE_JUNCTION_CURATION.md) documents transcript
+choices and coordinate sources. Version 1 catalogs have no
+reference junctions and therefore produce a header-only context TSV. See
+[reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for the
+version 2 catalog schema and interpretation.
+
 Run `sjsift --help` for the complete command-line reference. Existing output
 files are never overwritten.
+
+## HTML report
+
+Add `--html-output` to create a single offline HTML file alongside the TSVs:
+
+```bash
+sjsift \
+  --junctions sample.SJ.out.tab \
+  --definitions grch38.toml \
+  --output sample.sjsift.tsv \
+  --context-output sample.sjsift.context.tsv \
+  --html-output sample.sjsift.html
+```
+
+Open the HTML file in a browser. The overview shows defining-junction and
+reference support side by side, with separate unique and multimapping counts.
+Search by variant ID, sort by support or catalog order, and select a variant
+for detailed counts and coordinates. Reference roles remain separate, including
+custom roles from your own catalog.
+
+`--html-output` does not require `--context-output`. Without `--output`, the
+main TSV still goes to stdout. Both TSV formats are unchanged. The report also
+works with schema version 1 catalogs, which are labeled as having no configured
+reference context. All counts remain readable with JavaScript disabled.
+
+The HTML file needs no server, internet connection, or external assets. See the
+[HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
+This option requires a version of sjsift with HTML reporting support; it is not
+available in released v0.1.3.
 
 ## Reference catalog
 
@@ -61,6 +110,11 @@ files are never overwritten.
 definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
+
+The catalog now uses schema version 2 and requires a version of sjsift with
+reference-junction context support. Released sjsift v0.1.3 supports only schema
+version 1; its compatible catalog remains available at the
+[`v0.1.3` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml).
 
 Catalog coordinates use STAR's 1-based, inclusive intron convention and are
 matched exactly. Chromosome names are also literal: for example, `chr7` does
@@ -82,10 +136,10 @@ intron_end = 55155829
 strand = "+"
 ```
 
-Each variant must have a unique `id` and a unique combination of chromosome,
-intron coordinates, and strand. See the [MVP
-specification](docs/MVP_SPEC.md#variant-definition-catalog) for the complete
-catalog schema.
+Each variant must have a unique `id` and a unique defining junction
+(chromosome, intron coordinates, and strand). See the [catalog specification](docs/SPECIFICATION.md#variant-definition-catalog)
+for both schemas and the [reference-junction guide](docs/REFERENCE_JUNCTION_CONTEXT.md)
+for comparator examples.
 
 ## Output
 
@@ -113,14 +167,14 @@ sjsift accepts one plain-text or gzip-compressed, nine-column STAR
 It does not process BAM, CRAM, or SAM files; normalize chromosome names; lift
 coordinates between assemblies; apply thresholds; or combine multiple
 junctions into a call. For the full input, matching, validation, and exit-status
-contract, see the [MVP specification](docs/MVP_SPEC.md).
+contract, see the [specification](docs/SPECIFICATION.md).
 
 ## Development
 
 See the [development and release guide](docs/DEVELOPMENT.md) for local setup,
 testing, packaging, and release instructions. Additional design context is in
-the [design decisions](docs/DECISIONS.md) and [domain
-language](CONTEXT.md).
+the [specification](docs/SPECIFICATION.md#design-and-maintenance) and
+[domain language](CONTEXT.md).
 
 ## License
 

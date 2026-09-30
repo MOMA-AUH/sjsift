@@ -1,6 +1,10 @@
 # sjsift v0.1 implementation plan
 
-This plan implements [`MVP_SPEC.md`](MVP_SPEC.md) in small pull requests. Each milestone is independently reviewable and must preserve all explicit v0.1 exclusions.
+This is the historical plan for the original v0.1 implementation, retained as
+project history rather than a current task list. The original specification
+and decisions have been consolidated into the [current specification](SPECIFICATION.md).
+Later additions include gzip input, reference-junction context, and HTML reports;
+the exclusions and proposed components below describe the original scope.
 
 ## Milestone 0: finish repository-policy bootstrap
 

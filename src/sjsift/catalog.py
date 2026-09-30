@@ -7,8 +7,12 @@ from typing import NoReturn
 
 
 _TOP_LEVEL_FIELDS = frozenset({"schema_version", "genome_assembly", "variants"})
-_VARIANT_FIELDS = frozenset(
+_V1_VARIANT_FIELDS = frozenset(
     {"id", "chromosome", "intron_start", "intron_end", "strand"}
+)
+_V2_VARIANT_FIELDS = _V1_VARIANT_FIELDS | frozenset({"reference_junctions"})
+_REFERENCE_JUNCTION_FIELDS = frozenset(
+    {"role", "chromosome", "intron_start", "intron_end", "strand"}
 )
 
 
@@ -21,6 +25,18 @@ class VariantDefinition:
     """One known splice variant and its defining junction."""
 
     identifier: str
+    chromosome: str
+    intron_start: int
+    intron_end: int
+    strand: str
+    reference_junctions: tuple["ReferenceJunction", ...] = ()
+
+
+@dataclass(frozen=True)
+class ReferenceJunction:
+    """A named junction used to place a defining junction in local context."""
+
+    role: str
     chromosome: str
     intron_start: int
     intron_end: int
@@ -89,13 +105,66 @@ def _variant_context(index: int, value: dict[str, object]) -> str:
     return f"variant {index}"
 
 
-def _parse_variant(path: Path, value: object, index: int) -> VariantDefinition:
+def _parse_reference_junction(
+    path: Path, value: object, variant_context: str, index: int
+) -> ReferenceJunction:
+    context = f"{variant_context}, reference junction {index}"
+    if not isinstance(value, dict):
+        _fail(path, f"{context}: must be a table")
+
+    _validate_fields(path, value, _REFERENCE_JUNCTION_FIELDS, context)
+    role = _validate_string(path, value["role"], "role", context)
+    chromosome = _validate_string(path, value["chromosome"], "chromosome", context)
+    intron_start = _validate_positive_integer(
+        path, value["intron_start"], "intron_start", context
+    )
+    intron_end = _validate_positive_integer(
+        path, value["intron_end"], "intron_end", context
+    )
+    if intron_end < intron_start:
+        _fail(path, f"{context}: field 'intron_end' must not be less than 'intron_start'")
+    strand = value["strand"]
+    if not isinstance(strand, str) or strand not in {"+", "-"}:
+        _fail(path, f"{context}: field 'strand' must be '+' or '-'")
+
+    return ReferenceJunction(role, chromosome, intron_start, intron_end, strand)
+
+
+def _parse_reference_junctions(
+    path: Path, value: object, variant_context: str
+) -> tuple[ReferenceJunction, ...]:
+    if not isinstance(value, list):
+        _fail(
+            path,
+            f"{variant_context}: field 'reference_junctions' must be an array of tables",
+        )
+
+    junctions = tuple(
+        _parse_reference_junction(path, junction, variant_context, index)
+        for index, junction in enumerate(value, start=1)
+    )
+    roles: set[str] = set()
+    for index, junction in enumerate(junctions, start=1):
+        if junction.role in roles:
+            _fail(
+                path,
+                f"{variant_context}, reference junction {index} ({junction.role!r}): "
+                "duplicate role",
+            )
+        roles.add(junction.role)
+    return junctions
+
+
+def _parse_variant(
+    path: Path, value: object, index: int, schema_version: int
+) -> VariantDefinition:
     context = f"variant {index}"
     if not isinstance(value, dict):
         _fail(path, f"{context}: must be a table")
 
     context = _variant_context(index, value)
-    _validate_fields(path, value, _VARIANT_FIELDS, context)
+    expected_fields = _V1_VARIANT_FIELDS if schema_version == 1 else _V2_VARIANT_FIELDS
+    _validate_fields(path, value, expected_fields, context)
     identifier = _validate_string(path, value["id"], "id", context)
     context = f"variant {index} ({identifier!r})"
     chromosome = _validate_string(path, value["chromosome"], "chromosome", context)
@@ -111,12 +180,33 @@ def _parse_variant(path: Path, value: object, index: int) -> VariantDefinition:
     if not isinstance(strand, str) or strand not in {"+", "-"}:
         _fail(path, f"{context}: field 'strand' must be '+' or '-'")
 
+    reference_junctions = (
+        ()
+        if schema_version == 1
+        else _parse_reference_junctions(path, value["reference_junctions"], context)
+    )
+    defining_junction = (chromosome, intron_start, intron_end, strand)
+    for reference_index, reference in enumerate(reference_junctions, start=1):
+        reference_junction = (
+            reference.chromosome,
+            reference.intron_start,
+            reference.intron_end,
+            reference.strand,
+        )
+        if reference_junction == defining_junction:
+            _fail(
+                path,
+                f"{context}, reference junction {reference_index} ({reference.role!r}): "
+                "must not duplicate the defining junction",
+            )
+
     return VariantDefinition(
         identifier=identifier,
         chromosome=chromosome,
         intron_start=intron_start,
         intron_end=intron_end,
         strand=strand,
+        reference_junctions=reference_junctions,
     )
 
 
@@ -150,7 +240,7 @@ def _validate_unique(path: Path, variants: tuple[VariantDefinition, ...]) -> Non
 
 
 def load_catalog(path: Path) -> Catalog:
-    """Load and validate a schema-version-1 catalog from *path*."""
+    """Load and validate a schema-version-1 or schema-version-2 catalog."""
     try:
         with path.open("rb") as stream:
             document = tomllib.load(stream)
@@ -167,8 +257,8 @@ def load_catalog(path: Path) -> Catalog:
     schema_version = document["schema_version"]
     if type(schema_version) is not int:
         _fail(path, "catalog: field 'schema_version' must be an integer")
-    if schema_version != 1:
-        _fail(path, f"unsupported catalog schema version {schema_version}; expected 1")
+    if schema_version not in {1, 2}:
+        _fail(path, f"unsupported catalog schema version {schema_version}; expected 1 or 2")
 
     genome_assembly = _validate_string(
         path, document["genome_assembly"], "genome_assembly", "catalog"
@@ -180,7 +270,7 @@ def load_catalog(path: Path) -> Catalog:
         _fail(path, "catalog: field 'variants' must not be empty")
 
     variants = tuple(
-        _parse_variant(path, variant, index)
+        _parse_variant(path, variant, index, schema_version)
         for index, variant in enumerate(raw_variants, start=1)
     )
     _validate_unique(path, variants)
