@@ -8,8 +8,7 @@ human-readable TOML catalog and reports STAR's unique and multimapping support
 counts in a deterministic TSV table.
 
 sjsift does not reopen alignments, discover novel splice events, or assign
-biological or clinical significance. Version 0.1 supports one defining
-junction per variant.
+biological or clinical significance. Each variant has one defining junction.
 
 ## Installation
 
@@ -101,8 +100,7 @@ reference context. All counts remain readable with JavaScript disabled.
 
 The HTML file needs no server, internet connection, or external assets. See the
 [HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
-This option requires a version of sjsift with HTML reporting support; it is not
-available in released v0.1.3.
+HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
 ## Reference catalog
 
@@ -111,9 +109,9 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
-The catalog now uses schema version 2 and requires a version of sjsift with
-reference-junction context support. Released sjsift v0.1.3 supports only schema
-version 1; its compatible catalog remains available at the
+The catalog uses schema version 2 and requires sjsift v0.2.0 or newer.
+sjsift v0.1.3 supports only schema version 1; its compatible catalog remains
+available at the
 [`v0.1.3` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml).
 
 Catalog coordinates use STAR's 1-based, inclusive intron convention and are

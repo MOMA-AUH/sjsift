@@ -7,7 +7,7 @@ resources, or browser network requests.
 
 ## Creating and opening a report
 
-Run the current source checkout with a new destination path:
+Run sjsift v0.2.0 or newer with a new destination path:
 
 ```bash
 sjsift --junctions sample.SJ.out.tab \
@@ -20,8 +20,7 @@ sjsift --junctions sample.SJ.out.tab \
 Open `sample.html` directly in a browser. The file can be moved or shared on its
 own. `--context-output` is optional; omitting `--output` sends the main TSV to
 stdout while still creating the HTML. Both catalog schemas are supported;
-schema 1 has no reference context. These report extensions are not included in
-the released v0.1.3 package. See the [current specification](SPECIFICATION.md)
+schema 1 has no reference context. See the [specification](SPECIFICATION.md)
 for the complete input, schema, and CLI contract.
 
 ## Overview and variant details
