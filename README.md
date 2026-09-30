@@ -75,6 +75,35 @@ version 2 catalog schema and interpretation.
 Run `sjsift --help` for the complete command-line reference. Existing output
 files are never overwritten.
 
+## HTML report
+
+Add `--html-output` to create a single offline HTML file alongside the TSVs:
+
+```bash
+sjsift \
+  --junctions sample.SJ.out.tab \
+  --definitions grch38.toml \
+  --output sample.sjsift.tsv \
+  --context-output sample.sjsift.context.tsv \
+  --html-output sample.sjsift.html
+```
+
+Open the HTML file in a browser. The overview shows defining-junction and
+reference support side by side, with separate unique and multimapping counts.
+Search by variant ID, sort by support or catalog order, and select a variant
+for detailed counts and coordinates. Reference roles remain separate, including
+custom roles from your own catalog.
+
+`--html-output` does not require `--context-output`. Without `--output`, the
+main TSV still goes to stdout. Both TSV formats are unchanged. The report also
+works with schema version 1 catalogs, which are labeled as having no configured
+reference context. All counts remain readable with JavaScript disabled.
+
+The HTML file needs no server, internet connection, or external assets. See the
+[HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
+This option requires a version of sjsift with HTML reporting support; it is not
+available in released v0.1.3.
+
 ## Reference catalog
 
 [`definitions/grch38.toml`](definitions/grch38.toml) contains GRCh38

@@ -82,6 +82,7 @@ def test_help_describes_single_command_interface(invoke) -> None:
     assert "-o" in result.stdout
     assert "--output PATH" in result.stdout
     assert "--context-output PATH" in result.stdout
+    assert "--html-output PATH" in result.stdout
     assert "{command}" not in result.stdout
 
 
@@ -294,6 +295,84 @@ def test_existing_context_output_is_refused_without_creating_main_output(
     assert context_output.read_text(encoding="utf-8") == "do not replace me\n"
 
 
+@pytest.mark.parametrize("main_file", [False, True])
+@pytest.mark.parametrize("context_file", [False, True])
+def test_html_is_additive_and_preserves_tsv_bytes(tmp_path, main_file, context_file):
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    arguments = ["--junctions", str(junctions), "--definitions", str(definitions)]
+    baseline = run_console_script(*arguments)
+    output = tmp_path / "main.tsv"
+    context = tmp_path / "context.tsv"
+    html = tmp_path / "report.html"
+    if main_file:
+        arguments += ["--output", str(output)]
+    if context_file:
+        arguments += ["--context-output", str(context)]
+
+    result = run_console_script(*arguments, "--html-output", str(html))
+
+    assert result.returncode == 0
+    assert result.stderr == ""
+    assert (output.read_text() if main_file else result.stdout) == baseline.stdout
+    if main_file:
+        assert result.stdout == ""
+    if context_file:
+        assert context.read_text().splitlines() == [
+            "variant_id\tgenome_assembly\tcontext_role\tchromosome\tintron_start\t"
+            "intron_end\tstrand\tunique_support\tmultimapping_support\ttotal_support"
+        ]
+    text = html.read_text(encoding="utf-8")
+    assert "EGFRvIII" in text
+    assert 'data-unique="23" data-total="27"' in text
+    assert "no reference context configured" in text
+
+
+@pytest.mark.parametrize("failure", ["existing", "missing-parent", "input-path"])
+def test_html_destination_failure_preserves_existing_files_and_cleans_new_files(tmp_path, failure):
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    output, context = tmp_path / "main.tsv", tmp_path / "context.tsv"
+    html = tmp_path / "report.html"
+    if failure == "existing":
+        html.write_text("keep me")
+    elif failure == "missing-parent":
+        html = tmp_path / "missing" / "report.html"
+    else:
+        html = junctions
+    original = html.read_bytes() if html.exists() else None
+
+    result = run_console_script(
+        "--junctions", str(junctions), "--definitions", str(definitions),
+        "--output", str(output), "--context-output", str(context), "--html-output", str(html),
+    )
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert str(html) in result.stderr
+    assert "Traceback" not in result.stderr
+    assert not output.exists() and not context.exists()
+    if original is not None:
+        assert html.read_bytes() == original
+    else:
+        assert not html.exists()
+
+
+@pytest.mark.parametrize("other_option", ["--output", "--context-output"])
+def test_html_path_cannot_alias_a_tsv_path(tmp_path, other_option):
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    output = tmp_path / "result"
+    alias_parent = tmp_path / "subdir"
+    alias_parent.mkdir()
+    alias = alias_parent / ".." / "result"
+    result = run_console_script(
+        "--junctions", str(junctions), "--definitions", str(definitions),
+        other_option, str(output), "--html-output", str(alias),
+    )
+    assert result.returncode == 2
+    assert "output paths must differ" in result.stderr
+    assert result.stdout == ""
+    assert not output.exists()
+
+
 def test_existing_output_is_refused_without_modification(tmp_path: Path) -> None:
     junctions, definitions = write_single_variant_inputs(tmp_path)
     output = tmp_path / "report.tsv"
@@ -373,15 +452,22 @@ def test_curated_catalog_context_preserves_shared_and_missing_support(
     )
     definitions = REPOSITORY_ROOT / "definitions" / "grch38.toml"
     context_output = tmp_path / "context.tsv"
+    html_output = tmp_path / "report.html"
 
     result = run_console_script(
         "--junctions", str(junctions),
         "--definitions", str(definitions),
         "--context-output", str(context_output),
+        "--html-output", str(html_output),
     )
 
     assert result.returncode == 0
     assert ("warning:" in result.stderr) == empty
+    html = html_output.read_text(encoding="utf-8")
+    assert ("No catalog chromosome identifiers were found" in html) == empty
+    assert html.count('class="variant-detail panel"') == 17
+    assert "Reference · Same donor" in html
+    assert "Reference · Same acceptor" in html
     with context_output.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.DictReader(stream, delimiter="\t"))
     assert len(rows) == 32

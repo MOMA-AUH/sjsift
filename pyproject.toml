@@ -42,6 +42,9 @@ Issues = "https://github.com/MOMA-AUH/sjsift/issues"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+sjsift = ["html_report.html", "html_report.css", "html_report.js"]
+
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config"
 testpaths = ["tests"]

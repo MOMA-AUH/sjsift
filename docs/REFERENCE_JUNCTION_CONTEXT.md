@@ -81,3 +81,7 @@ The file has a header even when the catalog contains no reference junctions.
 Rows are ordered first by catalog variant and then by the variant's declared
 reference-junction order. A long-form table is used because variants may have
 different context roles.
+
+For a readable overview and per-variant evidence view, add `--html-output PATH`.
+The [HTML report](HTML_REPORT.md) displays the same counts alongside the defining
+junction and keeps the main and context TSV formats unchanged.

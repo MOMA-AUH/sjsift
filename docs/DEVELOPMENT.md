@@ -73,6 +73,8 @@ The intended external seam is the `sjsift` command. `cli.py` only parses argumen
 - `catalog.py` owns TOML decoding and all catalog invariants.
 - `quantify.py` owns STAR validation, exact matching, and result construction behind one small callable interface.
 - `report.py` owns the fixed TSV schema and destination handling.
+- `html_report.py` renders the offline HTML overview and variant details;
+  its template, CSS, and JavaScript are package data embedded into each report.
 
 Avoid generic `utils.py`, adapter hierarchies, plugin seams, or a separately supported Python library interface. New modules should exist only when they hide a coherent body of behavior behind a smaller interface.
 

@@ -6,6 +6,11 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
+This document records the original v0.1 contract. The additive
+[reference-junction context](REFERENCE_JUNCTION_CONTEXT.md) and
+[HTML report](HTML_REPORT.md) extensions define schema v2, `--context-output`,
+and `--html-output`; they preserve the main TSV schema below.
+
 ## Supported inputs
 
 Exactly two inputs are required:
