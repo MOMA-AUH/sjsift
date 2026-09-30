@@ -94,9 +94,9 @@ Development dependencies belong in a `dev` optional dependency group and initial
 - `build` for isolated sdist and wheel creation;
 - `twine` for distribution metadata validation.
 
-Do not add a formatter, linter, type checker, CLI framework, schema framework, dataframe library, or bioinformatics library in v0.1 unless a concrete defect demonstrates the need. `git diff --check` is the only initial whitespace check.
+Do not add a formatter, linter, type checker, CLI framework, schema framework, dataframe library, or bioinformatics library unless a concrete defect demonstrates the need. `git diff --check` is the only initial whitespace check.
 
-Keep the version static and explicit in `pyproject.toml` and the conda recipe. A small test must fail if they diverge; a custom version-management framework is unnecessary.
+Keep the version static and explicit in `pyproject.toml`, `src/sjsift/__init__.py`, and the conda recipe. A small test must fail if they diverge; a custom version-management framework is unnecessary.
 
 ## Tests and fixtures
 
@@ -124,7 +124,7 @@ GitHub Actions supports Python version matrices and standard build/test steps ([
 1. `tests (3.11)` through `tests (3.14)` each install the package with development dependencies and run pytest.
 2. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help`, `sjsift --version`, and TSV/HTML report generation.
 
-Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks and `package` become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing to v0.1.
+Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks and `package` become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing without a demonstrated need.
 
 Dependabot may check GitHub Actions weekly, matching the lightweight convention used by skua.
 
@@ -141,7 +141,7 @@ The repository uses `master` as its protected default branch.
 7. Let GitHub delete the merged head branch automatically.
 8. Fast-forward the local `master` after merge and remove the local topic branch.
 
-No reviewer approval is required for v0.1. A pull request and passing required checks are mandatory.
+No reviewer approval is required by the documented repository policy. A pull request and passing required checks are mandatory.
 
 ## Repository bootstrap and GitHub configuration
 
@@ -197,15 +197,15 @@ These ruleset and merge settings cannot be enforced solely by files committed to
 
 Use semantic versions and `vMAJOR.MINOR.PATCH` Git tags, following skua's release convention.
 
-1. On a release branch, update the version in both `pyproject.toml` and the Jinja `version` value in `conda-recipe/meta.yaml`, update user-facing documentation, and add or update release tests. `tests/test_release.py` rejects a version mismatch.
+1. On a release branch, update the version in `pyproject.toml`, `src/sjsift/__init__.py`, and the Jinja `version` value in `conda-recipe/meta.yaml`, and update user-facing documentation. Run the existing version-agreement checks in `tests/test_release.py` and `tests/test_cli.py`; add or update release tests when release behavior changes.
 2. Open and squash-merge the release pull request after all required checks pass. Do not tag a release-branch commit: the tag must identify the resulting protected-`master` commit.
 3. Fast-forward local `master`, create an annotated tag whose value is exactly `v` followed by the synchronized package version, and push that tag:
 
    ```bash
    git switch master
    git pull --ff-only origin master
-   git tag -a v0.1.0 -m "Release v0.1.0"
-   git push origin v0.1.0
+   git tag -a v0.2.0 -m "Release v0.2.0"
+   git push origin v0.2.0
    ```
 
 4. The tag-triggered publish workflow checks that the tag matches `pyproject.toml`, rebuilds and tests the Python distributions and conda package from that exact checkout, and retains both artifact sets in GitHub Actions.

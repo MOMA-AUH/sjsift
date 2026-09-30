@@ -6,11 +6,10 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes the current source checkout, including catalog schemas
-1 and 2, reference-junction context, and the optional HTML report. It consolidates
-the original MVP specification and design decisions. Released v0.1.3 supports
-gzip input and schema 1; reference context, schema 2, and HTML output require a
-checkout containing these extensions until a new release includes them.
+This document describes sjsift v0.2.0, including catalog schemas 1 and 2,
+reference-junction context, and the optional HTML report. It consolidates the
+original MVP specification and design decisions. Schema 2, reference context,
+and HTML output were introduced in v0.2.0; v0.1.3 supports gzip input and schema 1.
 
 The [reference-context guide](REFERENCE_JUNCTION_CONTEXT.md) explains comparator
 selection, the [curation record](REFERENCE_JUNCTION_CURATION.md) documents the
@@ -133,7 +132,7 @@ comments and documentation; transcript IDs and exon names are not schema fields.
 The catalog is explicit input, never an application default or an automatically
 updated download. Users may copy or replace it with another schema-compatible
 catalog. The [v0.1.3 catalog](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml)
-remains available for the released schema-1-only application.
+remains available for the older schema-1-only application.
 
 ## Coordinate, chromosome, and strand rules
 
