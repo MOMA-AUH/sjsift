@@ -5,6 +5,25 @@ and optional context TSV. It consumes the same quantification results, including
 zero-support entries. There are no additional runtime dependencies, remote
 resources, or browser network requests.
 
+## Creating and opening a report
+
+Run the current source checkout with a new destination path:
+
+```bash
+sjsift --junctions sample.SJ.out.tab \
+  --definitions definitions/grch38.toml \
+  --output sample.tsv \
+  --context-output sample.context.tsv \
+  --html-output sample.html
+```
+
+Open `sample.html` directly in a browser. The file can be moved or shared on its
+own. `--context-output` is optional; omitting `--output` sends the main TSV to
+stdout while still creating the HTML. Both catalog schemas are supported;
+schema 1 has no reference context. These report extensions are not included in
+the released v0.1.3 package. See the [current specification](SPECIFICATION.md)
+for the complete input, schema, and CLI contract.
+
 ## Overview and variant details
 
 The overview contains one row per catalog variant. Defining-junction support
@@ -84,15 +103,3 @@ newly created report files are removed where possible; existing files are never
 overwritten. Bytes already emitted to stdout cannot be retracted. This cleanup
 does not provide transactional guarantees against process termination or power
 loss.
-
-## Design provenance
-
-The approved design combines the prototype's comparison table (A) with its
-variant detail view (B). The original three-view prototype and decision are
-archived on local branch `prototype/html-report`, commit `fbb58a9`. For example:
-
-```bash
-git show prototype/html-report:docs/report.prototype.html > /tmp/sjsift-report-prototype.html
-```
-
-The production renderer is implemented separately from that throwaway artifact.

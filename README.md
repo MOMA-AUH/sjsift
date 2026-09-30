@@ -137,9 +137,9 @@ strand = "+"
 ```
 
 Each variant must have a unique `id` and a unique defining junction
-(chromosome, intron coordinates, and strand). See the [MVP
-specification](docs/MVP_SPEC.md#variant-definition-catalog) for schema version 1
-and [reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for version 2.
+(chromosome, intron coordinates, and strand). See the [catalog specification](docs/SPECIFICATION.md#variant-definition-catalog)
+for both schemas and the [reference-junction guide](docs/REFERENCE_JUNCTION_CONTEXT.md)
+for comparator examples.
 
 ## Output
 
@@ -167,14 +167,14 @@ sjsift accepts one plain-text or gzip-compressed, nine-column STAR
 It does not process BAM, CRAM, or SAM files; normalize chromosome names; lift
 coordinates between assemblies; apply thresholds; or combine multiple
 junctions into a call. For the full input, matching, validation, and exit-status
-contract, see the [MVP specification](docs/MVP_SPEC.md).
+contract, see the [specification](docs/SPECIFICATION.md).
 
 ## Development
 
 See the [development and release guide](docs/DEVELOPMENT.md) for local setup,
 testing, packaging, and release instructions. Additional design context is in
-the [design decisions](docs/DECISIONS.md) and [domain
-language](CONTEXT.md).
+the [specification](docs/SPECIFICATION.md#design-and-maintenance) and
+[domain language](CONTEXT.md).
 
 ## License
 

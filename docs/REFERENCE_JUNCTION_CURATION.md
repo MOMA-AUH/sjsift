@@ -135,7 +135,7 @@ GENCODE defines exon rank from the transcript's 5′ end, including for minus-st
 transcripts. For two adjacent exons ordered by genomic coordinate, the STAR
 intron interval is `lower exon end + 1` through `higher exon start - 1`.
 See the [GENCODE GTF field definitions](https://www.gencodegenes.org/pages/data_format.html)
-and the [STAR junction coordinate convention](MVP_SPEC.md#star-junction-file).
+and the [STAR junction coordinate convention](SPECIFICATION.md#star-junction-file).
 
 ### EGFR alternative endpoints
 

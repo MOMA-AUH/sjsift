@@ -8,8 +8,6 @@ The Python Packaging User Guide recommends declaring the build backend in `[buil
 
 ### Local setup
 
-Once the implementation files exist:
-
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
@@ -27,7 +25,7 @@ python -m twine check dist/*
 
 Generated environments, build directories, coverage data, and distributions remain untracked.
 
-## Proposed repository structure
+## Repository structure
 
 ```text
 .
@@ -43,32 +41,40 @@ Generated environments, build directories, coverage data, and distributions rema
 │   └── grch38.toml
 ├── docs/
 │   ├── adr/
-│   ├── DECISIONS.md
+│   ├── curation/
 │   ├── DEVELOPMENT.md
+│   ├── HTML_REPORT.md
 │   ├── IMPLEMENTATION_PLAN.md
-│   └── MVP_SPEC.md
+│   ├── REFERENCE_JUNCTION_CONTEXT.md
+│   ├── REFERENCE_JUNCTION_CURATION.md
+│   └── SPECIFICATION.md
 ├── src/
 │   └── sjsift/
 │       ├── __init__.py
 │       ├── __main__.py
 │       ├── catalog.py
 │       ├── cli.py
+│       ├── html_report.py
+│       ├── html_report.html
+│       ├── html_report.css
+│       ├── html_report.js
 │       ├── quantify.py
 │       └── report.py
 ├── tests/
 │   ├── fixtures/
 │   ├── test_catalog.py
 │   ├── test_cli.py
+│   ├── test_html_report.py
 │   ├── test_quantify.py
 │   ├── test_reference_catalog.py
-│   └── test_report.py
+│   └── test_release.py
 ├── CONTEXT.md
 ├── LICENSE
 ├── README.md
 └── pyproject.toml
 ```
 
-The intended external seam is the `sjsift` command. `cli.py` only parses arguments, translates expected failures into messages and exit statuses, and coordinates deeper modules:
+The supported external interface is the `sjsift` command. `cli.py` only parses arguments, translates expected failures into messages and exit statuses, and coordinates deeper modules:
 
 - `catalog.py` owns TOML decoding and all catalog invariants.
 - `quantify.py` owns STAR validation, exact matching, and result construction behind one small callable interface.
@@ -98,7 +104,7 @@ Tests are organized by behavior rather than internal helper functions. Use tempo
 
 Minimum fixture set:
 
-- a valid catalog containing the eight entries in `definitions/grch38.toml`;
+- the committed 17-variant schema-2 catalog and smaller synthetic catalogs for both schemas;
 - a small STAR file with supported junctions carrying both unique and multimapping counts;
 - a STAR file with near misses for chromosome spelling, off-by-one coordinates, opposite strand, and strand `0`;
 - an empty STAR file;
@@ -109,14 +115,14 @@ Minimum fixture set:
 
 Unit tests cover catalog validation, STAR parsing/matching, arithmetic, and report serialization. CLI integration tests invoke `main(argv)` with real temporary files and assert stdout, stderr, output files, refusal to overwrite, and exit statuses. At least one installed-package smoke test runs the console entry point.
 
-Every normative rule in [`MVP_SPEC.md`](MVP_SPEC.md) must have a named test or a direct build/install check. Test fixtures are synthetic evidence, not clinical validation samples.
+Every normative rule in [`SPECIFICATION.md`](SPECIFICATION.md) must have a named test or a direct build/install check. Test fixtures are synthetic evidence, not clinical validation samples.
 
 ## Continuous integration
 
 GitHub Actions supports Python version matrices and standard build/test steps ([GitHub's Python Actions guide](https://docs.github.com/en/actions/tutorials/build-and-test-code/python)). Keep the initial workflow modest:
 
 1. `tests (3.11)` through `tests (3.14)` each install the package with development dependencies and run pytest.
-2. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help` and `sjsift --version`.
+2. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help`, `sjsift --version`, and TSV/HTML report generation.
 
 Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks and `package` become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing to v0.1.
 
