@@ -38,21 +38,28 @@ strand = "+"
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 116771655
-intron_end = 116771656
+intron_end = 116771848
 strand = "+"
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
-intron_start = 116774879
+intron_start = 116771990
 intron_end = 116774880
 strand = "+"
 ```
 
-The coordinates above illustrate the schema only; they are deliberately not a
-curated MET definition. Curation must pin a transcript accession and annotation
-release, derive coordinates from its adjacent exon boundaries, and record its
-source before the reference catalog moves to version 2.
+These are the curated MET exon 13→14 and 14→15 reference junctions from
+RefSeq transcript NM_000245.4 (GENCODE v49 coordinate evidence). The repository's
+[`definitions/grch38.toml`](../definitions/grch38.toml) uses schema version 2
+and provides 32 reference entries across all 17 variants. See the
+[curation record](REFERENCE_JUNCTION_CURATION.md) for pinned transcripts,
+annotation checksum, exon evidence, and every derived coordinate.
+
+`same_donor` and `same_acceptor` describe sites in transcript orientation.
+On the plus strand they share `intron_start` and `intron_end`, respectively;
+on the minus strand they share `intron_end` and `intron_start`. These are
+curated roles, not constraints imposed on arbitrary user-defined role names.
 
 Reference junctions may be shared by multiple variants. A reference junction
 may not duplicate its own variant's defining junction. STAR rows matching any

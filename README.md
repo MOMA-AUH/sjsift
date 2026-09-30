@@ -58,13 +58,16 @@ To write local reference-junction context as a separate long-form TSV, pass
 ```bash
 sjsift \
   --junctions sample.SJ.out.tab \
-  --definitions definitions-with-context.toml \
+  --definitions definitions/grch38.toml \
   --output sample.sjsift.tsv \
   --context-output sample.sjsift.context.tsv
 ```
 
 The main TSV remains unchanged. The context TSV has one row for each named
-reference junction configured for a variant. Version 1 catalogs have no
+reference junction configured for a variant. The repository's GRCh38 catalog
+provides 32 context rows across all 17 variants, curated against GENCODE v49.
+The [curation record](docs/REFERENCE_JUNCTION_CURATION.md) documents transcript
+choices and coordinate sources. Version 1 catalogs have no
 reference junctions and therefore produce a header-only context TSV. See
 [reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for the
 version 2 catalog schema and interpretation.
@@ -78,6 +81,11 @@ files are never overwritten.
 definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
+
+The catalog now uses schema version 2 and requires a version of sjsift with
+reference-junction context support. Released sjsift v0.1.3 supports only schema
+version 1; its compatible catalog remains available at the
+[`v0.1.3` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml).
 
 Catalog coordinates use STAR's 1-based, inclusive intron convention and are
 matched exactly. Chromosome names are also literal: for example, `chr7` does
@@ -99,10 +107,10 @@ intron_end = 55155829
 strand = "+"
 ```
 
-Each variant must have a unique `id` and a unique combination of chromosome,
-intron coordinates, and strand. See the [MVP
-specification](docs/MVP_SPEC.md#variant-definition-catalog) for the complete
-catalog schema.
+Each variant must have a unique `id` and a unique defining junction
+(chromosome, intron coordinates, and strand). See the [MVP
+specification](docs/MVP_SPEC.md#variant-definition-catalog) for schema version 1
+and [reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for version 2.
 
 ## Output
 

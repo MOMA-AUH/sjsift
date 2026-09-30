@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import gzip
 import io
 import os
@@ -15,6 +16,7 @@ import pytest
 
 import sjsift
 from sjsift import cli
+from sjsift.catalog import load_catalog
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
@@ -343,6 +345,61 @@ def test_incompatible_star_file_reports_zeros_with_one_compatibility_warning(
         f"sjsift: warning: {junctions}: no catalog chromosome identifiers found; "
         "check genome assembly and chromosome naming compatibility\n"
     )
+
+
+@pytest.mark.parametrize("empty", [False, True])
+def test_curated_catalog_context_preserves_shared_and_missing_support(
+    tmp_path: Path, empty: bool,
+) -> None:
+    # Real curated references on both strands, including alternate EGFR exons.
+    # BRAF's donor row is shared by del2-10 and del2-8; other references are absent.
+    observed = {
+        ("chrX", 67686127, 67711401, "+"): (11, 2),
+        ("chr7", 140850213, 140924565, "-"): (13, 3),
+        ("chr7", 55109959, 55142285, "+"): (17, 4),
+        ("chr7", 55165438, 55170306, "+"): (19, 5),
+        ("chr10", 121480022, 121483697, "-"): (23, 6),
+        ("chr7", 116771655, 116771848, "+"): (29, 7),
+        ("chr7", 116771990, 116774880, "+"): (31, 8),
+    } if not empty else {}
+    junctions = tmp_path / "sample.SJ.out.tab"
+    junctions.write_text(
+        "".join(
+            f"{chrom}\t{start}\t{end}\t{1 if strand == '+' else 2}\t"
+            f"{1 if strand == '+' else 2}\t1\t{unique}\t{multi}\t50\n"
+            for (chrom, start, end, strand), (unique, multi) in reversed(observed.items())
+        ),
+        encoding="utf-8",
+    )
+    definitions = REPOSITORY_ROOT / "definitions" / "grch38.toml"
+    context_output = tmp_path / "context.tsv"
+
+    result = run_console_script(
+        "--junctions", str(junctions),
+        "--definitions", str(definitions),
+        "--context-output", str(context_output),
+    )
+
+    assert result.returncode == 0
+    assert ("warning:" in result.stderr) == empty
+    with context_output.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream, delimiter="\t"))
+    assert len(rows) == 32
+    expected = []
+    for variant in load_catalog(definitions).variants:
+        for ref in variant.reference_junctions:
+            key = (ref.chromosome, ref.intron_start, ref.intron_end, ref.strand)
+            unique, multi = observed.get(key, (0, 0))
+            expected.append((variant.identifier, ref.role, unique, multi, unique + multi))
+    assert [
+        (row["variant_id"], row["context_role"], int(row["unique_support"]),
+         int(row["multimapping_support"]), int(row["total_support"]))
+        for row in rows
+    ] == expected
+    # Reference-only input must not create support for defining junctions.
+    main_rows = list(csv.DictReader(io.StringIO(result.stdout), delimiter="\t"))
+    assert len(main_rows) == 17
+    assert all(row["total_support"] == "0" for row in main_rows)
 
 
 def test_reference_catalog_reports_every_variant_in_catalog_order(

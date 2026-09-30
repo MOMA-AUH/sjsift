@@ -1,6 +1,10 @@
 # GRCh38 junction coordinates use STAR's 1-based inclusive intron convention.
+# Reference transcripts use versioned RefSeq NM accessions.
+# Coordinates: GENCODE v49 (GRCh38.p14 / Ensembl 115).
+# RefSeq/GENCODE mappings, exon evidence, and source checksums:
+# ../docs/REFERENCE_JUNCTION_CURATION.md
 
-schema_version = 1
+schema_version = 2
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -10,10 +14,34 @@ intron_start = 67686127
 intron_end = 67694672
 strand = "+"
 
+# NM_000044.6, exons 3 -> 4.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chrX"
+intron_start = 67686127
+intron_end = 67711401
+strand = "+"
+
 [[variants]]
 id = "ARv567es"
 chromosome = "chrX"
 intron_start = 67711690
+intron_end = 67723685
+strand = "+"
+
+# NM_000044.6, exons 4 -> 5.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chrX"
+intron_start = 67711690
+intron_end = 67717477
+strand = "+"
+
+# NM_000044.6, exons 7 -> 8.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chrX"
+intron_start = 67722985
 intron_end = 67723685
 strand = "+"
 
@@ -24,11 +52,43 @@ intron_start = 140781694
 intron_end = 140924565
 strand = "-"
 
+# NM_004333.6, exons 1 -> 2.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140850213
+intron_end = 140924565
+strand = "-"
+
+# NM_004333.6, exons 10 -> 11.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140783020
+strand = "-"
+
 [[variants]]
 id = "BRAFdel2-8"
 chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140924565
+strand = "-"
+
+# NM_004333.6, exons 1 -> 2.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140850213
+intron_end = 140924565
+strand = "-"
+
+# NM_004333.6, exons 8 -> 9.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140794307
 strand = "-"
 
 [[variants]]
@@ -38,11 +98,43 @@ intron_start = 140781694
 intron_end = 140850110
 strand = "-"
 
+# NM_004333.6, exons 2 -> 3.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140834873
+intron_end = 140850110
+strand = "-"
+
+# NM_004333.6, exons 10 -> 11.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140783020
+strand = "-"
+
 [[variants]]
 id = "BRAFdel3-8"
 chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140850110
+strand = "-"
+
+# NM_004333.6, exons 2 -> 3.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140834873
+intron_end = 140850110
+strand = "-"
+
+# NM_004333.6, exons 8 -> 9.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140794307
 strand = "-"
 
 [[variants]]
@@ -52,6 +144,22 @@ intron_start = 140781694
 intron_end = 140834608
 strand = "-"
 
+# NM_004333.6, exons 3 -> 4.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140808996
+intron_end = 140834608
+strand = "-"
+
+# NM_004333.6, exons 10 -> 11.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140781694
+intron_end = 140783020
+strand = "-"
+
 [[variants]]
 id = "BRAFdel4-8"
 chromosome = "chr7"
@@ -59,10 +167,42 @@ intron_start = 140787585
 intron_end = 140834608
 strand = "-"
 
+# NM_004333.6, exons 3 -> 4.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 140808996
+intron_end = 140834608
+strand = "-"
+
+# NM_004333.6, exons 8 -> 9.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 140787585
+intron_end = 140794307
+strand = "-"
+
 [[variants]]
 id = "EGFRvIVa"
 chromosome = "chr7"
 intron_start = 55200414
+intron_end = 55205255
+strand = "+"
+
+# NM_005228.5, exons 24 -> 25.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55200414
+intron_end = 55201187
+strand = "+"
+
+# NM_005228.5, exons 27 -> 28.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55202626
 intron_end = 55205255
 strand = "+"
 
@@ -73,10 +213,42 @@ intron_start = 55019366
 intron_end = 55155829
 strand = "+"
 
+# NM_005228.5, exons 1 -> 2.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55019366
+intron_end = 55142285
+strand = "+"
+
+# NM_005228.5, exons 7 -> 8.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55154153
+intron_end = 55155829
+strand = "+"
+
 [[variants]]
 id = "EGFRvIIIb"
 chromosome = "chr7"
 intron_start = 55109959
+intron_end = 55155829
+strand = "+"
+
+# NM_001346900.2, exons 1 -> 2.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55109959
+intron_end = 55142285
+strand = "+"
+
+# NM_001346900.2, exons 7 -> 8.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55154153
 intron_end = 55155829
 strand = "+"
 
@@ -87,10 +259,42 @@ intron_start = 55200414
 intron_end = 55202516
 strand = "+"
 
+# NM_005228.5, exons 24 -> 25.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55200414
+intron_end = 55201187
+strand = "+"
+
+# NM_005228.5, exons 26 -> 27.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55201783
+intron_end = 55202516
+strand = "+"
+
 [[variants]]
 id = "EGFRvII"
 chromosome = "chr7"
 intron_start = 55161632
+intron_end = 55171174
+strand = "+"
+
+# NM_005228.5, exons 13 -> 14.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55161632
+intron_end = 55163732
+strand = "+"
+
+# NM_005228.5, exons 15 -> 16.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55165438
 intron_end = 55171174
 strand = "+"
 
@@ -101,10 +305,34 @@ intron_start = 55161632
 intron_end = 55170306
 strand = "+"
 
+# NM_201284.2, exons 13 -> 14.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 55161632
+intron_end = 55163732
+strand = "+"
+
+# NM_201284.2, exons 15 -> 16.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 55165438
+intron_end = 55170306
+strand = "+"
+
 [[variants]]
 id = "FGFR2-E18-C3"
 chromosome = "chr10"
 intron_start = 121482178
+intron_end = 121483697
+strand = "-"
+
+# NM_000141.5, exons 17 -> 18.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr10"
+intron_start = 121480022
 intron_end = 121483697
 strand = "-"
 
@@ -115,9 +343,41 @@ intron_start = 116755516
 intron_end = 116758458
 strand = "+"
 
+# NM_000245.4, exons 6 -> 7.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 116755516
+intron_end = 116757436
+strand = "+"
+
+# NM_000245.4, exons 8 -> 9.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 116757775
+intron_end = 116758458
+strand = "+"
+
 [[variants]]
 id = "METex14"
 chromosome = "chr7"
 intron_start = 116771655
+intron_end = 116774880
+strand = "+"
+
+# NM_000245.4, exons 13 -> 14.
+[[variants.reference_junctions]]
+role = "same_donor"
+chromosome = "chr7"
+intron_start = 116771655
+intron_end = 116771848
+strand = "+"
+
+# NM_000245.4, exons 14 -> 15.
+[[variants.reference_junctions]]
+role = "same_acceptor"
+chromosome = "chr7"
+intron_start = 116771990
 intron_end = 116774880
 strand = "+"
