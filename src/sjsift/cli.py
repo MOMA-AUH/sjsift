@@ -6,9 +6,20 @@ from pathlib import Path
 import sys
 
 from . import __version__
+from .alignment_evidence import AlignmentError, extract_evidence
 from .catalog import CatalogError, load_catalog
 from .quantify import QuantifyError, quantify
 from .report import ReportError, write_reports
+
+
+def _positive_integer(value: str) -> int:
+    try:
+        number = int(value)
+        if number > 0:
+            return number
+    except ValueError:
+        pass
+    raise argparse.ArgumentTypeError("must be a positive integer")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -44,6 +55,9 @@ def _parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="write an offline HTML overview and variant details to PATH",
     )
+    parser.add_argument("--alignments", metavar="PATH", help="local indexed coordinate-sorted BAM for HTML read previews")
+    parser.add_argument("--alignment-index", metavar="PATH", help="explicit local BAM index (otherwise discovered)")
+    parser.add_argument("--alignment-limit", type=_positive_integer, metavar="N", help="maximum embedded records per junction per mapping class (default: 200)")
     parser.add_argument(
         "--version",
         action="version",
@@ -53,6 +67,10 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
+    if arguments.alignments and not arguments.html_output:
+        parser.error("--alignments requires --html-output")
+    if not arguments.alignments and (arguments.alignment_index is not None or arguments.alignment_limit is not None):
+        parser.error("alignment-specific options require --alignments")
     try:
         catalog = load_catalog(Path(arguments.definitions))
     except CatalogError as error:
@@ -61,6 +79,16 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
         quantification = quantify(catalog, Path(arguments.junctions))
     except QuantifyError as error:
         parser.error(str(error))
+    evidence = None
+    if arguments.alignments:
+        try:
+            evidence = extract_evidence(
+                catalog, Path(arguments.alignments),
+                index_path=Path(arguments.alignment_index) if arguments.alignment_index else None,
+                limit=arguments.alignment_limit or 200,
+            )
+        except AlignmentError as error:
+            parser.error(str(error))
     try:
         write_reports(
             catalog.genome_assembly,
@@ -72,6 +100,7 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             junctions_name=Path(arguments.junctions).name,
             definitions_name=Path(arguments.definitions).name,
             compatibility_warning=quantification.compatibility_warning,
+            alignment_evidence=evidence,
         )
     except ReportError as error:
         parser.error(str(error))

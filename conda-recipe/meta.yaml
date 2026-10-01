@@ -19,13 +19,18 @@ requirements:
     - setuptools >=77
   run:
     - python >=3.11
+    - pysam >=0.24.0,<0.25
 
 test:
+  source_files:
+    - tests/alignment_fixtures.py
+    - tests/installed_alignment_smoke.py
   imports:
     - sjsift
   commands:
     - sjsift --help
     - sjsift --version
+    - python tests/installed_alignment_smoke.py
 
 about:
   home: https://github.com/MOMA-AUH/sjsift

@@ -2,8 +2,8 @@
 
 `--html-output PATH` adds a self-contained HTML report to the existing main TSV
 and optional context TSV. It consumes the same quantification results, including
-zero-support entries. There are no additional runtime dependencies, remote
-resources, or browser network requests.
+zero-support entries. Pysam is installed as a normal runtime dependency for optional alignment
+evidence; there are no remote resources or browser network requests.
 
 ## Creating and opening a report
 
@@ -105,3 +105,9 @@ newly created report files are removed where possible; existing files are never
 overwritten. Bytes already emitted to stdout cannot be retracted. This cleanup
 does not provide transactional guarantees against process termination or power
 loss.
+
+## Optional alignment previews
+
+Supply `--alignments sample.bam` to embed selected structural evidence. Read
+[alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
+counts, sampling, input checks and the raw identifiers retained when sharing.

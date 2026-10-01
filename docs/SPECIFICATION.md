@@ -24,7 +24,9 @@ Exactly two inputs are required:
 1. One STAR `SJ.out.tab` file for one sample.
 2. One TOML variant-definition catalog.
 
-Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Standard input, BAM, CRAM, SAM, other compression formats, directories, URLs, and multiple-sample input are not supported.
+Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Optional local indexed BAM may provide structural HTML evidence as described in
+[alignment evidence](ALIGNMENT_EVIDENCE.md). Standard input, CRAM, SAM, other
+compression formats, directories, URLs, and multiple-sample input are not supported.
 
 ### STAR junction file
 
@@ -278,7 +280,7 @@ Exit statuses are:
 The supported interface is one CLI with explicit named inputs and additive
 outputs. Internal Python modules do not promise a public library API. Python
 3.11 or newer provides standard-library TOML parsing; the package uses a `src/`
-layout, setuptools, and no runtime dependencies. HTML assets are packaged with
+layout, setuptools, and pysam for indexed alignment access. HTML assets are packaged with
 the application rather than fetched from a CDN.
 
 The [development guide](DEVELOPMENT.md) owns contributor setup, repository
@@ -309,7 +311,7 @@ not clinical validation samples.
 
 The application does not implement:
 
-- BAM, CRAM, or SAM processing, alignment recounting, deduplication, or filtering;
+- CRAM or SAM processing, replacement of STAR quantification with alignment counts;
 - novel splice-event discovery or multiple defining junctions per variant;
 - standard-input ingestion or multiple samples per invocation;
 - exon-coordinate conversion, liftover, chromosome aliases, or fuzzy matching;
@@ -318,3 +320,7 @@ The application does not implement:
 - automatic catalog discovery, annotation download, or catalog updates;
 - whole-transcript models or complete exon extents;
 - workflow-engine integration, plugin interfaces, or a public Python library API.
+
+The alignment-evidence guide is normative for alignment input, classification,
+sampling, provenance and failure handling. `tests/test_alignment_evidence.py` and
+`tests/test_alignment_cli.py` exercise its module and CLI/report boundaries.

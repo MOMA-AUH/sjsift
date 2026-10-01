@@ -97,3 +97,20 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .splice-boundaries small { display: block; font-size: .8rem; margin-top: .4rem; }
 .annotation-source { color: #526568; font-size: .85rem; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .splice-boundaries { gap: .4rem; } .exon-boundary { padding: .5rem; } }
+
+.alignment-provenance { margin-top: 1.5rem; font-size: .85rem; }
+.alignment-provenance .provenance { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.alignment-group { padding: 1rem 0; }
+.alignment-counts { max-width: 500px; }
+.read-rows { list-style: none; padding: 0; }
+.read-row { padding: .8rem; margin: .6rem 0; background: #f3f8f8; border-left: 3px solid #21767b; }
+.read-row.unverified { border-left: 3px dashed #b67b23; background: #faf7ef; }
+.read-label, .read-metadata { overflow-wrap: anywhere; font-size: .85rem; }
+.read-geometry { display: flex; align-items: center; gap: 2px; min-height: 42px; overflow-x: auto; margin: .5rem 0; }
+.cigar-op { flex-shrink: 0; min-width: 16px; text-align: center; background: #448b90; color: white; font-size: .7rem; }
+.cigar-op small { display: block; }
+.op-N { background: transparent; color: #46636a; border-top: 2px dotted #46636a; }
+.op-D { background: transparent; color: #be4646; border-top: 2px solid #be4646; }
+.op-I { background: #8b62b1; }
+.op-S, .op-H { background: #b88630; }
+.op-P { background: #aaa; }

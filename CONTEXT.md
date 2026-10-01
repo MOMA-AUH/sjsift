@@ -76,3 +76,19 @@ _Avoid_: Variant transcript accession, inferred exon label
 Labeled splice boundaries in transcript orientation, with exact intronic
 coordinates and no claim about full exon extents or complete transcript structure.
 _Avoid_: Full transcript model, exon coverage
+
+**Alignment evidence**:
+Individual selected-junction alignment records from optional indexed input.
+Their eligible, embedded and shown counts are separate from STAR support.
+_Avoid_: Recounted STAR support, molecule count
+
+**Mapping class**:
+Unique (valid NH=1), multimapping (valid NH>1), or unknown multiplicity. Alignment
+flags and MAPQ do not establish uniqueness.
+_Avoid_: Primary means unique
+
+**Transcript-strand evidence**:
+Usable transcript-strand tags or validated per-junction STAR motifs. Agreeing and
+unverified records are displayed separately; opposite/conflicting evidence is
+excluded with counts. Forward/reverse alignment orientation is a different fact.
+_Avoid_: Read orientation proves transcript strand

@@ -25,6 +25,9 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
+      - name: Exercise minimum supported pysam on Python 3.11
+        if: matrix.python-version == '3.11'
+        run: python -m pip install "pysam==0.24.0"
       - run: python -m pytest
 
   package:
@@ -49,7 +52,7 @@ jobs:
       - name: Install and smoke-test wheel in a clean environment
         run: |
           python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
-          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install --no-deps dist/*.whl
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install dist/*.whl
           "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
@@ -59,3 +62,22 @@ jobs:
             --definitions definitions/grch38.toml \
             --output "$RUNNER_TEMP/sjsift-smoke.tsv" \
             --html-output "$RUNNER_TEMP/sjsift-smoke.html"
+          PATH="$RUNNER_TEMP/sjsift-wheel-test/bin:$PATH" "$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/installed_alignment_smoke.py
+
+  conda:
+    name: conda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: conda-incubator/setup-miniconda@v4
+        with:
+          activate-environment: sjsift-build
+          channels: conda-forge,bioconda
+          channel-priority: strict
+          python-version: "3.14"
+          use-mamba: true
+      - name: Build and test installed conda package with alignment evidence
+        shell: bash -el {0}
+        run: |
+          conda install --yes --override-channels --channel conda-forge conda-build
+          conda-build --override-channels --channel conda-forge --channel bioconda --no-anaconda-upload conda-recipe/

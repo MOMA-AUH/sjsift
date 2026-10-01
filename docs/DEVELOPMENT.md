@@ -86,7 +86,10 @@ Avoid generic `utils.py`, adapter hierarchies, plugin seams, or a separately sup
 
 ## Dependency management
 
-Runtime dependencies: none. Use `argparse`, `csv`, `dataclasses`, `pathlib`, and `tomllib` from the standard library as needed.
+Runtime dependency: `pysam>=0.24.0,<0.25` for indexed alignment access. Use
+`argparse`, `csv`, `dataclasses`, `pathlib`, and `tomllib` from the standard library
+for the rest. `alignment_evidence.py` owns input validation, regional retrieval,
+classification, full counts, deterministic sampling and structural serialization.
 
 Development dependencies belong in a `dev` optional dependency group and initially comprise:
 
@@ -217,11 +220,11 @@ Before tagging, use **Actions → Publish Conda Package → Run workflow** on `m
 After publication, verify the intended user installation path in a clean environment:
 
 ```bash
-conda create --name sjsift-check --channel MOMA-AUH --channel conda-forge sjsift
+conda create --name sjsift-check --channel conda-forge --channel bioconda MOMA-AUH::sjsift
 conda run --name sjsift-check sjsift --version
 ```
 
-The shorter installation command for users with appropriate default channels is `conda install --channel MOMA-AUH sjsift`.
+The shorter installation command for users with appropriate default channels is `conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift`.
 
 ## MOMA-AUH Anaconda publishing outline
 
@@ -237,3 +240,7 @@ Use a conventional `conda-recipe/meta.yaml` and mark the package `noarch: python
 The publish job installs `conda-build` and `anaconda-client`, builds the recipe, and uploads the resulting artifact with `anaconda upload --skip-existing --user MOMA-AUH`. This matches conda-build's documented build/upload flow ([conda-build tutorial](https://docs.conda.io/projects/conda-build/en/stable/user-guide/tutorials/build-pkgs.html#optional-uploading-new-packages-to-anaconda-org)) and the established [`skua` publish workflow](https://github.com/MOMA-AUH/skua/blob/4b2162c4d2df11830ba030420899af7cb6165d04/.github/workflows/publish.yml). The token is passed only through the upload step's environment; it is not written to a file or included in the command line.
 
 Store `ANACONDA_API_TOKEN` as a GitHub Actions secret available only to the publish job. The token, repository ruleset, required-check selection, merge-method settings, and automatic branch deletion are external GitHub/Anaconda configuration and cannot be committed to the repository.
+
+The `conda` CI job validates dependency resolution and real installed BAM report
+generation. The wheel smoke check installs dependencies and runs the same fixture.
+The Python 3.11 job explicitly exercises the minimum supported pysam version.

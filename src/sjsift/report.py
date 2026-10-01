@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 from typing import TextIO
 
+from .alignment_evidence import AlignmentEvidence
 from .quantify import VariantSupport
 from .html_report import write_html
 
@@ -104,6 +105,7 @@ def write_reports(
     junctions_name: str = "",
     definitions_name: str = "",
     compatibility_warning: bool = False,
+    alignment_evidence: AlignmentEvidence | None = None,
 ) -> None:
     """Create requested reports exclusively; remove new files if any output fails.
 
@@ -117,6 +119,7 @@ def write_reports(
             junctions_name=junctions_name,
             definitions_name=definitions_name,
             compatibility_warning=compatibility_warning,
+            alignment_evidence=alignment_evidence,
         )))
     writers = [(path, writer) for path, writer in writers if path is not None]
     result_rows = tuple(results)
