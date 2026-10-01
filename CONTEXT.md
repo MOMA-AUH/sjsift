@@ -92,3 +92,9 @@ Usable transcript-strand tags or validated per-junction STAR motifs. Agreeing an
 unverified records are displayed separately; opposite/conflicting evidence is
 excluded with counts. Forward/reverse alignment orientation is a different fact.
 _Avoid_: Read orientation proves transcript strand
+
+**Shared alignment membership**:
+One physical alignment record supporting several selected junction groups. It
+has the same record ID in each and an Also matches indication. This is distinct
+from related mates sharing a read name, and does not imply independent molecules.
+_Avoid_: Deduplicated template, independent reference molecules

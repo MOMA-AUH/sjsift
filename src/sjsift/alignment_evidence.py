@@ -51,10 +51,12 @@ class AlignmentRecord:
     strand_status: str
     strand_evidence: tuple[str, ...]
     geometry: tuple[CigarOperation, ...]
+    matches: tuple[str, ...]
 
 
 @dataclass
 class JunctionEvidence:
+    label: str
     eligible: dict[str, int] = field(default_factory=lambda: dict.fromkeys(MAPPING_CLASSES, 0))
     strand_totals: dict[str, int] = field(default_factory=lambda: {"agreeing": 0, "unverified": 0})
     exclusions: dict[str, int] = field(default_factory=lambda: {"opposite": 0, "conflicting": 0})
@@ -172,7 +174,7 @@ def _retain(heap, record, key, limit):
         heapq.heapreplace(heap, item)
 
 
-def _serialize(read, record_id, geometry, mapping_class, status, evidence):
+def _serialize(read, record_id, geometry, mapping_class, status, evidence, matches):
     flags = tuple(label for mask, label in (
         (1, "paired"), (2, "proper pair"), (8, "mate unmapped"),
         (256, "secondary"), (512, "QC failure"), (1024, "duplicate"), (2048, "supplementary"),
@@ -187,7 +189,7 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence):
         record_id, read.query_name or "*", rg if kind == "Z" else "", mate,
         read.reference_name, read.reference_start, read.reference_end,
         read.cigarstring, read.mapping_quality, "reverse" if read.is_reverse else "forward",
-        read.flag, flags, mapping_class, nh, status, evidence, geometry,
+        read.flag, flags, mapping_class, nh, status, evidence, geometry, matches,
     )
 
 
@@ -195,8 +197,14 @@ def _extract_evidence(
     catalog: Catalog, path: Path, *, index_path: Path | None = None, limit: int = 200,
 ) -> AlignmentEvidence:
     """Return selected-junction record evidence; never modify STAR support."""
-    targets = [(f"v{i}-j0", variant) for i, variant in enumerate(catalog.variants)]
-    groups = {key: JunctionEvidence() for key, _ in targets}
+    targets = []
+    groups = {}
+    for i, variant in enumerate(catalog.variants):
+        for position, junction in enumerate((variant, *variant.reference_junctions)):
+            key = f"v{i}-j{position}"
+            label = "Defining junction" if position == 0 else junction.role
+            targets.append((key, junction))
+            groups[key] = JunctionEvidence(f"{variant.identifier} · {label}")
     retained = {key: {kind: [] for kind in MAPPING_CLASSES} for key, _ in targets}
     with pysam.AlignmentFile(str(path), "rb", index_filename=str(index_path) if index_path else None,
                              require_index=True) as stream:
@@ -232,6 +240,7 @@ def _extract_evidence(
                         continue
                     geometry = _geometry(read)
                     introns = [(op.start + 1, op.end) for op in geometry if op.op == "N"]
+                    memberships = []
                     for key, junction in selected:
                         pair = (junction.intron_start, junction.intron_end)
                         if pair not in introns:
@@ -241,11 +250,15 @@ def _extract_evidence(
                         if status in group.exclusions:
                             group.exclusions[status] += 1
                             continue
-                        mapping_class = _mapping_class(read)
+                        memberships.append((key, status, evidence))
+                    mapping_class = _mapping_class(read)
+                    matches = tuple(key for key, _, _ in memberships)
+                    for key, status, evidence in memberships:
+                        group = groups[key]
                         group.eligible[mapping_class] += 1
                         group.strand_totals[status] += 1
                         record_id = f"r{read.reference_id}-{region}-{ordinal}"
-                        record = _serialize(read, record_id, geometry, mapping_class, status, evidence)
+                        record = _serialize(read, record_id, geometry, mapping_class, status, evidence, matches)
                         _retain(retained[key][mapping_class], record, key, limit)
     for key, group in groups.items():
         group.records = tuple(
@@ -267,7 +280,7 @@ def _validate_header(catalog, header):
     samples = {r["SM"] for r in read_groups if r.get("SM")}
     if len(samples) > 1:
         raise AlignmentError("multiple samples in alignment header; only one sample is supported")
-    required = {v.chromosome for v in catalog.variants}
+    required = {j.chromosome for v in catalog.variants for j in (v, *v.reference_junctions)}
     assemblies = {sq["AS"] for sq in header.get("SQ", []) if sq["SN"] in required and sq.get("AS")}
     if assemblies and assemblies != {catalog.genome_assembly}:
         raise AlignmentError("alignment assembly metadata disagrees with catalog assembly")

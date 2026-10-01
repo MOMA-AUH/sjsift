@@ -97,3 +97,20 @@ different context roles.
 For a readable overview and per-variant evidence view, add `--html-output PATH`.
 The [HTML report](HTML_REPORT.md) displays the same counts alongside the defining
 junction and keeps the main and context TSV formats unchanged.
+
+## Alignment evidence and shared membership
+
+Optional indexed alignment input supplies separate previews for every reference
+role, including custom roles and references on different contigs or strands.
+Each group reports its own STAR support, eligible and embedded alignment counts,
+strand totals and exclusions. Sampling is independent per junction and mapping
+class. A configured zero is different from no reference configuration or evidence
+not requested.
+
+The same physical alignment may support several selected junctions. It appears
+in every qualifying group with the same record ID and an **Also matches** list;
+read name and mate labels identify related records without collapsing them.
+Shared references and overlapping regional fetches do not count a physical
+record twice within one group. Separate records with identical visible fields
+are retained. Shared rows and reference counts must not be summed into molecule,
+template, transcript or isoform counts. See [alignment evidence](ALIGNMENT_EVIDENCE.md).

@@ -111,3 +111,9 @@ loss.
 Supply `--alignments sample.bam` to embed selected structural evidence. Read
 [alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
 counts, sampling, input checks and the raw identifiers retained when sharing.
+
+Every configured reference has an immediate read preview and retains its own
+annotation and counts. **Also matches** identifies shared physical records across
+qualifying junction groups; record IDs are stable within the report and identical
+input/settings. Empty reference arrays, zero eligible records and alignment
+input not requested remain distinct states.
