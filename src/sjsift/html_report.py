@@ -7,6 +7,7 @@ from string import Template
 from typing import TextIO
 
 from . import __version__
+from .alignment_evidence import AlignmentEvidence, AlignmentRecord, JunctionEvidence, MAPPING_CLASSES
 from .quantify import ReferenceJunctionSupport, VariantSupport
 
 
@@ -124,7 +125,83 @@ def _schematic(label: str, support: VariantSupport | ReferenceJunctionSupport) -
     )
 
 
-def _detail(index: int, result: VariantSupport) -> str:
+def _read_geometry(record: AlignmentRecord) -> str:
+    operations = []
+    for operation in record.geometry:
+        coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
+        description = f"{operation.op}: {operation.length} nt; {coordinates}"
+        operations.append(
+            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}" '
+            f'style="flex-basis:{max(12, min(operation.length, 80))}px" title="{description}">'
+            f'{operation.op}<small>{operation.length}</small></span>'
+        )
+    return '<div class="read-geometry" aria-label="CIGAR geometry">' + "".join(operations) + '</div>'
+
+
+def _read_row(record: AlignmentRecord, position: int) -> str:
+    flags = ", ".join(record.flags) or "primary; no additional flags"
+    strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
+    return (
+        f'<li class="read-row {record.strand_status}" data-mapping="{record.mapping_class}"'
+        f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
+        f'<div class="read-label"><strong>{escape(record.read_name)}</strong> · {record.mate} · '
+        f'{record.mapping_class} · {strand}</div>'
+        + _read_geometry(record)
+        + '<details class="read-metadata"><summary>Read details</summary>'
+        f'<p>Record ID: {record.record_id} · Read group: {escape(record.read_group or "not supplied")} · '
+        f'{escape(record.chromosome)}:{record.start + 1}–{record.end}</p>'
+        f'<p>CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"} · Alignment orientation: {record.orientation}</p>'
+        f'<p>Flags: {escape(flags)} ({record.flag}) · Transcript {strand}</p>'
+        f'<p>Strand sources: {escape("; ".join(record.strand_evidence) or "No usable transcript-strand evidence")}</p>'
+        '</details></li>'
+    )
+
+
+def _alignment_group(group: JunctionEvidence | None, key: str) -> str:
+    if group is None:
+        return '<p class="alignment-unavailable">Alignment evidence not requested for this junction.</p>'
+    eligible = sum(group.eligible.values())
+    counts = "".join(
+        f'<tr><th scope="row">{kind}</th><td>{group.eligible[kind]}</td>'
+        f'<td>{sum(r.mapping_class == kind for r in group.records)}</td></tr>'
+        for kind in MAPPING_CLASSES
+    )
+    return (
+        f'<section class="alignment-group" id="reads-{key}">'
+        '<h4>Alignment records</h4>'
+        f'<p>Eligible: {eligible} · Embedded: {len(group.records)} · '
+        f'<span class="shown-count">Currently shown: {min(10, len(group.records))}</span></p>'
+        '<table class="alignment-counts"><caption>Alignment counts by mapping class</caption>'
+        '<thead><tr><th>Class</th><th>Eligible</th><th>Embedded</th></tr></thead>'
+        f'<tbody>{counts}</tbody></table>'
+        f'<p>Transcript strand totals: agreeing {group.strand_totals["agreeing"]}; '
+        f'unverified {group.strand_totals["unverified"]}. '
+        f'Excluded: opposite {group.exclusions["opposite"]}; conflicting {group.exclusions["conflicting"]}.</p>'
+        + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
+        + '<ol class="read-rows">' + "".join(_read_row(row, position) for position, row in enumerate(group.records))
+        + '</ol></section>'
+    )
+
+
+def _alignment_provenance(evidence: AlignmentEvidence | None) -> str:
+    if evidence is None:
+        return '<aside class="alignment-provenance"><p>Alignment evidence not requested.</p></aside>'
+    fields = "".join(f'<div><dt>{escape(key)}</dt><dd>{escape(value)}</dd></div>' for key, value in evidence.provenance.items())
+    return (
+        '<aside class="alignment-provenance"><h2>Alignment evidence provenance</h2>'
+        f'<dl class="provenance">{fields}</dl>'
+        f'<p>Sampling limit: {evidence.limit} records per junction per mapping class. '
+        'All eligible records are counted; embedded samples are deterministic. Initial previews show up to 10 records per junction.</p>'
+        '<p>STAR support is separate from alignment-record counts. Differences can reflect upstream STAR filtering, '
+        'paired-template counting, alignment output choices, and this display policy. '
+        'Records are not molecule or transcript counts.</p>'
+        '<p>This shareable file retains original read names, read-group/sample identifiers, CIGARs, coordinates, '
+        'mapping quality, flags and strand evidence. It contains no read sequence, base qualities, '
+        'source alignment file or reference sequence.</p></aside>'
+    )
+
+
+def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | None) -> str:
     maximum = max(1, result.total, *(support.total for support in result.reference_junctions))
     junctions = [("Defining junction", result), *(
         (_role_label(support.definition.role), support) for support in result.reference_junctions
@@ -151,7 +228,11 @@ def _detail(index: int, result: VariantSupport) -> str:
         '<p class="scale-note">Bars use one linear scale within this variant. '
         'Donor and acceptor roles follow transcript orientation on either strand.</p>'
         f'<div class="evidence"><strong>{escape(label)}</strong><p>{escape(explanation)}</p></div>'
-        + "".join(_schematic(name, support) for name, support in junctions)
+        + "".join(
+            _schematic(name, support) + _alignment_group(
+                evidence.groups.get(f"v{index}-j{position}") if evidence else None, f"v{index}-j{position}",
+            ) for position, (name, support) in enumerate(junctions)
+        )
         + '<a class="back-link" href="#overview">Back to all variants</a></article>'
     )
 
@@ -164,6 +245,7 @@ def write_html(
     junctions_name: str = "",
     definitions_name: str = "",
     compatibility_warning: bool = False,
+    alignment_evidence: AlignmentEvidence | None = None,
 ) -> None:
     """Write deterministic HTML with escaped text and no external resources.
 
@@ -187,6 +269,7 @@ def write_html(
         junctions=escape(junctions_name or "Not supplied"),
         definitions=escape(definitions_name or "Not supplied"),
         count=len(rows),
+        alignment_provenance=_alignment_provenance(alignment_evidence),
         observed=sum(bool(result.total) for result in rows),
         warning=(
             '<aside class="warning" role="note"><strong>Check input compatibility.</strong> '
@@ -198,5 +281,5 @@ def write_html(
             f'<th scope="col">Reference · {escape(_role_label(role))}</th>' for role in roles
         ),
         overview_rows="".join(_overview_row(index, result, roles, maximum) for index, result in ordered),
-        detail_sections="".join(_detail(index, result) for index, result in enumerate(rows)),
+        detail_sections="".join(_detail(index, result, alignment_evidence) for index, result in enumerate(rows)),
     ))

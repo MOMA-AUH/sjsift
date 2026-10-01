@@ -7,8 +7,8 @@
 human-readable TOML catalog and reports STAR's unique and multimapping support
 counts in a deterministic TSV table.
 
-sjsift does not reopen alignments, discover novel splice events, or assign
-biological or clinical significance. Each variant has one defining junction.
+sjsift can inspect selected alignments in an offline HTML report. It does not
+discover novel splice events or assign biological or clinical significance. Each variant has one defining junction.
 
 ## Installation
 
@@ -16,11 +16,15 @@ The recommended way to install **sjsift** is via
 [conda](https://docs.conda.io/), using the `MOMA-AUH` channel:
 
 ```bash
-conda install MOMA-AUH::sjsift
+conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift
 ```
 
-sjsift requires Python 3.11 or newer and has no third-party runtime
-dependencies.
+sjsift requires Python 3.11 or newer. The current development version also
+installs pysam (one normal runtime dependency) for alignment evidence. The
+currently published v0.2.0 package does not include these development features.
+Use `python -m pip install .` from this checkout to test before release.
+Pair published packages with the catalog from their matching Git tag; the master
+catalog uses schema 3.
 
 ## Usage
 
@@ -29,7 +33,7 @@ use the reference GRCh38 catalog from this repository:
 
 ```bash
 curl -L \
-  https://raw.githubusercontent.com/MOMA-AUH/sjsift/master/definitions/grch38.toml \
+  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.0/definitions/grch38.toml \
   -o grch38.toml
 
 sjsift \
@@ -101,6 +105,12 @@ The HTML file needs no server, internet connection, or external assets. See the
 [HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
 HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
+Add `--alignments sample.bam` for structural read previews. The BAM must be local,
+coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
+index, and `--alignment-limit N` caps each junction/mapping-class sample (default
+200). See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion, strand,
+sampling, count provenance and the raw identifiers retained in shared reports.
+
 ## Reference catalog
 
 [`definitions/grch38.toml`](definitions/grch38.toml) contains GRCh38
@@ -168,7 +178,7 @@ the report.
 
 sjsift accepts one plain-text or gzip-compressed, nine-column STAR
 `SJ.out.tab` file at a time.
-It does not process BAM, CRAM, or SAM files; normalize chromosome names; lift
+It does not process CRAM or SAM in this development slice; normalize chromosome names; lift
 coordinates between assemblies; apply thresholds; or combine multiple
 junctions into a call. For the full input, matching, validation, and exit-status
 contract, see the [specification](docs/SPECIFICATION.md).

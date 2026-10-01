@@ -34,7 +34,7 @@ jobs:
       - name: Smoke-test wheel in a clean environment
         run: |
           python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
-          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install --no-deps dist/*.whl
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install dist/*.whl
           "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
@@ -44,6 +44,7 @@ jobs:
             --definitions definitions/grch38.toml \
             --output "$RUNNER_TEMP/sjsift-smoke.tsv" \
             --html-output "$RUNNER_TEMP/sjsift-smoke.html"
+          PATH="$RUNNER_TEMP/sjsift-wheel-test/bin:$PATH" "$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/installed_alignment_smoke.py
       - uses: actions/upload-artifact@v7
         with:
           name: python-distributions
@@ -59,7 +60,7 @@ jobs:
         with:
           auto-update-conda: true
           activate-environment: sjsift-build
-          channels: conda-forge,defaults
+          channels: conda-forge,bioconda
           channel-priority: strict
           python-version: "3.14"
           use-mamba: true
@@ -68,12 +69,12 @@ jobs:
         run: conda install --yes --channel conda-forge conda-build
       - name: Build package
         shell: bash -el {0}
-        run: conda-build conda-recipe/
+        run: conda-build --override-channels --channel conda-forge --channel bioconda conda-recipe/
       - name: Locate and test package
         id: package
         shell: bash -el {0}
         run: |
-          PACKAGE_PATH="$(conda-build conda-recipe/ --output)"
+          PACKAGE_PATH="$(conda-build --override-channels --channel conda-forge --channel bioconda conda-recipe/ --output)"
           test -n "$PACKAGE_PATH"
           test -f "$PACKAGE_PATH"
           conda-build --test "$PACKAGE_PATH"
