@@ -111,6 +111,18 @@ index, and `--alignment-limit N` caps each junction/mapping-class sample (defaul
 200). See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion, strand,
 sampling, count provenance and the raw identifiers retained in shared reports.
 
+For CRAM, supply the matching **local indexed FASTA** explicitly:
+
+```bash
+sjsift --junctions sample.SJ.out.tab --definitions definitions/grch38.toml \
+  --alignments sample.cram --reference genome.fa --html-output sample.html
+```
+
+CRAM requires an existing `.crai` (or `--alignment-index`) and the FASTA's `.fai`;
+a BGZF-compressed FASTA also requires `.gzi`. sjsift never downloads references
+or creates indexes. The explicit reference is required even for self-contained
+CRAM. The resulting HTML needs neither source file after generation.
+
 ## Reference catalog
 
 [`definitions/grch38.toml`](definitions/grch38.toml) contains GRCh38
@@ -178,7 +190,8 @@ the report.
 
 sjsift accepts one plain-text or gzip-compressed, nine-column STAR
 `SJ.out.tab` file at a time.
-It does not process CRAM or SAM in this development slice; normalize chromosome names; lift
+Optional indexed BAM/CRAM supplies structural HTML evidence. sjsift does not
+process SAM; normalize chromosome names; lift
 coordinates between assemblies; apply thresholds; or combine multiple
 junctions into a call. For the full input, matching, validation, and exit-status
 contract, see the [specification](docs/SPECIFICATION.md).

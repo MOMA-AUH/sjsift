@@ -2,10 +2,13 @@
 
 from array import array
 from bisect import bisect_left
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from pathlib import Path
 import hashlib
 import heapq
+import os
+import tempfile
 
 import pysam
 
@@ -209,7 +212,8 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence, match
 
 
 def _extract_evidence(
-    catalog: Catalog, path: Path, *, index_path: Path | None = None, limit: int = 200,
+    catalog: Catalog, path: Path, *, index_path: Path, limit: int = 200,
+    reference_path: Path | None = None,
 ) -> AlignmentEvidence:
     """Return selected-junction record evidence; never modify STAR support."""
     targets = []
@@ -221,13 +225,16 @@ def _extract_evidence(
             targets.append((key, junction))
             groups[key] = JunctionEvidence(f"{variant.identifier} · {label}")
     retained = {key: {kind: [] for kind in MAPPING_CLASSES} for key, _ in targets}
-    with pysam.AlignmentFile(str(path), "rb", index_filename=str(index_path) if index_path else None,
+    with pysam.AlignmentFile(str(path), "rc" if reference_path else "rb", index_filename=str(index_path),
+                             reference_filename=str(reference_path) if reference_path else None,
                              require_index=True) as stream:
-        if not stream.is_bam:
-            raise AlignmentError("expected BAM; CRAM is not supported in this development slice")
+        if not (stream.is_bam or stream.is_cram):
+            raise AlignmentError("expected indexed BAM or CRAM")
         stream.check_index()
         header = stream.header.to_dict()
         provenance = _validate_header(catalog, header)
+        if reference_path:
+            provenance.update(_validate_reference(header, reference_path))
         for _, junction in targets:
             if junction.chromosome not in stream.references:
                 raise AlignmentError(f"missing contig {junction.chromosome!r}")
@@ -280,7 +287,7 @@ def _extract_evidence(
             item[2] for kind in MAPPING_CLASSES
             for item in sorted(retained[key][kind], key=lambda item: item[1])
         )
-    provenance.update({"Alignment file": path.name, "Format": "BAM", "pysam": pysam.__version__,
+    provenance.update({"Alignment file": path.name, "Format": "CRAM" if reference_path else "BAM", "pysam": pysam.__version__,
                        "HTSlib": pysam.__samtools_version__, "Index": index_path.name})
     return AlignmentEvidence(groups, provenance, limit)
 
@@ -306,10 +313,73 @@ def _validate_header(catalog, header):
     }
 
 
+@contextmanager
+def _offline_reference():
+    """The single-command process must never inherit a remote refget search path."""
+    previous = {key: os.environ.get(key) for key in ("REF_PATH", "REF_CACHE")}
+    with tempfile.TemporaryDirectory(prefix="sjsift-reference-") as directory:
+        try:
+            for key in previous:
+                os.environ[key] = str(Path(directory) / "%s")
+            yield
+        finally:
+            for key, value in previous.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+
+def _check_reference_files(path):
+    if not path.is_file():
+        raise AlignmentError("--reference must be a local FASTA file")
+    index = Path(str(path) + ".fai")
+    if not index.is_file():
+        raise AlignmentError("reference requires an existing local .fai index; no index is created")
+    with path.open("rb") as source:
+        compressed = source.read(2) == b"\x1f\x8b"
+    if compressed and not Path(str(path) + ".gzi").is_file():
+        raise AlignmentError("compressed reference requires an existing local .gzi index")
+    # Explicit index paths prevent pysam's automatic index-building fallback.
+    with pysam.FastaFile(str(path), filepath_index=str(index),
+                         filepath_index_compressed=str(path) + ".gzi" if compressed else None):
+        pass
+
+
+def _validate_reference(header, path):
+    checked = 0
+    with pysam.FastaFile(str(path), filepath_index=str(path) + ".fai") as reference:
+        for sequence in header.get("SQ", []):
+            name, length = sequence["SN"], sequence["LN"]
+            if name not in reference.references:
+                raise AlignmentError(f"reference is missing alignment contig {name!r}")
+            if reference.get_reference_length(name) != length:
+                raise AlignmentError(f"reference length disagrees with alignment contig {name!r}")
+            digest = hashlib.md5()
+            # Bound validation memory even for whole human chromosomes.
+            for start in range(0, length, 1024 * 1024):
+                end = min(length, start + 1024 * 1024)
+                bases = reference.fetch(name, start, end)
+                if len(bases) != end - start:
+                    raise AlignmentError(f"reference sequence/index is truncated or inconsistent for {name!r}")
+                digest.update(bases.upper().encode("ascii"))
+            if sequence.get("M5"):
+                if digest.hexdigest() != sequence["M5"].lower():
+                    raise AlignmentError(f"reference M5 checksum disagrees for {name!r}")
+                checked += 1
+    return {
+        "Reference FASTA": path.name,
+        "Reference index": path.name + ".fai",
+        "Reference assurance": f"Local contig names/lengths checked; {checked} of {len(header.get('SQ', []))} header M5 checksums verified. Missing M5 limits sequence assurance; decoded slice checks remain enabled. STAR assembly remains unverified.",
+        "Reference access": "Explicit local FASTA only; inherited REF_PATH/REF_CACHE isolated; no remote reference lookup",
+    }
+
+
 def extract_evidence(
     catalog: Catalog, path: Path, *, index_path: Path | None = None, limit: int = 200,
+    reference_path: Path | None = None,
 ) -> AlignmentEvidence:
-    """Validate local indexed BAM and return bounded evidence before output creation.
+    """Validate local indexed BAM/CRAM and return evidence before output creation.
 
     Regional access counts alignment records, not templates. Every requested
     region is decoded to completion even after the independent sample caps fill.
@@ -320,15 +390,25 @@ def extract_evidence(
         if not path.is_file():
             raise AlignmentError("alignment input must be a local file")
         with path.open("rb") as source:
-            if source.read(4) == b"CRAM":
-                raise AlignmentError("CRAM is not supported in this development slice; supply indexed BAM")
+            is_cram = source.read(4) == b"CRAM"
+        if is_cram and reference_path is None:
+            raise AlignmentError("CRAM requires --reference with an explicit local indexed FASTA")
+        if not is_cram and reference_path is not None:
+            raise AlignmentError("--reference applies only to CRAM input")
         if index_path is None:
-            index_path = next((candidate for candidate in (
+            candidates = (Path(str(path) + ".crai"), path.with_suffix(".crai")) if is_cram else (
                 Path(str(path) + ".bai"), path.with_suffix(".bai"),
                 Path(str(path) + ".csi"), path.with_suffix(".csi"),
-            ) if candidate.is_file()), None)
+            )
+            index_path = next((candidate for candidate in candidates if candidate.is_file()), None)
         if index_path is None or not index_path.is_file():
             raise AlignmentError("a local alignment index is required; no index is created automatically")
-        return _extract_evidence(catalog, path, index_path=index_path, limit=limit)
-    except (OSError, ValueError, KeyError, OverflowError) as error:
+        with _offline_reference() if is_cram else nullcontext():
+            if reference_path:
+                _check_reference_files(reference_path)
+                # AlignmentFile.check_truncation does not reject missing CRAM EOF.
+                # Use pysam's bundled header/EOF check; no external executable.
+                pysam.quickcheck("--", str(path))
+            return _extract_evidence(catalog, path, index_path=index_path, limit=limit, reference_path=reference_path)
+    except (OSError, ValueError, KeyError, IndexError, OverflowError, pysam.SamtoolsError) as error:
         raise AlignmentError(f"{path}: cannot extract alignment evidence: {error}") from None

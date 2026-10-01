@@ -33,6 +33,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
     (["--alignments", "missing.bam"], "requires --html-output"),
     (["--alignment-index", "missing.bai"], "require --alignments"),
     (["--alignment-limit", "1"], "require --alignments"),
+    (["--reference", "reference.fa"], "require --alignments"),
     (["--alignment-limit", "0"], "positive integer"),
     (["--alignment-limit", "-1"], "positive integer"),
 ])
@@ -116,7 +117,7 @@ def test_available_alignment_assembly_labels_must_agree_without_claiming_star_id
         assert not output.exists() and not result.stdout
 
 
-def test_indexed_cram_is_explicitly_rejected_before_bam_index_discovery(tmp_path):
+def test_indexed_cram_requires_reference_before_index_discovery(tmp_path):
     import pysam
     path = tmp_path / "reads.cram"
     header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}]}
@@ -124,5 +125,5 @@ def test_indexed_cram_is_explicitly_rejected_before_bam_index_discovery(tmp_path
         stream.write(record())
     pysam.index(str(path))
     result = invoke(*cli_inputs(tmp_path), "--alignments", path, "--html-output", tmp_path / "report.html")
-    assert result.returncode == 2 and "CRAM is not supported" in result.stderr
+    assert result.returncode == 2 and "CRAM requires --reference" in result.stderr
     assert not result.stdout and not (tmp_path / "report.html").exists()

@@ -1,6 +1,6 @@
 # Alignment evidence in offline reports
 
-The current development version accepts a local coordinate-sorted indexed BAM
+The current development version accepts a local coordinate-sorted indexed BAM or CRAM
 alongside the required STAR file and schema-3 catalog:
 
 ```bash
@@ -15,7 +15,40 @@ default 200, **per junction per mapping class**. Alignment options require
 sjsift. Every defining and configured reference junction has its own immediate preview.
 Custom roles, references on other contigs or strands, and shared references use
 the same inclusion rules. Each group can expand into pages of 50 embedded records.
-CRAM is rejected until explicit-reference support is implemented.
+
+## CRAM and its explicit local FASTA
+
+For CRAM, add `--reference genome.fa`. This is mandatory even when the CRAM
+embeds reference bases or uses reference-free compression. `--reference` applies
+only to CRAM. Index discovery checks `sample.cram.crai` then `sample.crai`, or
+uses the explicit `--alignment-index`. The local FASTA needs an existing `.fai`;
+BGZF-compressed FASTA also needs `.gzi`. Plain gzip is not a random-access FASTA
+format. No alignment or reference index is built automatically.
+
+All alignment-header contigs must exist at exactly the declared length in the
+FASTA. Their sequence is read in bounded chunks and checked against any available
+header M5 checksum before regional extraction; this can require reading the full
+reference once. Missing M5 checksums are disclosed as limited sequence assurance.
+HTSlib's CRAM slice checks remain enabled. Pysam's bundled header/EOF check
+rejects a missing CRAM end marker, which regional decoding alone can merely warn
+about; this does not require an external samtools executable. A missing or invalid reference/index,
+detectable mismatch, or decoding failure aborts before any report output. Input
+files must remain unchanged during the invocation.
+
+The explicit FASTA is passed directly to HTSlib. For the single CLI process,
+inherited `REF_PATH` and `REF_CACHE` are temporarily replaced with an isolated
+empty local directory, then restored even on failure. Supported HTSlib versions
+also reject remote header UR fallbacks. This combination prevents remote
+reference retrieval; a wrong FASTA is never repaired by downloading another one.
+Tests include a real HTTP listener with a successful unguarded-HTSlib positive
+control, followed by zero requests from sjsift with valid, wrong or absent input.
+
+BAM and CRAM use the same record-classification, count, sample and rendering
+path. Reference validation establishes available CRAM/FASTA compatibility only;
+the anonymous STAR input still cannot establish sample identity or assembly.
+Provenance records FASTA/index basenames and the checks performed. Reference
+sequence, read bases/qualities and absolute paths are never embedded. The HTML
+remains usable after both CRAM and FASTA have been removed.
 
 ## What qualifies
 
@@ -122,7 +155,7 @@ annotation and software provenance, and input basenames. It contains no read
 sequence, base qualities, reference sequence, original alignment file, or
 absolute source paths. Consider the retained raw identifiers before sharing.
 All text is escaped and all assets are inline; no browser network access or
-source BAM is needed. Counts and provenance remain readable without JavaScript.
+source BAM/CRAM or FASTA is needed. Counts and provenance remain readable without JavaScript.
 The document's content security policy also blocks external resources and connections.
 The geometry is schematic; nucleotide-level inspection is outside this release.
 
@@ -145,3 +178,6 @@ Primary format/API references checked 2026-10-01:
 - [Minimap2 tag and splice orientation implementation](https://github.com/lh3/minimap2/blob/master/format.c).
 - [Pysam 0.24 releases](https://pysam.readthedocs.io/en/latest/release.html)
   and [alignment APIs](https://pysam.readthedocs.io/en/latest/api.html).
+- [HTSlib reference resolution and validation](https://www.htslib.org/doc/reference_seqs.html)
+  and [HTSlib 1.24 reference fallback implementation](https://github.com/samtools/htslib/blob/1.24/cram/cram_io.c).
+- [Bundled samtools header/EOF check semantics](https://www.htslib.org/doc/samtools-quickcheck.html).
