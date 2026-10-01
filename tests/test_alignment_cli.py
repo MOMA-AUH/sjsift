@@ -114,3 +114,15 @@ def test_available_alignment_assembly_labels_must_agree_without_claiming_star_id
     else:
         assert result.returncode == 2 and "assembly metadata disagrees" in result.stderr
         assert not output.exists() and not result.stdout
+
+
+def test_indexed_cram_is_explicitly_rejected_before_bam_index_discovery(tmp_path):
+    import pysam
+    path = tmp_path / "reads.cram"
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}]}
+    with pysam.AlignmentFile(path, "wc", header=header, format_options=["no_ref=1"]) as stream:
+        stream.write(record())
+    pysam.index(str(path))
+    result = invoke(*cli_inputs(tmp_path), "--alignments", path, "--html-output", tmp_path / "report.html")
+    assert result.returncode == 2 and "CRAM is not supported" in result.stderr
+    assert not result.stdout and not (tmp_path / "report.html").exists()

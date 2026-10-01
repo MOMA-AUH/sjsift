@@ -291,6 +291,9 @@ def extract_evidence(
             raise AlignmentError("alignment limit must be a positive integer")
         if not path.is_file():
             raise AlignmentError("alignment input must be a local file")
+        with path.open("rb") as source:
+            if source.read(4) == b"CRAM":
+                raise AlignmentError("CRAM is not supported in this development slice; supply indexed BAM")
         if index_path is None:
             index_path = next((candidate for candidate in (
                 Path(str(path) + ".bai"), path.with_suffix(".bai"),
