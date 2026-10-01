@@ -5,15 +5,18 @@ from pathlib import Path
 
 import pytest
 
-from sjsift.catalog import Catalog, ReferenceJunction, VariantDefinition
+from sjsift.catalog import JunctionAnnotation, Catalog, ReferenceJunction, VariantDefinition
 from sjsift.quantify import QuantifyError, ReferenceJunctionSupport, VariantSupport, quantify
+
+
+ANNOTATION = JunctionAnnotation("NM_synthetic.1", "1", "2", "Synthetic test annotation")
 
 
 CATALOG = Catalog(
     genome_assembly="GRCh38",
     variants=(
-        VariantDefinition("plus", "chr7", 10, 20, "+"),
-        VariantDefinition("minus", "chrX", 30, 40, "-"),
+        VariantDefinition("plus", "chr7", 10, 20, "+", annotation=ANNOTATION),
+        VariantDefinition("minus", "chrX", 30, 40, "-", annotation=ANNOTATION),
     ),
 )
 
@@ -56,10 +59,10 @@ def test_reference_junctions_are_quantified_in_catalog_order(tmp_path: Path) -> 
     variant = VariantDefinition(
         "skip", "chr7", 10, 30, "+",
         (
-            ReferenceJunction("same_donor", "chr7", 10, 20, "+"),
-            ReferenceJunction("same_acceptor", "chr7", 21, 30, "+"),
+            ReferenceJunction("same_donor", "chr7", 10, 20, "+", annotation=ANNOTATION),
+            ReferenceJunction("same_acceptor", "chr7", 21, 30, "+", annotation=ANNOTATION),
         ),
-    )
+     annotation=ANNOTATION)
     catalog = Catalog("GRCh38", (variant,))
     path = tmp_path / "sample.SJ.out.tab"
     path.write_text(
@@ -86,12 +89,12 @@ def test_reference_junctions_are_quantified_in_catalog_order(tmp_path: Path) -> 
 def test_shared_reference_junction_support_is_available_to_each_variant(
     tmp_path: Path,
 ) -> None:
-    shared = ReferenceJunction("same_donor", "chr7", 10, 20, "+")
+    shared = ReferenceJunction("same_donor", "chr7", 10, 20, "+", annotation=ANNOTATION)
     catalog = Catalog(
         "GRCh38",
         (
-            VariantDefinition("first", "chr7", 10, 30, "+", (shared,)),
-            VariantDefinition("second", "chr7", 10, 40, "+", (shared,)),
+            VariantDefinition("first", "chr7", 10, 30, "+", (shared,), annotation=ANNOTATION),
+            VariantDefinition("second", "chr7", 10, 40, "+", (shared,), annotation=ANNOTATION),
         ),
     )
     path = tmp_path / "sample.SJ.out.tab"

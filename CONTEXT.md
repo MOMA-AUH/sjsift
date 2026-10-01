@@ -65,3 +65,14 @@ _Avoid_: MET exon 14 deletion, when describing the RNA event
 **ARv7**:
 The AR splice variant defined by the exon 3-to-cryptic exon 3 junction.
 _Avoid_: AR variant 7
+
+**Junction annotation**:
+Explicit reference-transcript accession, donor/acceptor exon labels, and source
+provenance for a local splice connection. An accession is an annotation or
+comparison basis, not a claim that it contains the aberrant junction.
+_Avoid_: Variant transcript accession, inferred exon label
+
+**Local junction schematic**:
+Labeled splice boundaries in transcript orientation, with exact intronic
+coordinates and no claim about full exon extents or complete transcript structure.
+_Avoid_: Full transcript model, exon coverage

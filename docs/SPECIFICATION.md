@@ -6,10 +6,11 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes sjsift v0.2.0, including catalog schemas 1 and 2,
-reference-junction context, and the optional HTML report. It consolidates the
-original MVP specification and design decisions. Schema 2, reference context,
-and HTML output were introduced in v0.2.0; v0.1.3 supports gzip input and schema 1.
+This document describes the current development version, targeting v0.2.1,
+with annotated catalog schema 3. Schemas 1 and 2 are rejected explicitly.
+Before stable v1.0.0, backward compatibility is not guaranteed, including in
+patch releases. Use a catalog matching the installed version. The historical
+original implementation plan records the original MVP rather than current scope.
 
 The [reference-context guide](REFERENCE_JUNCTION_CONTEXT.md) explains comparator
 selection, the [curation record](REFERENCE_JUNCTION_CURATION.md) documents the
@@ -53,10 +54,10 @@ The catalog uses a closed, versioned TOML schema. TOML groups catalog metadata
 and typed variant entries in a format that can be reviewed by humans and parsed
 by Python's standard library; see [ADR 0001](adr/0001-use-toml-for-variant-definition-catalogs.md).
 
-A minimal schema-1 catalog is:
+A minimal schema-3 catalog is:
 
 ```toml
-schema_version = 1
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -65,13 +66,18 @@ chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
 strand = "+"
+reference_junctions = []
+reference_transcript = "NM_000245.4"
+donor_exon = "13"
+acceptor_exon = "15"
+annotation_source = "GENCODE v49 / ENST00000397752.8; curated exon skipping"
 ```
 
 Top-level fields:
 
 | Field | Requirement |
 |---|---|
-| `schema_version` | Required integer; `1` or `2` |
+| `schema_version` | Required integer; `3` |
 | `genome_assembly` | Required, non-empty string without tabs or line breaks; applies to every entry |
 | `variants` | Required, non-empty array of variant tables |
 
@@ -85,12 +91,19 @@ Every variant has these fields:
 | `intron_end` | Positive integer, not less than `intron_start`, using the same convention |
 | `strand` | `+` or `-` |
 
-Schema 1 permits exactly those five fields and provides no reference context.
-Schema 2 additionally requires `reference_junctions`, an array of tables that
-may be empty (`reference_junctions = []`). Each reference has exactly `role`,
-`chromosome`, `intron_start`, `intron_end`, and `strand`. Its junction fields
-follow the same rules as a defining junction; `role` is a non-empty string
-without tabs or line breaks. See the [schema-2 example](REFERENCE_JUNCTION_CONTEXT.md#catalog-schema-version-2).
+Every defining and reference junction also requires `reference_transcript`,
+`donor_exon`, `acceptor_exon`, and `annotation_source`. All four are nonempty
+strings (whitespace-only values, tabs, and line breaks are invalid). Exon labels
+may describe cryptic or alternative terminal exons, rather than numeric ranks.
+The accession identifies the annotation/comparison basis; it does not assert
+that the reference transcript contains the defining aberrant junction.
+
+Every variant requires `reference_junctions`, an array of tables that may be
+empty (`reference_junctions = []`). References have exactly `role`, `chromosome`,
+`intron_start`, `intron_end`, `strand`, and the four annotation fields above.
+Their junction fields follow the same rules; `role` is a nonempty string without
+tabs or line breaks. See the [schema-3 example](REFERENCE_JUNCTION_CONTEXT.md#catalog-schema-version-3).
+No legacy loaders, migrations, or annotation fallbacks are provided.
 
 Unknown and missing fields are errors, preventing silent typos. Boolean values
 are not accepted as integers. Variant IDs and defining-junction tuples
@@ -110,7 +123,7 @@ The required assembly label makes the catalog self-describing, but `SJ.out.tab` 
 
 ## Versioned GRCh38 reference catalog
 
-[`definitions/grch38.toml`](../definitions/grch38.toml) uses schema 2 and contains
+[`definitions/grch38.toml`](../definitions/grch38.toml) uses schema 3 and contains
 17 defining junctions across AR, BRAF, EGFR, FGFR2, and MET:
 
 | Gene | Variant IDs |
@@ -125,8 +138,9 @@ It provides 32 reference entries representing 22 distinct reference junctions.
 Coordinates use GRCh38 with literal `chr`-prefixed identifiers, including both
 plus- and minus-strand events. The [curation record](REFERENCE_JUNCTION_CURATION.md)
 pins transcript choices, explains project-specific EGFR suffixes, and records
-annotation checksums and exon evidence. Versioned RefSeq `NM_` names are catalog
-comments and documentation; transcript IDs and exon names are not schema fields.
+annotation checksums and exon evidence. Versioned RefSeq `NM_` names, donor/acceptor labels, and annotation provenance
+are explicit required catalog fields. Runtime annotation never parses comments
+or variant identifiers and never downloads annotation.
 `METex14` remains the project identifier for MET exon 14 skipping.
 
 The catalog is explicit input, never an application default or an automatically
@@ -280,7 +294,7 @@ Automated checks cover the following contracts:
 
 | Contract | Verification |
 |---|---|
-| Both catalog schemas, field validation, uniqueness, and reference constraints | `tests/test_catalog.py` |
+| Current catalog schema, field validation, uniqueness, and reference constraints | `tests/test_catalog.py` |
 | Committed catalog and reproducible curated reference coordinates | `tests/test_reference_catalog.py`, `docs/curation/gencode-v49-exons.tsv` |
 | STAR validation, exact matching, gzip, duplicate targets, shared references, and zero counts | `tests/test_quantify.py` |
 | TSV columns and order, CLI streams and statuses, compatibility warnings, and output refusal | `tests/test_cli.py` |

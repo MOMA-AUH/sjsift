@@ -25,8 +25,8 @@ REPOSITORY_ROOT = Path(__file__).parents[1]
 def write_single_variant_inputs(tmp_path: Path) -> tuple[Path, Path]:
     definitions = tmp_path / "definitions.toml"
     definitions.write_text(
-        """\
-schema_version = 1
+        '''\
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -35,7 +35,13 @@ chromosome = "chr7"
 intron_start = 55019366
 intron_end = 55155829
 strand = "+"
-""",
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
+''',
         encoding="utf-8",
     )
     junctions = tmp_path / "sample.SJ.out.tab"
@@ -110,8 +116,8 @@ def test_exact_defining_junction_is_reported(
 ) -> None:
     definitions = tmp_path / "definitions.toml"
     definitions.write_text(
-        """\
-schema_version = 1
+        '''\
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -120,7 +126,13 @@ chromosome = "chr7"
 intron_start = 55019366
 intron_end = 55155829
 strand = "+"
-""",
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
+''',
         encoding="utf-8",
     )
     junctions = tmp_path / f"sample.SJ.out{suffix}"
@@ -183,7 +195,7 @@ def test_context_output_reports_reference_junctions_in_catalog_and_role_order(
     definitions = tmp_path / "definitions.toml"
     definitions.write_text(
         '''\
-schema_version = 2
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -193,6 +205,10 @@ intron_start = 10
 intron_end = 30
 strand = "+"
 
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
@@ -200,12 +216,21 @@ intron_start = 10
 intron_end = 20
 strand = "+"
 
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 21
 intron_end = 30
 strand = "+"
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
 ''',
         encoding="utf-8",
     )
@@ -246,7 +271,7 @@ strand = "+"
     )
 
 
-def test_context_output_for_a_version_one_catalog_contains_only_its_header(
+def test_context_output_without_references_contains_only_its_header(
     tmp_path: Path,
 ) -> None:
     junctions, definitions = write_single_variant_inputs(tmp_path)
@@ -541,27 +566,43 @@ chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
     ("catalog_text", "expected_message"),
     [
         (
-            'schema_version = "one"\n'
-            'genome_assembly = "GRCh38"\n'
-            "[[variants]]\n"
-            'id = "test"\n'
-            'chromosome = "chr1"\n'
-            "intron_start = 1\n"
-            "intron_end = 2\n"
-            'strand = "+"\n',
+            '''\
+schema_version = "one"
+genome_assembly = "GRCh38"
+[[variants]]
+id = "test"
+chromosome = "chr1"
+intron_start = 1
+intron_end = 2
+strand = "+"
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
+''',
             "schema_version",
         ),
         (
-            'schema_version = 1\n'
-            'genome_assembly = "GRCh38"\n'
-            "[[variants]]\n"
-            'id = "test"\n'
-            "intron_start = 1\n"
-            "intron_end = 2\n"
-            'strand = "+"\n',
+            '''\
+schema_version = 3
+genome_assembly = "GRCh38"
+[[variants]]
+id = "test"
+intron_start = 1
+intron_end = 2
+strand = "+"
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
+''',
             "variant 1 ('test'): missing field(s) 'chromosome'",
         ),
-        ('schema_version = 1\ngenome_assembly = "GRCh38"\nvariants = [', "invalid TOML"),
+        ('schema_version = 3\ngenome_assembly = "GRCh38"\nvariants = [', "invalid TOML"),
     ],
 )
 def test_invalid_catalog_is_a_concise_cli_error(
@@ -740,8 +781,8 @@ def test_invalid_star_input_is_a_concise_cli_error(
 ) -> None:
     definitions = tmp_path / "definitions.toml"
     definitions.write_text(
-        """\
-schema_version = 1
+        '''\
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -750,7 +791,13 @@ chromosome = "chr7"
 intron_start = 10
 intron_end = 20
 strand = "+"
-""",
+
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
+''',
         encoding="utf-8",
     )
     junctions = tmp_path / "sample.SJ.out.tab"

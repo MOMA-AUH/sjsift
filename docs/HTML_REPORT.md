@@ -7,7 +7,7 @@ resources, or browser network requests.
 
 ## Creating and opening a report
 
-Run sjsift v0.2.0 or newer with a new destination path:
+Run the current development version with a schema-3 catalog with a new destination path:
 
 ```bash
 sjsift --junctions sample.SJ.out.tab \
@@ -19,8 +19,7 @@ sjsift --junctions sample.SJ.out.tab \
 
 Open `sample.html` directly in a browser. The file can be moved or shared on its
 own. `--context-output` is optional; omitting `--output` sends the main TSV to
-stdout while still creating the HTML. Both catalog schemas are supported;
-schema 1 has no reference context. See the [specification](SPECIFICATION.md)
+stdout while still creating the HTML. Only annotated schema 3 is supported; empty reference arrays mean no reference context. See the [specification](SPECIFICATION.md)
 for the complete input, schema, and CLI contract.
 
 ## Overview and variant details
@@ -81,12 +80,16 @@ and the sjsift version. Basenames identify the supplied files; no sample identit
 is inferred. The catalog's assembly cannot independently establish the assembly
 used to create the STAR file.
 
-The current catalog schema does not expose its transcript comments or exon
-labels to the loader. The HTML therefore displays junction coordinates, rather
-than extracting NM accessions from comments or guessing exon names. The curated
-catalog's [transcript provenance](REFERENCE_JUNCTION_CURATION.md) remains in its
-documentation. Splice diagrams are deferred until the necessary metadata is
-explicit in the schema.
+Each junction includes a local schematic with donor and acceptor exon labels,
+exact intronic boundary coordinates, transcript strand, and intron length.
+The schematic reads in transcript direction (decreasing coordinates on minus
+strand), is not to scale, and does not imply full exon extents or a complete
+transcript model. Dashed outer edges mark the partial exon views.
+
+Reference accessions identify the annotation or comparison basis, not necessarily
+a transcript containing the aberrant junction. Each group's annotation provenance
+is visible, including explicit ARv7 CE3 and FGFR2 alternative terminal-exon caveats.
+All labels come from required schema fields, never guesses from comments or IDs.
 
 The file embeds all styles and scripts. With JavaScript disabled, the complete
 static overview and all detail sections remain visible and linked. Search,

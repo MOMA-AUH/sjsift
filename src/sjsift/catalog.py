@@ -1,23 +1,35 @@
 """Load and validate variant-definition catalogs."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import tomllib
 from typing import NoReturn
 
 
 _TOP_LEVEL_FIELDS = frozenset({"schema_version", "genome_assembly", "variants"})
-_V1_VARIANT_FIELDS = frozenset(
-    {"id", "chromosome", "intron_start", "intron_end", "strand"}
+_ANNOTATION_FIELDS = frozenset(
+    {"reference_transcript", "donor_exon", "acceptor_exon", "annotation_source"}
 )
-_V2_VARIANT_FIELDS = _V1_VARIANT_FIELDS | frozenset({"reference_junctions"})
+_VARIANT_FIELDS = frozenset(
+    {"id", "chromosome", "intron_start", "intron_end", "strand", "reference_junctions"}
+) | _ANNOTATION_FIELDS
 _REFERENCE_JUNCTION_FIELDS = frozenset(
     {"role", "chromosome", "intron_start", "intron_end", "strand"}
-)
+) | _ANNOTATION_FIELDS
 
 
 class CatalogError(ValueError):
     """A user-correctable problem with a variant-definition catalog."""
+
+
+@dataclass(frozen=True)
+class JunctionAnnotation:
+    """Explicit labels and their comparison basis, not a whole transcript model."""
+
+    reference_transcript: str
+    donor_exon: str
+    acceptor_exon: str
+    annotation_source: str
 
 
 @dataclass(frozen=True)
@@ -29,6 +41,7 @@ class VariantDefinition:
     intron_start: int
     intron_end: int
     strand: str
+    annotation: JunctionAnnotation = field(kw_only=True)
     reference_junctions: tuple["ReferenceJunction", ...] = ()
 
 
@@ -41,6 +54,7 @@ class ReferenceJunction:
     intron_start: int
     intron_end: int
     strand: str
+    annotation: JunctionAnnotation = field(kw_only=True)
 
 
 @dataclass(frozen=True)
@@ -80,7 +94,7 @@ def _validate_fields(
 def _validate_string(path: Path, value: object, field: str, context: str) -> str:
     if not isinstance(value, str):
         _fail(path, f"{context}: field {field!r} must be a string")
-    if not value:
+    if not value.strip():
         _fail(path, f"{context}: field {field!r} must not be empty")
     if "\t" in value or "\n" in value or "\r" in value:
         _fail(path, f"{context}: field {field!r} must not contain tabs or line breaks")
@@ -105,6 +119,13 @@ def _variant_context(index: int, value: dict[str, object]) -> str:
     return f"variant {index}"
 
 
+def _parse_annotation(path: Path, value: dict[str, object], context: str) -> JunctionAnnotation:
+    return JunctionAnnotation(**{
+        name: _validate_string(path, value[name], name, context)
+        for name in sorted(_ANNOTATION_FIELDS)
+    })
+
+
 def _parse_reference_junction(
     path: Path, value: object, variant_context: str, index: int
 ) -> ReferenceJunction:
@@ -127,7 +148,10 @@ def _parse_reference_junction(
     if not isinstance(strand, str) or strand not in {"+", "-"}:
         _fail(path, f"{context}: field 'strand' must be '+' or '-'")
 
-    return ReferenceJunction(role, chromosome, intron_start, intron_end, strand)
+    return ReferenceJunction(
+        role, chromosome, intron_start, intron_end, strand,
+        annotation=_parse_annotation(path, value, context),
+    )
 
 
 def _parse_reference_junctions(
@@ -156,15 +180,14 @@ def _parse_reference_junctions(
 
 
 def _parse_variant(
-    path: Path, value: object, index: int, schema_version: int
+    path: Path, value: object, index: int
 ) -> VariantDefinition:
     context = f"variant {index}"
     if not isinstance(value, dict):
         _fail(path, f"{context}: must be a table")
 
     context = _variant_context(index, value)
-    expected_fields = _V1_VARIANT_FIELDS if schema_version == 1 else _V2_VARIANT_FIELDS
-    _validate_fields(path, value, expected_fields, context)
+    _validate_fields(path, value, _VARIANT_FIELDS, context)
     identifier = _validate_string(path, value["id"], "id", context)
     context = f"variant {index} ({identifier!r})"
     chromosome = _validate_string(path, value["chromosome"], "chromosome", context)
@@ -180,11 +203,7 @@ def _parse_variant(
     if not isinstance(strand, str) or strand not in {"+", "-"}:
         _fail(path, f"{context}: field 'strand' must be '+' or '-'")
 
-    reference_junctions = (
-        ()
-        if schema_version == 1
-        else _parse_reference_junctions(path, value["reference_junctions"], context)
-    )
+    reference_junctions = _parse_reference_junctions(path, value["reference_junctions"], context)
     defining_junction = (chromosome, intron_start, intron_end, strand)
     for reference_index, reference in enumerate(reference_junctions, start=1):
         reference_junction = (
@@ -207,6 +226,7 @@ def _parse_variant(
         intron_end=intron_end,
         strand=strand,
         reference_junctions=reference_junctions,
+        annotation=_parse_annotation(path, value, context),
     )
 
 
@@ -240,7 +260,7 @@ def _validate_unique(path: Path, variants: tuple[VariantDefinition, ...]) -> Non
 
 
 def load_catalog(path: Path) -> Catalog:
-    """Load and validate a schema-version-1 or schema-version-2 catalog."""
+    """Load and validate a schema-version-3 catalog."""
     try:
         with path.open("rb") as stream:
             document = tomllib.load(stream)
@@ -257,8 +277,8 @@ def load_catalog(path: Path) -> Catalog:
     schema_version = document["schema_version"]
     if type(schema_version) is not int:
         _fail(path, "catalog: field 'schema_version' must be an integer")
-    if schema_version not in {1, 2}:
-        _fail(path, f"unsupported catalog schema version {schema_version}; expected 1 or 2")
+    if schema_version != 3:
+        _fail(path, f"unsupported catalog schema version {schema_version}; expected 3")
 
     genome_assembly = _validate_string(
         path, document["genome_assembly"], "genome_assembly", "catalog"
@@ -270,7 +290,7 @@ def load_catalog(path: Path) -> Catalog:
         _fail(path, "catalog: field 'variants' must not be empty")
 
     variants = tuple(
-        _parse_variant(path, variant, index, schema_version)
+        _parse_variant(path, variant, index)
         for index, variant in enumerate(raw_variants, start=1)
     )
     _validate_unique(path, variants)

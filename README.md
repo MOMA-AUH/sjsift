@@ -66,10 +66,10 @@ The main TSV remains unchanged. The context TSV has one row for each named
 reference junction configured for a variant. The repository's GRCh38 catalog
 provides 32 context rows across all 17 variants, curated against GENCODE v49.
 The [curation record](docs/REFERENCE_JUNCTION_CURATION.md) documents transcript
-choices and coordinate sources. Version 1 catalogs have no
-reference junctions and therefore produce a header-only context TSV. See
+choices and coordinate sources. Empty reference arrays produce a header-only
+context TSV. See
 [reference-junction context](docs/REFERENCE_JUNCTION_CONTEXT.md) for the
-version 2 catalog schema and interpretation.
+version 3 catalog schema and interpretation.
 
 Run `sjsift --help` for the complete command-line reference. Existing output
 files are never overwritten.
@@ -90,12 +90,11 @@ sjsift \
 Open the HTML file in a browser. The overview shows defining-junction and
 reference support side by side, with separate unique and multimapping counts.
 Search by variant ID, sort by support or catalog order, and select a variant
-for detailed counts and coordinates. Reference roles remain separate, including
+for detailed counts, coordinates, and local labeled splice-boundary schematics. Reference roles remain separate, including
 custom roles from your own catalog.
 
 `--html-output` does not require `--context-output`. Without `--output`, the
-main TSV still goes to stdout. Both TSV formats are unchanged. The report also
-works with schema version 1 catalogs, which are labeled as having no configured
+main TSV still goes to stdout. Both TSV formats are unchanged. Entries with empty reference arrays are labeled as having no configured
 reference context. All counts remain readable with JavaScript disabled.
 
 The HTML file needs no server, internet connection, or external assets. See the
@@ -109,7 +108,9 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
-The catalog uses schema version 2 and requires sjsift v0.2.0 or newer.
+The current development catalog uses schema version 3 (target release v0.2.1).
+Schemas 1 and 2 are rejected by the current code. Pre-1.0 releases, including
+patch releases, do not promise backward compatibility.
 sjsift v0.1.3 supports only schema version 1; its compatible catalog remains
 available at the
 [`v0.1.3` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml).
@@ -123,7 +124,7 @@ You can copy the reference catalog or provide your own schema-compatible TOML
 file:
 
 ```toml
-schema_version = 1
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -132,11 +133,16 @@ chromosome = "chr7"
 intron_start = 55019366
 intron_end = 55155829
 strand = "+"
+reference_junctions = []
+reference_transcript = "NM_005228.5"
+donor_exon = "1"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000275493.7; curated exon skipping"
 ```
 
 Each variant must have a unique `id` and a unique defining junction
 (chromosome, intron coordinates, and strand). See the [catalog specification](docs/SPECIFICATION.md#variant-definition-catalog)
-for both schemas and the [reference-junction guide](docs/REFERENCE_JUNCTION_CONTEXT.md)
+for the current schema and the [reference-junction guide](docs/REFERENCE_JUNCTION_CONTEXT.md)
 for comparator examples.
 
 ## Output

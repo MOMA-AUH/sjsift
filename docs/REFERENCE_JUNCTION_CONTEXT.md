@@ -16,15 +16,15 @@ Alternative terminal exons need an event-specific comparator. `ARv7`, for
 example, can compare `3→CE3` with `3→4`; `FGFR2-E18-C3` can compare its
 alternative terminal exon junction with the canonical terminal-exon junction.
 
-## Catalog schema version 2
+## Catalog schema version 3
 
-Version 1 catalogs remain supported and have no reference context. A version 2
+Only schema 3 is supported; older schemas are rejected. A current
 variant has a required `reference_junctions` array. Each entry has a unique
 `role` within that variant and uses the same STAR-native coordinate convention
 as a defining junction.
 
 ```toml
-schema_version = 2
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -33,6 +33,10 @@ chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "13"
+acceptor_exon = "15"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence"
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -40,6 +44,10 @@ chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116771848
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "13"
+acceptor_exon = "14"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence"
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -47,11 +55,15 @@ chromosome = "chr7"
 intron_start = 116771990
 intron_end = 116774880
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "14"
+acceptor_exon = "15"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence"
 ```
 
 These are the curated MET exon 13→14 and 14→15 reference junctions from
 RefSeq transcript NM_000245.4 (GENCODE v49 coordinate evidence). The repository's
-[`definitions/grch38.toml`](../definitions/grch38.toml) uses schema version 2
+[`definitions/grch38.toml`](../definitions/grch38.toml) uses schema version 3
 and provides 32 reference entries across all 17 variants. See the
 [curation record](REFERENCE_JUNCTION_CURATION.md) for pinned transcripts,
 annotation checksum, exon evidence, and every derived coordinate.

@@ -75,6 +75,42 @@ def test_curated_references_match_adjacent_exons_and_shared_splice_sites(
         else:
             assert end == variant.intron_end
             assert start != variant.intron_start
-        expected.append(ReferenceJunction(role, variant.chromosome, start, end, variant.strand))
+        expected.append((role, variant.chromosome, start, end, variant.strand))
 
-    assert variant.reference_junctions == tuple(expected)
+    assert tuple((r.role, r.chromosome, r.intron_start, r.intron_end, r.strand) for r in variant.reference_junctions) == tuple(expected)
+
+
+@pytest.mark.parametrize("identifier", CURATION)
+def test_annotations_match_pinned_exon_boundaries_and_explicit_terminal_curation(identifier):
+    variant = next(v for v in load_catalog(ROOT / "definitions/grch38.toml").variants if v.identifier == identifier)
+    enst, ranks = CURATION[identifier]
+    transcripts = {
+        "ENST00000374690.9": "NM_000044.6", "ENST00000646891.2": "NM_004333.6",
+        "ENST00000275493.7": "NM_005228.5", "ENST00000450046.2": "NM_001346900.2",
+        "ENST00000344576.7": "NM_201284.2", "ENST00000358487.10": "NM_000141.5",
+        "ENST00000397752.8": "NM_000245.4",
+    }
+    with (ROOT / "docs/curation/gencode-v49-exons.tsv").open() as stream:
+        exons = {row["exon_number"]: row for row in csv.DictReader(stream, delimiter="\t") if row["transcript_id"] == enst}
+    for junction in (variant, *variant.reference_junctions):
+        annotation = junction.annotation
+        assert annotation.reference_transcript == transcripts[enst]
+        assert enst in annotation.annotation_source and "GENCODE v49" in annotation.annotation_source
+        donor, acceptor = annotation.donor_exon, annotation.acceptor_exon
+        if identifier == "FGFR2-E18-C3":
+            assert donor == "E17"
+            assert acceptor == ("E18-C3" if junction is variant else "E18-C1")
+            assert "not present in NM_000141.5" in annotation.annotation_source
+            donor, acceptor = "17", (None if junction is variant else "18")
+        if identifier == "ARv7" and junction is variant:
+            assert acceptor == "CE3"
+            assert "not present in NM_000044.6" in annotation.annotation_source
+            acceptor = None
+        if junction.strand == "+":
+            assert int(exons[donor]["exon_end"]) + 1 == junction.intron_start
+            if acceptor:
+                assert int(exons[acceptor]["exon_start"]) - 1 == junction.intron_end
+        else:
+            assert int(exons[donor]["exon_start"]) - 1 == junction.intron_end
+            if acceptor:
+                assert int(exons[acceptor]["exon_end"]) + 1 == junction.intron_start
