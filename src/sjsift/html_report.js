@@ -76,5 +76,39 @@
     });
   }
   window.addEventListener("hashchange", () => showView(true));
+  for (const group of document.querySelectorAll(".alignment-group")) {
+    const find = selector => group.querySelector(selector);
+    const reads = Array.from(group.querySelectorAll(".read-row"));
+    const filter = find(".read-filter");
+    const expand = find(".read-expand");
+    const previous = find(".read-previous");
+    const next = find(".read-next");
+    let expanded = false;
+    let page = 0;
+    function updateReads() {
+      const matching = reads.filter(row => filter.value === "all" || row.dataset.mapping === "unique");
+      const size = expanded ? 50 : 10;
+      const pages = Math.max(1, Math.ceil(matching.length / size));
+      page = Math.min(page, pages - 1);
+      const shown = new Set(matching.slice(page * size, (page + 1) * size));
+      for (const row of reads) row.hidden = !shown.has(row);
+      find(".shown-count").textContent = `Currently shown: ${shown.size} (${matching.length} embedded match filter)`;
+      find(".read-filter-empty").hidden = matching.length !== 0;
+      expand.textContent = expanded ? "Collapse reads" : "Expand reads";
+      expand.setAttribute("aria-expanded", String(expanded));
+      previous.hidden = next.hidden = !expanded;
+      previous.disabled = page === 0;
+      next.disabled = page === pages - 1;
+      find(".read-page").textContent = !matching.length ? "No matching reads." : expanded
+        ? `Page ${page + 1} of ${pages} · records ${page * size + 1}–${page * size + shown.size} of ${matching.length}${page === pages - 1 ? " · End of embedded reads" : ""}`
+        : `Preview: first ${shown.size} of ${matching.length} embedded records. Expand for pages of 50.`;
+    }
+    filter.addEventListener("change", () => { page = 0; updateReads(); });
+    expand.addEventListener("click", () => { expanded = !expanded; page = 0; updateReads(); });
+    previous.addEventListener("click", () => { page -= 1; updateReads(); });
+    next.addEventListener("click", () => { page += 1; updateReads(); });
+    find(".read-controls").hidden = false;
+    updateReads();
+  }
   update();
 })();

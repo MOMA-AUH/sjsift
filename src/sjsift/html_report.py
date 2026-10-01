@@ -130,10 +130,12 @@ def _read_geometry(record: AlignmentRecord) -> str:
     for operation in record.geometry:
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
+        broken = operation.op in "ND" and operation.length > 80
         operations.append(
             f'<span class="cigar-op op-{operation.op.replace("=", "equal")}" '
             f'style="flex-basis:{max(12, min(operation.length, 80))}px" title="{description}">'
-            f'{operation.op}<small>{operation.length}</small></span>'
+            f'{operation.op}' + ('<span class="gap-break" aria-label="compressed gap">//</span>' if broken else '')
+            + f'<small>{operation.length} nt</small></span>'
         )
     return '<div class="read-geometry" aria-label="CIGAR geometry">' + "".join(operations) + '</div>'
 
@@ -153,6 +155,7 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
         f'{escape(record.chromosome)}:{record.start + 1}–{record.end}</p>'
         f'<p>CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"} · Alignment orientation: {record.orientation}</p>'
         f'<p>Flags: {escape(flags)} ({record.flag}) · Transcript {strand}</p>'
+        f'<p>Aligned anchors: genomic left {record.anchors[0]} nt; genomic right {record.anchors[1]} nt</p>'
         f'<p>Strand sources: {escape("; ".join(record.strand_evidence) or "No usable transcript-strand evidence")}</p>'
         '</details></li>'
     )
@@ -179,6 +182,23 @@ def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
         f'<p>Transcript strand totals: agreeing {group.strand_totals["agreeing"]}; '
         f'unverified {group.strand_totals["unverified"]}. '
         f'Excluded: opposite {group.exclusions["opposite"]}; conflicting {group.exclusions["conflicting"]}.</p>'
+        + (f'<p class="sampling-note">Sampled evidence: {len(group.records)} of {eligible} eligible records embedded. '
+           f'Limit: {evidence.limit} records per junction per mapping class.</p>' if eligible > len(group.records)
+           else '<p>All eligible records are embedded.</p>')
+        + '<p class="scale-note">Nonuniform scale: aligned blocks M/= /X, dotted splice gaps N, red deletions D, '
+        'purple insertions I, gold soft/hard clips S/H; P is padding. Gaps longer than 80 nt have // break marks. '
+        'Labels give exact lengths; hover for 1-based inclusive genomic coordinates or interbase positions. '
+        'Geometry runs in increasing genomic coordinates regardless of strand.</p>'
+        '<p class="scale-note">Aligned anchors in Read details count contiguous M, = and X bases immediately '
+        'abutting this junction on the genomic left and right. Any other operation ends an anchor. '
+        'These are not STAR maximum overhang; no anchor or MAPQ threshold is applied.</p>'
+        f'<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Read filter for {escape(group.label, quote=True)}">'
+        '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
+        '<button class="read-expand" type="button" aria-expanded="false">Expand reads</button>'
+        '<button class="read-previous" type="button">Previous reads</button>'
+        '<button class="read-next" type="button">Next reads</button>'
+        '<span class="read-page" role="status" aria-live="polite"></span></div>'
+        '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'
         + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
         + '<ol class="read-rows">' + "".join(
             _read_row(row, position, tuple(evidence.groups[match].label for match in row.matches if match != key))

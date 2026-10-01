@@ -52,6 +52,7 @@ class AlignmentRecord:
     strand_evidence: tuple[str, ...]
     geometry: tuple[CigarOperation, ...]
     matches: tuple[str, ...]
+    anchors: tuple[int, int]
 
 
 @dataclass
@@ -174,7 +175,20 @@ def _retain(heap, record, key, limit):
         heapq.heapreplace(heap, item)
 
 
-def _serialize(read, record_id, geometry, mapping_class, status, evidence, matches):
+def _anchors(geometry, intron_index):
+    """Contiguous M/= /X lengths immediately left/right of the selected N."""
+    position = [i for i, op in enumerate(geometry) if op.op == "N"][intron_index]
+    counts = []
+    for step in (-1, 1):
+        cursor, count = position + step, 0
+        while 0 <= cursor < len(geometry) and geometry[cursor].op in "M=X":
+            count += geometry[cursor].length
+            cursor += step
+        counts.append(count)
+    return tuple(counts)
+
+
+def _serialize(read, record_id, geometry, mapping_class, status, evidence, matches, intron_index):
     flags = tuple(label for mask, label in (
         (1, "paired"), (2, "proper pair"), (8, "mate unmapped"),
         (256, "secondary"), (512, "QC failure"), (1024, "duplicate"), (2048, "supplementary"),
@@ -190,6 +204,7 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence, match
         read.reference_name, read.reference_start, read.reference_end,
         read.cigarstring, read.mapping_quality, "reverse" if read.is_reverse else "forward",
         read.flag, flags, mapping_class, nh, status, evidence, geometry, matches,
+        _anchors(geometry, intron_index),
     )
 
 
@@ -250,15 +265,15 @@ def _extract_evidence(
                         if status in group.exclusions:
                             group.exclusions[status] += 1
                             continue
-                        memberships.append((key, status, evidence))
+                        memberships.append((key, status, evidence, introns.index(pair)))
                     mapping_class = _mapping_class(read)
-                    matches = tuple(key for key, _, _ in memberships)
-                    for key, status, evidence in memberships:
+                    matches = tuple(key for key, _, _, _ in memberships)
+                    for key, status, evidence, intron_index in memberships:
                         group = groups[key]
                         group.eligible[mapping_class] += 1
                         group.strand_totals[status] += 1
                         record_id = f"r{read.reference_id}-{region}-{ordinal}"
-                        record = _serialize(read, record_id, geometry, mapping_class, status, evidence, matches)
+                        record = _serialize(read, record_id, geometry, mapping_class, status, evidence, matches, intron_index)
                         _retain(retained[key][mapping_class], record, key, limit)
     for key, group in groups.items():
         group.records = tuple(
