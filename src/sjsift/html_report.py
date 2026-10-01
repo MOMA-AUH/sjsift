@@ -7,7 +7,7 @@ from string import Template
 from typing import TextIO
 
 from . import __version__
-from .alignment_evidence import AlignmentEvidence, AlignmentRecord, JunctionEvidence, MAPPING_CLASSES
+from .alignment_evidence import AlignmentEvidence, AlignmentRecord, MAPPING_CLASSES
 from .quantify import ReferenceJunctionSupport, VariantSupport
 
 
@@ -138,7 +138,7 @@ def _read_geometry(record: AlignmentRecord) -> str:
     return '<div class="read-geometry" aria-label="CIGAR geometry">' + "".join(operations) + '</div>'
 
 
-def _read_row(record: AlignmentRecord, position: int) -> str:
+def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, ...]) -> str:
     flags = ", ".join(record.flags) or "primary; no additional flags"
     strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
     return (
@@ -146,6 +146,7 @@ def _read_row(record: AlignmentRecord, position: int) -> str:
         f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
         f'<div class="read-label"><strong>{escape(record.read_name)}</strong> · {record.mate} · '
         f'{record.mapping_class} · {strand}</div>'
+        + (f'<p class="shared-membership">Also matches: {escape("; ".join(also_matches))}</p>' if also_matches else "")
         + _read_geometry(record)
         + '<details class="read-metadata"><summary>Read details</summary>'
         f'<p>Record ID: {record.record_id} · Read group: {escape(record.read_group or "not supplied")} · '
@@ -157,9 +158,10 @@ def _read_row(record: AlignmentRecord, position: int) -> str:
     )
 
 
-def _alignment_group(group: JunctionEvidence | None, key: str) -> str:
-    if group is None:
+def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
+    if evidence is None:
         return '<p class="alignment-unavailable">Alignment evidence not requested for this junction.</p>'
+    group = evidence.groups[key]
     eligible = sum(group.eligible.values())
     counts = "".join(
         f'<tr><th scope="row">{kind}</th><td>{group.eligible[kind]}</td>'
@@ -178,7 +180,10 @@ def _alignment_group(group: JunctionEvidence | None, key: str) -> str:
         f'unverified {group.strand_totals["unverified"]}. '
         f'Excluded: opposite {group.exclusions["opposite"]}; conflicting {group.exclusions["conflicting"]}.</p>'
         + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
-        + '<ol class="read-rows">' + "".join(_read_row(row, position) for position, row in enumerate(group.records))
+        + '<ol class="read-rows">' + "".join(
+            _read_row(row, position, tuple(evidence.groups[match].label for match in row.matches if match != key))
+            for position, row in enumerate(group.records)
+        )
         + '</ol></section>'
     )
 
@@ -230,7 +235,7 @@ def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | No
         f'<div class="evidence"><strong>{escape(label)}</strong><p>{escape(explanation)}</p></div>'
         + "".join(
             _schematic(name, support) + _alignment_group(
-                evidence.groups.get(f"v{index}-j{position}") if evidence else None, f"v{index}-j{position}",
+                evidence, f"v{index}-j{position}",
             ) for position, (name, support) in enumerate(junctions)
         )
         + '<a class="back-link" href="#overview">Back to all variants</a></article>'

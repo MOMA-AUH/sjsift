@@ -12,8 +12,9 @@ sjsift --junctions sample.SJ.out.tab --definitions catalog.toml \
 `sample.bam.csi`, or `sample.csi`. `--alignment-limit N` is a positive integer,
 default 200, **per junction per mapping class**. Alignment options require
 `--alignments`, which requires `--html-output`. Indexes are never created by
-sjsift. This initial BAM slice shows defining-junction previews; reference reads
-and expansion controls follow in the subsequent implementation milestones.
+sjsift. Every defining and configured reference junction has its own immediate preview.
+Custom roles, references on other contigs or strands, and shared references use
+the same inclusion rules. Expansion controls follow in the next milestone.
 CRAM is rejected until explicit-reference support is implemented.
 
 ## What qualifies
@@ -57,7 +58,12 @@ read name, read group and read-1/read-2 labels help recognize related records.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
-performed.
+performed. A record matching several selected junctions appears in each
+qualifying group with the same stable record ID and an **Also matches** list.
+Membership indicates exact supporting groups even if independently sampled
+records are not retained in every group. Excluded opposite/conflicting groups
+are not listed as supporting membership. Reference observations and samples
+remain independent, so abundant references cannot displace rare defining reads.
 
 Every eligible record is counted before sampling. Deterministic SHA-256 bottom-k
 sampling independently caps each junction/class subset, retaining all records
