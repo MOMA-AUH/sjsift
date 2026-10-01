@@ -117,3 +117,19 @@ annotation and counts. **Also matches** identifies shared physical records acros
 qualifying junction groups; record IDs are stable within the report and identical
 input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
+
+Each junction initially shows up to ten alignment rows. **Expand reads** pages
+through the embedded evidence, 50 rows at a time; **Collapse reads** restores the
+preview. **All / Unique only** changes the displayed subset, leaving full counts
+and STAR support unchanged. Unique only means NH=1, regardless of primary,
+duplicate, supplementary or QC flags. The page status labels the last page and
+filter-empty state. Limits apply independently to every junction and mapping
+class, and sampled evidence is labeled.
+
+Geometry distinguishes aligned blocks, splice gaps, deletions, insertions and
+clipping. It uses a labeled nonuniform scale and `//` breaks on long gaps, with
+exact lengths and coordinate tooltips. **Read details** includes identity, flags,
+strand sources and the explicitly defined genomic left/right aligned anchors;
+these are not STAR maximum overhang. The alignment guide specifies the anchor
+calculation. Without JavaScript, ten previews per group, native read details,
+all counts and provenance remain readable; filtering and paging require JavaScript.

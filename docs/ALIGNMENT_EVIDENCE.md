@@ -14,7 +14,7 @@ default 200, **per junction per mapping class**. Alignment options require
 `--alignments`, which requires `--html-output`. Indexes are never created by
 sjsift. Every defining and configured reference junction has its own immediate preview.
 Custom roles, references on other contigs or strands, and shared references use
-the same inclusion rules. Expansion controls follow in the next milestone.
+the same inclusion rules. Each group can expand into pages of 50 embedded records.
 CRAM is rejected until explicit-reference support is implemented.
 
 ## What qualifies
@@ -71,6 +71,31 @@ below its cap. Extraction memory for retained records is bounded by those caps;
 it does not keep a set of every observed read. Caps limit records, not HTML bytes.
 Eligible, embedded and currently shown counts have separate labels, as do strand
 totals and exclusion reasons. The initial preview displays up to ten records.
+**All** is the initial filter. **Unique only** shows exactly NH=1 records,
+including eligible secondary, supplementary, duplicate and QC-flagged records.
+It excludes unknown multiplicity. Changing the filter resets to the first page;
+collapsing restores a ten-record preview. Paging and filtering change only the
+currently shown count. Full eligible/embedded counts and strand totals always
+describe the entire group. Sampled groups state the per-class cap explicitly;
+the last page is labeled and its Next button disabled.
+
+## Structural geometry and anchors
+
+One row displays the complete alignment CIGAR in increasing genomic coordinates,
+independent of alignment orientation and transcript strand. M, = and X are
+aligned blocks; dotted N is a splice gap; red D is a deletion; purple I is an
+insertion; gold S/H mark soft/hard clipping; gray P is padding. Operation labels
+give exact lengths, and tooltips retain 1-based inclusive reference coordinates
+or interbase positions for operations that consume no reference. The scale is
+nonuniform: widths are bounded for readability, and N/D gaps longer than 80 nt
+carry visible `//` breaks. No nucleotide sequence or mismatch bases are shown.
+
+Read details give **genomic left/right aligned anchors** at this group's selected
+splice. Each is the sum of consecutive M, = and X operations immediately abutting
+that N. Any I, D, N, S, H or P terminates the sum; a nonaligned immediate neighbor
+gives zero. Left/right do not swap on the minus strand. For example,
+`10M2I5=2D3X100N7M2I10M` has anchors 3 and 7 at its skip. These measurements
+are not STAR maximum overhang, inferred exon extents or quality thresholds.
 
 **STAR support remains unchanged** in both TSVs and HTML. STAR's upstream
 junction filtering, paired-template semantics, alignment output choices and the
@@ -98,6 +123,7 @@ sequence, base qualities, reference sequence, original alignment file, or
 absolute source paths. Consider the retained raw identifiers before sharing.
 All text is escaped and all assets are inline; no browser network access or
 source BAM is needed. Counts and provenance remain readable without JavaScript.
+The document's content security policy also blocks external resources and connections.
 The geometry is schematic; nucleotide-level inspection is outside this release.
 
 ## Dependency and validation basis

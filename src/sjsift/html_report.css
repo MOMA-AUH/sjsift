@@ -107,10 +107,14 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .read-row.unverified { border-left: 3px dashed #b67b23; background: #faf7ef; }
 .read-label, .read-metadata { overflow-wrap: anywhere; font-size: .85rem; }
 .read-geometry { display: flex; align-items: center; gap: 2px; min-height: 42px; overflow-x: auto; margin: .5rem 0; }
-.cigar-op { flex-shrink: 0; min-width: 16px; text-align: center; background: #448b90; color: white; font-size: .7rem; }
+.cigar-op { flex-shrink: 0; min-width: 46px; text-align: center; background: #448b90; color: white; font-size: .7rem; }
 .cigar-op small { display: block; }
 .op-N { background: transparent; color: #46636a; border-top: 2px dotted #46636a; }
 .op-D { background: transparent; color: #be4646; border-top: 2px solid #be4646; }
 .op-I { background: #8b62b1; }
 .op-S, .op-H { background: #b88630; }
 .op-P { background: #aaa; }
+.gap-break { font-weight: 800; padding-left: .4rem; font-size: 1rem; }
+.read-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; font-size: .85rem; }
+.read-page { flex-basis: 100%; }
+.sampling-note { font-weight: 600; }
