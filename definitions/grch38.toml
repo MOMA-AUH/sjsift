@@ -4,7 +4,7 @@
 # RefSeq/GENCODE mappings, exon evidence, and source checksums:
 # ../docs/REFERENCE_JUNCTION_CURATION.md
 
-schema_version = 2
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -13,14 +13,21 @@ chromosome = "chrX"
 intron_start = 67686127
 intron_end = 67694672
 strand = "+"
+reference_transcript = "NM_000044.6"
+donor_exon = "3"
+acceptor_exon = "CE3"
+annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; CE3 is a curated cryptic terminal exon (Hu 2009; DRAGEN 4.4 hg38 junction), not present in NM_000044.6. Full CE3 extent is not asserted."
 
-# NM_000044.6, exons 3 -> 4.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chrX"
 intron_start = 67686127
 intron_end = 67711401
 strand = "+"
+reference_transcript = "NM_000044.6"
+donor_exon = "3"
+acceptor_exon = "4"
+annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "ARv567es"
@@ -28,22 +35,32 @@ chromosome = "chrX"
 intron_start = 67711690
 intron_end = 67723685
 strand = "+"
+reference_transcript = "NM_000044.6"
+donor_exon = "4"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000044.6, exons 4 -> 5.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chrX"
 intron_start = 67711690
 intron_end = 67717477
 strand = "+"
+reference_transcript = "NM_000044.6"
+donor_exon = "4"
+acceptor_exon = "5"
+annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000044.6, exons 7 -> 8.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chrX"
 intron_start = 67722985
 intron_end = 67723685
 strand = "+"
+reference_transcript = "NM_000044.6"
+donor_exon = "7"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel2-10"
@@ -51,22 +68,32 @@ chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140924565
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "1"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 1 -> 2.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140850213
 intron_end = 140924565
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 10 -> 11.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140783020
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "10"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel2-8"
@@ -74,22 +101,32 @@ chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140924565
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "1"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 1 -> 2.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140850213
 intron_end = 140924565
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 8 -> 9.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140794307
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "8"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel3-10"
@@ -97,22 +134,32 @@ chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140850110
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "2"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 2 -> 3.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140834873
 intron_end = 140850110
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 10 -> 11.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140783020
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "10"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel3-8"
@@ -120,22 +167,32 @@ chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140850110
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "2"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 2 -> 3.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140834873
 intron_end = 140850110
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 8 -> 9.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140794307
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "8"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel4-10"
@@ -143,22 +200,32 @@ chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140834608
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "3"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 3 -> 4.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140808996
 intron_end = 140834608
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "3"
+acceptor_exon = "4"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 10 -> 11.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140781694
 intron_end = 140783020
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "10"
+acceptor_exon = "11"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "BRAFdel4-8"
@@ -166,22 +233,32 @@ chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140834608
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "3"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 3 -> 4.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 140808996
 intron_end = 140834608
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "3"
+acceptor_exon = "4"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_004333.6, exons 8 -> 9.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 140787585
 intron_end = 140794307
 strand = "-"
+reference_transcript = "NM_004333.6"
+donor_exon = "8"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvIVa"
@@ -189,22 +266,32 @@ chromosome = "chr7"
 intron_start = 55200414
 intron_end = 55205255
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "24"
+acceptor_exon = "28"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 24 -> 25.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55200414
 intron_end = 55201187
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "24"
+acceptor_exon = "25"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 27 -> 28.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55202626
 intron_end = 55205255
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "27"
+acceptor_exon = "28"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvIII"
@@ -212,22 +299,32 @@ chromosome = "chr7"
 intron_start = 55019366
 intron_end = 55155829
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "1"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 1 -> 2.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55019366
 intron_end = 55142285
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 7 -> 8.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55154153
 intron_end = 55155829
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "7"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvIIIb"
@@ -235,22 +332,32 @@ chromosome = "chr7"
 intron_start = 55109959
 intron_end = 55155829
 strand = "+"
+reference_transcript = "NM_001346900.2"
+donor_exon = "1"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_001346900.2, exons 1 -> 2.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55109959
 intron_end = 55142285
 strand = "+"
+reference_transcript = "NM_001346900.2"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_001346900.2, exons 7 -> 8.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55154153
 intron_end = 55155829
 strand = "+"
+reference_transcript = "NM_001346900.2"
+donor_exon = "7"
+acceptor_exon = "8"
+annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvIVb"
@@ -258,22 +365,32 @@ chromosome = "chr7"
 intron_start = 55200414
 intron_end = 55202516
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "24"
+acceptor_exon = "27"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 24 -> 25.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55200414
 intron_end = 55201187
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "24"
+acceptor_exon = "25"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 26 -> 27.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55201783
 intron_end = 55202516
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "26"
+acceptor_exon = "27"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvII"
@@ -281,22 +398,32 @@ chromosome = "chr7"
 intron_start = 55161632
 intron_end = 55171174
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "13"
+acceptor_exon = "16"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 13 -> 14.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55161632
 intron_end = 55163732
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "13"
+acceptor_exon = "14"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_005228.5, exons 15 -> 16.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55165438
 intron_end = 55171174
 strand = "+"
+reference_transcript = "NM_005228.5"
+donor_exon = "15"
+acceptor_exon = "16"
+annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "EGFRvIIb"
@@ -304,22 +431,32 @@ chromosome = "chr7"
 intron_start = 55161632
 intron_end = 55170306
 strand = "+"
+reference_transcript = "NM_201284.2"
+donor_exon = "13"
+acceptor_exon = "16"
+annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_201284.2, exons 13 -> 14.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 55161632
 intron_end = 55163732
 strand = "+"
+reference_transcript = "NM_201284.2"
+donor_exon = "13"
+acceptor_exon = "14"
+annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_201284.2, exons 15 -> 16.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 55165438
 intron_end = 55170306
 strand = "+"
+reference_transcript = "NM_201284.2"
+donor_exon = "15"
+acceptor_exon = "16"
+annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "FGFR2-E18-C3"
@@ -327,14 +464,21 @@ chromosome = "chr10"
 intron_start = 121482178
 intron_end = 121483697
 strand = "-"
+reference_transcript = "NM_000141.5"
+donor_exon = "E17"
+acceptor_exon = "E18-C3"
+annotation_source = "GENCODE v49 / ENST00000358487.10; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; Zingg 2022 biological labels E17/E18-C1/E18-C3; comparator annotation ranks 17/18. E18-C3 is an alternative terminal exon, not present in NM_000141.5. Full alternative exon extent is not asserted."
 
-# NM_000141.5, exons 17 -> 18.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr10"
 intron_start = 121480022
 intron_end = 121483697
 strand = "-"
+reference_transcript = "NM_000141.5"
+donor_exon = "E17"
+acceptor_exon = "E18-C1"
+annotation_source = "GENCODE v49 / ENST00000358487.10; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; Zingg 2022 biological labels E17/E18-C1/E18-C3; comparator annotation ranks 17/18. E18-C3 is an alternative terminal exon, not present in NM_000141.5. Full alternative exon extent is not asserted."
 
 [[variants]]
 id = "METex7-8"
@@ -342,22 +486,32 @@ chromosome = "chr7"
 intron_start = 116755516
 intron_end = 116758458
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "6"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000245.4, exons 6 -> 7.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 116755516
 intron_end = 116757436
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "6"
+acceptor_exon = "7"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000245.4, exons 8 -> 9.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 116757775
 intron_end = 116758458
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "8"
+acceptor_exon = "9"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
 [[variants]]
 id = "METex14"
@@ -365,19 +519,29 @@ chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116774880
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "13"
+acceptor_exon = "15"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000245.4, exons 13 -> 14.
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chr7"
 intron_start = 116771655
 intron_end = 116771848
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "13"
+acceptor_exon = "14"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
 
-# NM_000245.4, exons 14 -> 15.
 [[variants.reference_junctions]]
 role = "same_acceptor"
 chromosome = "chr7"
 intron_start = 116771990
 intron_end = 116774880
 strand = "+"
+reference_transcript = "NM_000245.4"
+donor_exon = "14"
+acceptor_exon = "15"
+annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"

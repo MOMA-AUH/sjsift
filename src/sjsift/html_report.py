@@ -100,6 +100,30 @@ def _overview_row(
     )
 
 
+def _schematic(label: str, support: VariantSupport | ReferenceJunctionSupport) -> str:
+    junction = support.definition
+    annotation = junction.annotation
+    donor, acceptor = (junction.intron_start, junction.intron_end)
+    if junction.strand == "-":
+        donor, acceptor = acceptor, donor
+    return (
+        '<section class="junction-schematic">'
+        f'<h3>{escape(label)}</h3>'
+        '<p class="scale-note">Local splice boundaries · transcript direction → · not to scale. '
+        'Exon extents and intervening transcript structure are not shown.</p>'
+        '<div class="splice-boundaries">'
+        f'<div class="exon-boundary donor">Donor exon {escape(annotation.donor_exon)}'
+        f'<small>Donor boundary: {donor}</small></div>'
+        f'<div class="splice-gap">↗ ··· ↘<small>{junction.intron_end - junction.intron_start + 1} nt intron</small></div>'
+        f'<div class="exon-boundary acceptor">Acceptor exon {escape(annotation.acceptor_exon)}'
+        f'<small>Acceptor boundary: {acceptor}</small></div></div>'
+        f'<p class="coordinates">{_coordinates(support)} · boundaries are intronic bases</p>'
+        f'<p>Annotation / comparison basis: {escape(annotation.reference_transcript)}. '
+        'This accession supplies labels or a comparator; it need not contain the defining junction.</p>'
+        f'<p class="annotation-source">{escape(annotation.annotation_source)}</p></section>'
+    )
+
+
 def _detail(index: int, result: VariantSupport) -> str:
     maximum = max(1, result.total, *(support.total for support in result.reference_junctions))
     junctions = [("Defining junction", result), *(
@@ -127,7 +151,8 @@ def _detail(index: int, result: VariantSupport) -> str:
         '<p class="scale-note">Bars use one linear scale within this variant. '
         'Donor and acceptor roles follow transcript orientation on either strand.</p>'
         f'<div class="evidence"><strong>{escape(label)}</strong><p>{escape(explanation)}</p></div>'
-        '<a class="back-link" href="#overview">Back to all variants</a></article>'
+        + "".join(_schematic(name, support) for name, support in junctions)
+        + '<a class="back-link" href="#overview">Back to all variants</a></article>'
     )
 
 

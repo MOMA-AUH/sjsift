@@ -104,7 +104,7 @@ Tests are organized by behavior rather than internal helper functions. Use tempo
 
 Minimum fixture set:
 
-- the committed 17-variant schema-2 catalog and smaller synthetic catalogs for both schemas;
+- the committed 17-variant schema-3 catalog and smaller synthetic annotated catalogs;
 - a small STAR file with supported junctions carrying both unique and multimapping counts;
 - a STAR file with near misses for chromosome spelling, off-by-one coordinates, opposite strand, and strand `0`;
 - an empty STAR file;

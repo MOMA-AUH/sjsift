@@ -4,11 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from sjsift.catalog import CatalogError, ReferenceJunction, VariantDefinition, load_catalog
+from sjsift.catalog import JunctionAnnotation, CatalogError, ReferenceJunction, VariantDefinition, load_catalog
+
+
+ANNOTATION = JunctionAnnotation("NM_synthetic.1", "1", "2", "Synthetic test annotation")
 
 
 VALID_CATALOG = """\
-schema_version = 1
+schema_version = 3
 genome_assembly = "GRCh38"
 
 [[variants]]
@@ -17,6 +20,11 @@ chromosome = "chr7"
 intron_start = 10
 intron_end = 20
 strand = "+"
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
 
 [[variants]]
 id = "second"
@@ -24,6 +32,11 @@ chromosome = "chrX"
 intron_start = 30
 intron_end = 30
 strand = "-"
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+reference_junctions = []
 """
 
 
@@ -50,83 +63,42 @@ def test_valid_catalog_preserves_entry_order(tmp_path: Path) -> None:
 
     assert catalog.genome_assembly == "GRCh38"
     assert catalog.variants == (
-        VariantDefinition("first", "chr7", 10, 20, "+"),
-        VariantDefinition("second", "chrX", 30, 30, "-"),
+        VariantDefinition("first", "chr7", 10, 20, "+", annotation=ANNOTATION),
+        VariantDefinition("second", "chrX", 30, 30, "-", annotation=ANNOTATION),
     )
 
 
-def test_version_two_catalog_loads_ordered_named_reference_junctions(
-    tmp_path: Path,
-) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
-    text = text.replace(
-        'strand = "+"',
-        'strand = "+"\nreference_junctions = []',
-        1,
-    ).replace(
-        'strand = "-"',
-        '''strand = "-"
-
+REFERENCE = """
 [[variants.reference_junctions]]
 role = "same_donor"
 chromosome = "chrX"
 intron_start = 41
 intron_end = 50
 strand = "-"
+reference_transcript = "NM_synthetic.1"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Synthetic test annotation"
+"""
 
-[[variants.reference_junctions]]
-role = "same_acceptor"
-chromosome = "chrX"
-intron_start = 21
-intron_end = 29
-strand = "-"''',
-        1,
-    )
 
+def test_current_schema_catalog_loads_ordered_named_reference_junctions(tmp_path):
+    text = VALID_CATALOG.rsplit("reference_junctions = []", 1)[0] + REFERENCE
     _, catalog = load_text(tmp_path, text)
-
     assert catalog.variants[0].reference_junctions == ()
     assert catalog.variants[1].reference_junctions == (
-        ReferenceJunction("same_donor", "chrX", 41, 50, "-"),
-        ReferenceJunction("same_acceptor", "chrX", 21, 29, "-"),
+        ReferenceJunction("same_donor", "chrX", 41, 50, "-", annotation=ANNOTATION),
     )
 
 
-def test_version_two_requires_reference_junctions_for_every_variant(
-    tmp_path: Path,
-) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
-
+def test_current_schema_requires_reference_junctions_for_every_variant(tmp_path):
+    text = VALID_CATALOG.replace("reference_junctions = []", "", 1)
     assert_invalid(tmp_path, text, "variant 1 ('first')", "'reference_junctions'")
 
 
-def test_reference_junction_validation_has_variant_and_junction_context(
-    tmp_path: Path,
-) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 2")
-    text = text.replace(
-        'strand = "+"',
-        '''strand = "+"
-
-[[variants.reference_junctions]]
-role = "same_donor"
-chromosome = "chr7"
-intron_start = 10
-intron_end = 20
-strand = "+"''',
-        1,
-    ).replace(
-        'strand = "-"',
-        'strand = "-"\nreference_junctions = []',
-        1,
-    )
-
-    assert_invalid(
-        tmp_path,
-        text,
-        "variant 1 ('first'), reference junction 1 ('same_donor')",
-        "must not duplicate the defining junction",
-    )
+def test_reference_junction_validation_has_variant_and_junction_context(tmp_path):
+    text = VALID_CATALOG.rsplit("reference_junctions = []", 1)[0] + REFERENCE.replace("41", "30").replace("50", "30")
+    assert_invalid(tmp_path, text, "variant 2 ('second'), reference junction 1 ('same_donor')", "must not duplicate the defining junction")
 
 
 @pytest.mark.parametrize("field", ["schema_version", "genome_assembly", "variants"])
@@ -158,14 +130,14 @@ def test_mistyped_top_level_field_reports_missing_and_unknown_names(
 
 @pytest.mark.parametrize("value", ["true", '"1"', "1.0"])
 def test_schema_version_must_be_an_integer(tmp_path: Path, value: str) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", f"schema_version = {value}")
+    text = VALID_CATALOG.replace("schema_version = 3", f"schema_version = {value}")
     assert_invalid(tmp_path, text, "schema_version", "must be an integer")
 
 
 def test_unsupported_schema_version_is_explicit(tmp_path: Path) -> None:
-    text = VALID_CATALOG.replace("schema_version = 1", "schema_version = 3")
+    text = VALID_CATALOG.replace("schema_version = 3", "schema_version = 4")
     assert_invalid(
-        tmp_path, text, "unsupported catalog schema version 3", "expected 1 or 2"
+        tmp_path, text, "unsupported catalog schema version 4", "expected 3"
     )
 
 
@@ -181,12 +153,12 @@ def test_genome_assembly_must_be_a_safe_nonempty_string(
 
 @pytest.mark.parametrize("value", ["[]", '"not an array"'])
 def test_variants_must_be_a_nonempty_array(tmp_path: Path, value: str) -> None:
-    text = f'schema_version = 1\ngenome_assembly = "GRCh38"\nvariants = {value}\n'
+    text = f'schema_version = 3\ngenome_assembly = "GRCh38"\nvariants = {value}\n'
     assert_invalid(tmp_path, text, "variants", "must")
 
 
 def test_every_variant_must_be_a_table(tmp_path: Path) -> None:
-    text = 'schema_version = 1\ngenome_assembly = "GRCh38"\nvariants = [1]\n'
+    text = 'schema_version = 3\ngenome_assembly = "GRCh38"\nvariants = [1]\n'
     assert_invalid(tmp_path, text, "variant 1", "must be a table")
 
 
@@ -200,7 +172,7 @@ def test_missing_variant_field_is_rejected_with_entry_context(
     text = "\n".join(
         line for line in first_variant.splitlines() if not line.startswith(f"{field} =")
     )
-    text = f'schema_version = 1\ngenome_assembly = "GRCh38"\n[[variants]]\n{text}\n'
+    text = f'schema_version = 3\ngenome_assembly = "GRCh38"\n[[variants]]\n{text}\n'
     assert_invalid(tmp_path, text, "variant 1", "missing field", repr(field))
 
 

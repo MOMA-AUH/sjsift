@@ -6,10 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from sjsift.catalog import ReferenceJunction, VariantDefinition
+from sjsift.catalog import JunctionAnnotation, ReferenceJunction, VariantDefinition
 from sjsift.html_report import write_html
 from sjsift.quantify import ReferenceJunctionSupport, VariantSupport
 from sjsift import report
+
+
+ANNOTATION = JunctionAnnotation("NM_synthetic.1", "1", "2", "Synthetic test annotation")
 
 
 class Document(HTMLParser):
@@ -36,10 +39,10 @@ class Document(HTMLParser):
 
 def support(identifier="skip", unique=18, multi=2, reference_counts=((90, 5), (84, 4))):
     references = (
-        ReferenceJunction("same_donor", "chr7", 10, 20, "+"),
-        ReferenceJunction("same_acceptor", "chr7", 21, 30, "+"),
+        ReferenceJunction("same_donor", "chr7", 10, 20, "+", annotation=ANNOTATION),
+        ReferenceJunction("same_acceptor", "chr7", 21, 30, "+", annotation=ANNOTATION),
     )[:len(reference_counts)]
-    variant = VariantDefinition(identifier, "chr7", 10, 30, "+", references)
+    variant = VariantDefinition(identifier, "chr7", 10, 30, "+", references, annotation=ANNOTATION)
     return VariantSupport(variant, unique, multi, tuple(
         ReferenceJunctionSupport(ref, u, m)
         for ref, (u, m) in zip(references, reference_counts)
@@ -82,8 +85,9 @@ def test_evidence_descriptions_distinguish_zero_multimapping_and_unconfigured_co
 
 def test_arbitrary_roles_and_catalog_text_cannot_inject_html_or_javascript():
     hostile = '</script><img src=x onerror="alert(1)"> & $script'
-    ref = ReferenceJunction(hostile, hostile, 10, 20, "-")
-    variant = VariantDefinition(hostile, hostile, 10, 30, "-", (ref,))
+    annotation = JunctionAnnotation(hostile, hostile, hostile, hostile)
+    ref = ReferenceJunction(hostile, hostile, 10, 20, "-", annotation=annotation)
+    variant = VariantDefinition(hostile, hostile, 10, 30, "-", (ref,), annotation=annotation)
     result = VariantSupport(variant, 3, 1, (ReferenceJunctionSupport(ref, 9, 2),))
     stream = io.StringIO()
     write_html(hostile, (result,), stream, junctions_name=hostile, definitions_name=hostile)
@@ -112,8 +116,8 @@ def test_overview_ranks_unique_support_then_total_with_catalog_order_as_tiebreak
 
 
 def test_role_columns_include_custom_roles_and_distinguish_missing_from_zero():
-    ref = ReferenceJunction("terminal comparator", "chr10", 10, 20, "-")
-    v = VariantDefinition("terminal", "chr10", 15, 20, "-", (ref,))
+    ref = ReferenceJunction("terminal comparator", "chr10", 10, 20, "-", annotation=ANNOTATION)
+    v = VariantDefinition("terminal", "chr10", 15, 20, "-", (ref,), annotation=ANNOTATION)
     rows = (support(), VariantSupport(v, 0, 0, (ReferenceJunctionSupport(ref, 0, 0),)))
     html = render(rows)
     assert "Reference · terminal comparator" in html

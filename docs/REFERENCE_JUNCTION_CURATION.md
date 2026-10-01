@@ -218,3 +218,16 @@ cmp exons.tsv docs/curation/gencode-v49-exons.tsv
 This is an offline curation helper, not a runtime download or automatic catalog
 update. Re-curation against a different release requires reviewing the transcript
 choices, exon evidence, and reference junctions together.
+
+## Annotated schema 3 (2026-10-01)
+
+The current catalog promotes the selected RefSeq accession, donor/acceptor
+labels, and annotation provenance to required fields on every defining and
+reference junction. All 17 defining and 32 reference entries retain their
+coordinates, strand, identifiers, roles, and order. Labels are tested against
+the pinned exon evidence above. ARv7 explicitly uses `3→CE3`; FGFR2 uses the
+paper's `E17→E18-C3` and comparator `E17→E18-C1`, with annotation ranks 17/18
+recorded in provenance. Neither canonical accession is asserted to contain the
+alternative terminal exon; its full extent is not curated here. The two alternate
+EGFR accessions remain the local annotation basis. Schematics show boundaries
+only and do not invent a full transcript.
