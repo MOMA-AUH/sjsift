@@ -101,3 +101,20 @@ def test_minimap_relative_transcript_strand_has_explicit_program_provenance(tmp_
     group = extract_evidence(CATALOG, bam(tmp_path, [record(flag=16 if reverse else 0, tags={"ts": value})], header=header)).groups["v0-j0"]
     if status == "opposite": assert group.exclusions[status] == 1
     else: assert group.records[0].strand_status == status
+
+
+@pytest.mark.parametrize("pg,status", [(None, "unverified"), ("sort", "agreeing"), ("other", "unverified"), ("missing", "unverified")])
+def test_record_program_selects_ancestry_in_ambiguous_merged_header(tmp_path, pg, status):
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}],
+              "PG": [{"ID": "align", "PN": "STAR"}, {"ID": "sort", "PN": "samtools", "PP": "align"}, {"ID": "other", "PN": "other-aligner"}]}
+    tags = {"jM": [1]}
+    if pg is not None: tags["PG"] = pg
+    group = extract_evidence(CATALOG, bam(tmp_path, [record(tags=tags)], header=header)).groups["v0-j0"]
+    assert group.records[0].strand_status == status
+
+
+def test_shared_star_ancestry_is_usable_without_record_program(tmp_path):
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}],
+              "PG": [{"ID": "align", "PN": "STAR"}, {"ID": "sort", "PN": "samtools", "PP": "align"}]}
+    group = extract_evidence(CATALOG, bam(tmp_path, [record(tags={"jM": [1]})], header=header)).groups["v0-j0"]
+    assert group.records[0].strand_status == "agreeing"
