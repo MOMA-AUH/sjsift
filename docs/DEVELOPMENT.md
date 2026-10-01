@@ -241,6 +241,10 @@ The publish job installs `conda-build` and `anaconda-client`, builds the recipe,
 
 Store `ANACONDA_API_TOKEN` as a GitHub Actions secret available only to the publish job. The token, repository ruleset, required-check selection, merge-method settings, and automatic branch deletion are external GitHub/Anaconda configuration and cannot be committed to the repository.
 
-The `conda` CI job validates dependency resolution and real installed BAM report
+The `conda` CI job validates dependency resolution and real installed BAM/CRAM report
 generation. The wheel smoke check installs dependencies and runs the same fixture.
 The Python 3.11 job explicitly exercises the minimum supported pysam version.
+CRAM tests use synthetic local indexed FASTA, including a loopback HTTP listener
+that detects actual HTSlib reference requests. The listener's positive control
+makes a local request; sjsift must make none. No external reference service is
+used by this test.

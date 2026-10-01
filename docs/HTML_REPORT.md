@@ -111,6 +111,11 @@ loss.
 Supply `--alignments sample.bam` to embed selected structural evidence. Read
 [alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
 counts, sampling, input checks and the raw identifiers retained when sharing.
+For CRAM, use `--alignments sample.cram --reference genome.fa` with local existing
+alignment and FASTA indexes. The explicit FASTA is always required and remote
+reference retrieval is disabled. FASTA provenance contains basenames and available
+compatibility assurance, never reference bases or absolute paths. The generated
+report opens independently of both source CRAM and FASTA.
 
 Every configured reference has an immediate read preview and retains its own
 annotation and counts. **Also matches** identifies shared physical records across

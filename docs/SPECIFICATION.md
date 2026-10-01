@@ -24,8 +24,9 @@ Exactly two inputs are required:
 1. One STAR `SJ.out.tab` file for one sample.
 2. One TOML variant-definition catalog.
 
-Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Optional local indexed BAM may provide structural HTML evidence as described in
-[alignment evidence](ALIGNMENT_EVIDENCE.md). Standard input, CRAM, SAM, other
+Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Optional local indexed BAM or CRAM may provide structural HTML evidence as described in
+[alignment evidence](ALIGNMENT_EVIDENCE.md). CRAM additionally requires an explicit
+local indexed FASTA via `--reference`. Standard input, SAM, other
 compression formats, directories, URLs, and multiple-sample input are not supported.
 
 ### STAR junction file
@@ -202,6 +203,9 @@ sjsift --version
 - Diagnostics and warnings are written to standard error; standard output contains only the result table.
 - `--context-output PATH` adds a reference-junction TSV.
 - `--html-output PATH` adds an offline HTML report independently of `--context-output`.
+- `--alignments PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
+- `--alignment-index PATH` optionally selects its local index; `--alignment-limit N` sets a positive per-junction/per-class sample cap (default 200).
+- `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignments`.
 - Both optional reports work with either a main TSV file or main TSV on stdout.
 - All output paths must differ and must not already exist; parent directories must exist.
 - Inputs cannot be provided via standard input.
@@ -311,7 +315,7 @@ not clinical validation samples.
 
 The application does not implement:
 
-- CRAM or SAM processing, replacement of STAR quantification with alignment counts;
+- SAM processing, remote reference retrieval, replacement of STAR quantification with alignment counts;
 - novel splice-event discovery or multiple defining junctions per variant;
 - standard-input ingestion or multiple samples per invocation;
 - exon-coordinate conversion, liftover, chromosome aliases, or fuzzy matching;
@@ -324,3 +328,6 @@ The application does not implement:
 The alignment-evidence guide is normative for alignment input, classification,
 sampling, provenance and failure handling. `tests/test_alignment_evidence.py` and
 `tests/test_alignment_cli.py` exercise its module and CLI/report boundaries.
+`tests/test_cram_evidence.py` covers real CRAM/reference input, BAM equivalence,
+corruption and offline resolution with a working HTTP detector. Installed wheel
+and conda smoke checks generate both BAM and CRAM reports.

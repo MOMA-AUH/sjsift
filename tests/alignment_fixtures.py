@@ -66,3 +66,22 @@ annotation_source = "Synthetic fixture"
     sj = tmp_path / "sample.SJ.out.tab"
     sj.write_text("chr1\t101\t200\t1\t1\t0\t8\t2\t20\n")
     return ["--junctions", str(sj), "--definitions", str(catalog)]
+
+
+def fasta(tmp_path, sequence="A" * 2000, name="reference.fa", contig="chr1"):
+    path = tmp_path / name
+    path.write_text(f">{contig}\n{sequence}\n")
+    pysam.faidx(str(path))
+    return path
+
+
+def cram(tmp_path, bam_path, reference_path, options=None):
+    path = tmp_path / "reads.cram"
+    with pysam.AlignmentFile(str(bam_path), "rb") as source:
+        with pysam.AlignmentFile(str(path), "wc", header=source.header,
+                                 reference_filename=str(reference_path),
+                                 format_options=options) as output:
+            for read in source:
+                output.write(read)
+    pysam.index(str(path))
+    return path

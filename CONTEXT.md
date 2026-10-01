@@ -98,3 +98,10 @@ One physical alignment record supporting several selected junction groups. It
 has the same record ID in each and an Also matches indication. This is distinct
 from related mates sharing a read name, and does not imply independent molecules.
 _Avoid_: Deduplicated template, independent reference molecules
+
+**CRAM reference FASTA**:
+The explicit local reference sequence used to validate and decode CRAM
+alignments, distinct from selected reference junctions used as local splice
+comparators. Available sequence checks establish CRAM/FASTA compatibility,
+not the sample identity or assembly of the anonymous STAR input.
+_Avoid_: Reference junction file, automatically downloaded genome, verified STAR assembly
