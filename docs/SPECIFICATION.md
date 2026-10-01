@@ -236,7 +236,7 @@ variant_id	genome_assembly	context_role	chromosome	intron_start	intron_end	stran
 
 `variant_id` identifies the owning variant, `context_role` is the declared role,
 and the coordinates and counts describe that reference junction. A catalog
-without references produces a header-only context TSV. Schema 1 remains usable
+without references produces a header-only context TSV. Only schema 3 is accepted
 with either optional report.
 
 ### HTML report
@@ -316,5 +316,5 @@ The application does not implement:
 - scores, thresholds, clinical calls, or variant/reference fractions;
 - inferred sample identity or independent verification of the input assembly;
 - automatic catalog discovery, annotation download, or catalog updates;
-- transcript-aware splice diagrams or structured transcript/exon metadata;
+- whole-transcript models or complete exon extents;
 - workflow-engine integration, plugin interfaces, or a public Python library API.

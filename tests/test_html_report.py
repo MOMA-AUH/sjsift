@@ -85,8 +85,9 @@ def test_evidence_descriptions_distinguish_zero_multimapping_and_unconfigured_co
 
 def test_arbitrary_roles_and_catalog_text_cannot_inject_html_or_javascript():
     hostile = '</script><img src=x onerror="alert(1)"> & $script'
-    ref = ReferenceJunction(hostile, hostile, 10, 20, "-", annotation=ANNOTATION)
-    variant = VariantDefinition(hostile, hostile, 10, 30, "-", (ref,), annotation=ANNOTATION)
+    annotation = JunctionAnnotation(hostile, hostile, hostile, hostile)
+    ref = ReferenceJunction(hostile, hostile, 10, 20, "-", annotation=annotation)
+    variant = VariantDefinition(hostile, hostile, 10, 30, "-", (ref,), annotation=annotation)
     result = VariantSupport(variant, 3, 1, (ReferenceJunctionSupport(ref, 9, 2),))
     stream = io.StringIO()
     write_html(hostile, (result,), stream, junctions_name=hostile, definitions_name=hostile)
