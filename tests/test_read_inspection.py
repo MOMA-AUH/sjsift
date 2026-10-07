@@ -1,5 +1,6 @@
 """Structural inspection through real alignments and the public report boundary."""
 from dataclasses import replace
+from html.parser import HTMLParser
 import io
 
 import pytest
@@ -15,6 +16,62 @@ def render(catalog, evidence):
     write_html("synthetic", tuple(VariantSupport(v, 8, 2) for v in catalog.variants),
                output, alignment_evidence=evidence)
     return output.getvalue()
+
+
+class PileupParser(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.rows = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = attrs.get("class", "").split()
+        if tag == "li" and "read-row" in classes:
+            self.rows.append([])
+        if "cigar-op" in classes:
+            style = dict(item.split(":") for item in attrs["style"].split(";"))
+            self.rows[-1].append((attrs["title"], float(style["left"].strip("%")),
+                                 float(style["width"].strip("%"))))
+
+
+def test_pileup_aligns_shared_coordinates_and_preserves_relative_anchor_lengths(tmp_path):
+    catalog = replace(CATALOG, variants=(replace(CATALOG.variants[0], intron_end=1200),))
+    path = bam(tmp_path, [
+        record("early", start=60, cigar="4S40M1100N20M3S", tags={"NH": 1}),
+        record("late", start=80, cigar="10M2I10M1100N40M", tags={"NH": 2}),
+    ])
+    html = render(catalog, extract_evidence(catalog, path))
+    early, late = PileupParser(html).rows
+    left_anchor = early[1]
+    late_anchor = late[0]
+    assert left_anchor[1] < late_anchor[1]
+    assert left_anchor[2] == pytest.approx(late_anchor[2] * 4, abs=0.00001)
+    # The same junction and downstream genomic start occupy identical positions.
+    assert early[2][1:] == late[3][1:]
+    assert early[3][1] == late[4][1]
+    assert early[3][2] * 2 == pytest.approx(late[4][2], abs=0.00001)
+    # Clips/insertions mark boundaries without consuming reference width.
+    assert early[0][2] == late[1][2] == early[-1][2] == 0
+    assert 'aria-label="Shared genomic coordinate ruler"' in html
+    assert 'Compressed gap: 101–1,200 (1,100 nt)' in html
+    # Names and metadata are inside a closed native disclosure, below its summary.
+    assert html.index('</summary><div class="read-metadata">') < html.index('<strong>early</strong>')
+    assert '<details class="read-inspection" open' not in html
+
+
+def test_pileup_never_compresses_across_another_embedded_reads_aligned_bases(tmp_path):
+    catalog = replace(CATALOG, variants=(replace(CATALOG.variants[0], intron_start=501, intron_end=1600),))
+    path = bam(tmp_path, [
+        record("extra-splice", start=100, cigar="20M350N30M1100N20M"),
+        record("continuous", start=100, cigar="400M1100N40M"),
+    ])
+    html = render(catalog, extract_evidence(catalog, path))
+    split, continuous = PileupParser(html).rows
+    assert split[1][2] == pytest.approx(continuous[0][2] * 350 / 400, abs=0.00001)
+    assert split[3][1:] == continuous[1][1:]
+    assert 'Compressed gap: 121–470' not in html
+    assert 'Compressed gap: 501–1,600' in html
 
 
 @pytest.mark.parametrize("cigar,start,anchors", [

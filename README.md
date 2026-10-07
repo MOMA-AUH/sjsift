@@ -105,7 +105,10 @@ The HTML file needs no server, internet connection, or external assets. See the
 [HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
 HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
-Add `--alignments sample.bam` for structural read previews. The BAM must be local,
+Add `--alignments sample.bam` for one combined read pileup per variant. Reads are
+blue for variant support, teal for same-donor support, and purple for same-acceptor
+support; multimapping reads are faded. Labeled junction guides share the genomic
+ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
 index, and `--alignment-limit N` caps each junction/mapping-class sample (default
 200). See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion, strand,

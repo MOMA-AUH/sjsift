@@ -117,23 +117,36 @@ reference retrieval is disabled. FASTA provenance contains basenames and availab
 compatibility assurance, never reference bases or absolute paths. The generated
 report opens independently of both source CRAM and FASTA.
 
-Every configured reference has an immediate read preview and retains its own
-annotation and counts. **Also matches** identifies shared physical records across
+Defining and configured reference junctions share one pileup per variant, with
+colored junction guides labeled by exon connection and STAR support. Variant reads
+are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
+roles are gray. Multimapping reads are faded; unknown multiplicity has a dotted
+outline. A dashed lower edge marks unverified transcript strand. Shared reads
+appear once with striped blocks and a **Supports** list. Each junction retains its
+own annotation and counts under **Junction annotations and alignment counts**.
+**Also matches** identifies shared physical records across
 qualifying junction groups; record IDs are stable within the report and identical
 input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
 
-Each junction initially shows up to ten alignment rows. **Expand reads** pages
-through the embedded evidence, 50 rows at a time; **Collapse reads** restores the
-preview. **All / Unique only** changes the displayed subset, leaving full counts
+The initial figure shows up to ten alignment rows per support group. **Expand reads**
+pages through the embedded evidence, up to 50 rows per group at a time;
+**Collapse reads** restores the preview. Shared reads belong to the first matching
+group in catalog order for pagination. **All / Unique only** and **Support** change
+the displayed subset, leaving full counts
 and STAR support unchanged. Unique only means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
 filter-empty state. Limits apply independently to every junction and mapping
 class, and sampled evidence is labeled.
 
-Geometry distinguishes aligned blocks, splice gaps, deletions, insertions and
-clipping. It uses a labeled nonuniform scale and `//` breaks on long gaps, with
-exact lengths and coordinate tooltips. **Read details** includes identity, flags,
+Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
+ruler. Matching positions align vertically; thin splice lines connect aligned
+blocks. Gaps longer than 80 nt without any embedded aligned bases are compressed
+at shared `//` marks. The scale remains fixed when filtering or paging.
+Deletions, insertions and clipping have distinct marks with exact lengths and
+coordinate tooltips. References on other chromosomes have separate labeled axes
+within the figure. Click a read, or focus it and press Enter, to open
+**Read details**, which includes identity, flags,
 strand sources and the explicitly defined genomic left/right aligned anchors;
 these are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,

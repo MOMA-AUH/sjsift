@@ -1,5 +1,6 @@
 """Reference groups are independent observations, including shared physical records."""
 from dataclasses import replace
+from html.parser import HTMLParser
 import io
 
 from alignment_fixtures import ANNOTATION, CATALOG, bam, record
@@ -46,7 +47,10 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
     html = render()
     assert html == render()
     assert html.count("Eligible: 1 · Embedded: 1") == 2
-    assert "Also matches: skip · Defining junction" in html
+    assert html.count('<li class="read-row') == 1
+    assert 'data-support="0 1"' in html
+    assert 'repeating-linear-gradient(135deg,#3159ad' in html
+    assert "Supports: Variant; &lt;/script&gt;" in html
     assert "Also matches: skip · &lt;/script&gt;" in html
     assert hostile not in html and '<img' not in html
     assert "Alignment evidence not requested" not in html
@@ -105,3 +109,72 @@ annotation_source = "Synthetic comparator"
     html = (tmp_path / "report.html").read_text()
     assert 'id="reads-v0-j1"' in html and "Also matches: skip · custom comparator" in html
     assert "Eligible: 1 · Embedded: 1" in html
+
+
+class PileupRows(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.rows = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "li" and "read-row" in attrs.get("class", "").split():
+            self.rows.append(attrs)
+
+
+def combined_report(catalog, evidence):
+    stream = io.StringIO()
+    write_html("synthetic", tuple(
+        VariantSupport(variant, 8, 2, tuple(ReferenceJunctionSupport(ref, 20, 3)
+                                          for ref in variant.reference_junctions))
+        for variant in catalog.variants
+    ), stream, alignment_evidence=evidence)
+    return stream.getvalue()
+
+
+def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_path):
+    donor = reference("same_donor", 101, 200)
+    acceptor = reference("same_acceptor", 201, 300)
+    variant = replace(CATALOG.variants[0], intron_end=300, reference_junctions=(donor, acceptor))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M", tags={"NH": 1})]
+               + [record(f"donor-{i}", tags={"NH": 2}) for i in range(60)]
+               + [record("acceptor", start=180)])
+    html = combined_report(catalog, extract_evidence(catalog, path))
+    rows = PileupRows(html).rows
+    assert html.count('class="alignment-group"') == 1
+    assert html.count('aria-label="Shared genomic coordinate ruler"') == 1
+    assert len(rows) == 62
+    assert len([row for row in rows if 'hidden' not in row]) == 12
+    assert 'Currently shown: 12' in html
+    variant_rows = [row for row in rows if row['data-support'] == '0']
+    donor_rows = [row for row in rows if row['data-support'] == '1']
+    acceptor_rows = [row for row in rows if row['data-support'] == '2']
+    assert len(variant_rows) == len(acceptor_rows) == 1 and len(donor_rows) == 60
+    assert '--read-color:#3159ad' in variant_rows[0]['style']
+    assert '--read-color:#168375' in donor_rows[0]['style']
+    assert '--read-color:#9950a5' in acceptor_rows[0]['style']
+    assert variant_rows[0]['data-mapping'] == 'unique'
+    assert donor_rows[0]['data-mapping'] == 'multimapping'
+    assert acceptor_rows[0]['data-mapping'] == 'unknown'
+    assert 'Variant · exon 1 → 3' in html
+    assert 'Same donor · exon 1 → 3' in html
+    assert 'Same acceptor · exon 1 → 3' in html
+    assert '8 unique + 2 multi (STAR)' in html
+
+
+def test_combined_figure_keeps_other_contigs_separate_and_empty_guides_visible(tmp_path):
+    ref = reference(chromosome="chr2", strand="-")
+    variant = replace(CATALOG.variants[0], reference_junctions=(ref,))
+    catalog = replace(CATALOG, variants=(variant,))
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}, {"SN": "chr2", "LN": 2000}]}
+    path = bam(tmp_path, [record("minus", start=200, contig=1, tags={"NH": 1, "TS": "-"})], header=header)
+    html = combined_report(catalog, extract_evidence(catalog, path))
+    assert html.count('class="alignment-group"') == 1
+    assert html.count('class="pileup-track"') == 2
+    assert 'chr1 · genomic coordinates →' in html and 'chr2 · genomic coordinates →' in html
+    assert html.count('<li class="read-row') == 1
+    assert 'data-support="1"' in html
+    assert 'No eligible alignment records (0)' in html
+    assert '>←</span>' in html

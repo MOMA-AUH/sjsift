@@ -1,6 +1,7 @@
 """Render a self-contained, offline overview and per-variant evidence report."""
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from html import escape
 from importlib.resources import files
 from string import Template
@@ -125,39 +126,109 @@ def _schematic(label: str, support: VariantSupport | ReferenceJunctionSupport) -
     )
 
 
-def _read_geometry(record: AlignmentRecord) -> str:
+@dataclass(frozen=True)
+class _PileupScale:
+    """One coordinate transform for all embedded records on a figure's chromosome."""
+
+    start: int
+    end: int
+    breaks: tuple[tuple[int, int], ...]
+
+    @classmethod
+    def for_records(cls, records: tuple[AlignmentRecord, ...], boundaries: tuple[int, ...] = ()):
+        start = min([record.start for record in records] + list(boundaries))
+        end = max([record.end for record in records] + list(boundaries))
+        # Never compress a region containing an aligned base in ANY record.
+        intervals = sorted([(op.start, op.end) for record in records
+                            for op in record.geometry if op.op not in "ND"]
+                           + [(boundary, boundary) for boundary in boundaries])
+        cursor, breaks = start, []
+        for left, right in [*intervals, (end, end)]:
+            if left - cursor > 80:
+                breaks.append((cursor, left))
+            cursor = max(cursor, right)
+        return cls(start, end, tuple(breaks))
+
+    def project(self, coordinate: float) -> float:
+        return coordinate - self.start - sum(
+            max(0, min(coordinate, right) - left) * (1 - 24 / (right - left))
+            for left, right in self.breaks
+        )
+
+    def percent(self, coordinate: float) -> float:
+        # Leave room at both edges for clips and insertions at interbase positions.
+        return 1 + 98 * self.project(coordinate) / max(1, self.project(self.end))
+
+    def ruler(self, chromosome: str) -> str:
+        ticks = []
+        width = self.project(self.end)
+        for index in range(5):
+            projected = width * index / 4
+            coordinate = self.start + projected
+            for left, right in self.breaks:
+                offset = max(0, min(24, projected - self.project(left)))
+                coordinate += offset * ((right - left) / 24 - 1)
+            base = min(self.end, int(coordinate) + 1)
+            ticks.append(f'<span class="pileup-tick tick-{index}" style="left:{1 + 98 * index / 4}%">{base:,}</span>')
+        breaks = "".join(
+            f'<span class="gap-break" style="left:{self.percent((left + right) / 2):.6f}%" '
+            f'title="Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)">//</span>'
+            for left, right in self.breaks
+        )
+        return (f'<div class="pileup-chromosome">{escape(chromosome)} · genomic coordinates →</div>'
+                '<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
+                + "".join(ticks) + breaks + '</div>')
+
+
+def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -> str:
     operations = []
     for operation in record.geometry:
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
-        broken = operation.op in "ND" and operation.length > 80
+        left = scale.percent(operation.start)
+        width = scale.percent(operation.end) - left
+        selected = next((color for support, color in junctions
+                         if operation.op == "N" and operation.start == support.definition.intron_start - 1
+                         and operation.end == support.definition.intron_end), None)
         operations.append(
-            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}" '
-            f'style="flex-basis:{max(12, min(operation.length, 80))}px" title="{description}">'
-            f'{operation.op}' + ('<span class="gap-break" aria-label="compressed gap">//</span>' if broken else '')
-            + f'<small>{operation.length} nt</small></span>'
+            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}" '
+            f'style="left:{left:.6f}%;width:{width:.6f}%'
+            + (f';background:{selected}' if selected else '') + f'" title="{description}"></span>'
         )
-    return '<div class="read-geometry" aria-label="CIGAR geometry">' + "".join(operations) + '</div>'
+    return '<span class="read-geometry" aria-hidden="true">' + "".join(operations) + '</span>'
 
 
-def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, ...]) -> str:
+def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, ...], scale: _PileupScale,
+              memberships, bucket: int, junctions) -> str:
     flags = ", ".join(record.flags) or "primary; no additional flags"
     strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
+    colors = list(dict.fromkeys(color for _, _, _, color in memberships))
+    fill = colors[0] if len(colors) == 1 else "repeating-linear-gradient(135deg," + ",".join(
+        f"{color} {index * 4}px {(index + 1) * 4}px" for index, color in enumerate(colors)
+    ) + ")"
+    support_labels = "; ".join(label for _, label, _, _ in memberships)
     return (
         f'<li class="read-row {record.strand_status}" data-mapping="{record.mapping_class}"'
+        f' data-bucket="{bucket}" data-support="{" ".join(str(index) for index, _, _, _ in memberships)}"'
+        f' style="--read-color:{colors[0]};--read-fill:{fill}"'
         f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
+        '<details class="read-inspection"><summary class="read-hit" '
+        f'aria-label="Inspect {escape(record.read_name, quote=True)}; {escape(support_labels, quote=True)}; {record.mapping_class}; {strand}">'
+        + _read_geometry(record, scale, junctions) + '</summary>'
+        '<div class="read-metadata">'
         f'<div class="read-label"><strong>{escape(record.read_name)}</strong> · {record.mate} · '
         f'{record.mapping_class} · {strand}</div>'
+        f'<p>Supports: {escape(support_labels)}</p>'
         + (f'<p class="shared-membership">Also matches: {escape("; ".join(also_matches))}</p>' if also_matches else "")
-        + _read_geometry(record)
-        + '<details class="read-metadata"><summary>Read details</summary>'
+        + '<strong>Read details</strong>'
         f'<p>Record ID: {record.record_id} · Read group: {escape(record.read_group or "not supplied")} · '
         f'{escape(record.chromosome)}:{record.start + 1}–{record.end}</p>'
         f'<p>CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"} · Alignment orientation: {record.orientation}</p>'
         f'<p>Flags: {escape(flags)} ({record.flag}) · Transcript {strand}</p>'
         f'<p>Aligned anchors: genomic left {record.anchors[0]} nt; genomic right {record.anchors[1]} nt</p>'
+        f'<p>Anchor and transcript-strand details refer to {escape(memberships[0][1])}.</p>'
         f'<p>Strand sources: {escape("; ".join(record.strand_evidence) or "No usable transcript-strand evidence")}</p>'
-        '</details></li>'
+        '</div></details></li>'
     )
 
 
@@ -172,10 +243,9 @@ def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
         for kind in MAPPING_CLASSES
     )
     return (
-        f'<section class="alignment-group" id="reads-{key}">'
+        f'<section class="alignment-count-group" id="reads-{key}">'
         '<h4>Alignment records</h4>'
-        f'<p>Eligible: {eligible} · Embedded: {len(group.records)} · '
-        f'<span class="shown-count">Currently shown: {min(10, len(group.records))}</span></p>'
+        f'<p>Eligible: {eligible} · Embedded: {len(group.records)}</p>'
         '<table class="alignment-counts"><caption>Alignment counts by mapping class</caption>'
         '<thead><tr><th>Class</th><th>Eligible</th><th>Embedded</th></tr></thead>'
         f'<tbody>{counts}</tbody></table>'
@@ -185,26 +255,117 @@ def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
         + (f'<p class="sampling-note">Sampled evidence: {len(group.records)} of {eligible} eligible records embedded. '
            f'Limit: {evidence.limit} records per junction per mapping class.</p>' if eligible > len(group.records)
            else '<p>All eligible records are embedded.</p>')
-        + '<p class="scale-note">Nonuniform scale: aligned blocks M/= /X, dotted splice gaps N, red deletions D, '
-        'purple insertions I, gold soft/hard clips S/H; P is padding. Gaps longer than 80 nt have // break marks. '
-        'Labels give exact lengths; hover for 1-based inclusive genomic coordinates or interbase positions. '
-        'Geometry runs in increasing genomic coordinates regardless of strand.</p>'
-        '<p class="scale-note">Aligned anchors in Read details count contiguous M, = and X bases immediately '
-        'abutting this junction on the genomic left and right. Any other operation ends an anchor. '
-        'These are not STAR maximum overhang; no anchor or MAPQ threshold is applied.</p>'
-        f'<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Read filter for {escape(group.label, quote=True)}">'
+        + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
+        + '</section>'
+    )
+
+
+def _junction_guide(label, support, color, scale):
+    junction = support.definition
+    annotation = junction.annotation
+    left, right = scale.percent(junction.intron_start - 1), scale.percent(junction.intron_end)
+    exons = (annotation.donor_exon, annotation.acceptor_exon)
+    if junction.strand == "-":
+        exons = exons[::-1]
+    return (
+        f'<div class="junction-guide" style="--read-color:{color}">'
+        f'<div class="junction-guide-label"><span class="support-swatch" style="background:{color}"></span>'
+        f'{escape(label)} · exon {escape(annotation.donor_exon)} → {escape(annotation.acceptor_exon)}'
+        f' · {support.unique} unique + {support.multimapping} multi (STAR)</div>'
+        '<div class="junction-guide-axis">'
+        f'<span class="junction-guide-line" style="left:{left:.6f}%;width:{right - left:.6f}%" '
+        f'title="{escape(junction.chromosome, quote=True)}:{junction.intron_start}–{junction.intron_end} ({junction.strand})">'
+        f'{"→" if junction.strand == "+" else "←"}</span>'
+        f'<span class="junction-endpoint left" style="left:{left:.6f}%">{escape(exons[0])}</span>'
+        f'<span class="junction-endpoint right" style="left:{right:.6f}%">{escape(exons[1])}</span>'
+        '</div></div>'
+    )
+
+
+def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvidence | None) -> str:
+    if evidence is None:
+        return '<p class="alignment-unavailable">Alignment evidence not requested.</p>'
+    # Keys and colors are generated here; catalog text is never used in CSS or selectors.
+    junctions = [("Variant", result, "#3159ad"), *(
+        (_role_label(support.definition.role), support,
+         {"same_donor": "#168375", "same_acceptor": "#9950a5"}.get(support.definition.role, "#677481"))
+        for support in result.reference_junctions
+    )]
+    keys = [f"v{index}-j{position}" for position in range(len(junctions))]
+    retained = {}
+    for position, key in enumerate(keys):
+        for record in evidence.groups[key].records:
+            retained.setdefault(record.record_id, (record, position))
+    buckets = {}
+    for record, owner in retained.values():
+        members = [(position, label, support, color) for position, (label, support, color) in enumerate(junctions)
+                   if keys[position] in record.matches]
+        bucket = min(position for position, _, _, _ in members)
+        # Keep the metadata's extraction junction explicit even if another group's
+        # independent sample omitted this shared physical record.
+        members.sort(key=lambda member: (member[0] != owner, member[0]))
+        buckets.setdefault(bucket, []).append((record, members, owner))
+    entries = []
+    for bucket, rows in sorted(buckets.items()):
+        rows.sort(key=lambda item: (item[0].chromosome, item[0].start, item[0].end, item[0].record_id))
+        entries.extend((record, members, owner, bucket, position)
+                       for position, (record, members, owner) in enumerate(rows))
+    tracks = []
+    chromosomes = list(dict.fromkeys(support.definition.chromosome for _, support, _ in junctions))
+    for chromosome in chromosomes:
+        local_junctions = [(label, support, color) for label, support, color in junctions
+                           if support.definition.chromosome == chromosome]
+        local_entries = [entry for entry in entries if entry[0].chromosome == chromosome]
+        boundaries = tuple(coordinate for _, support, _ in local_junctions
+                           for coordinate in (support.definition.intron_start - 1, support.definition.intron_end))
+        scale = _PileupScale.for_records(tuple(entry[0] for entry in local_entries), boundaries)
+        tracks.append('<div class="pileup-track">' + scale.ruler(chromosome)
+                      + "".join(_junction_guide(label, support, color, scale)
+                                for label, support, color in local_junctions)
+                      + '<ol class="read-rows">' + "".join(
+                          _read_row(record, position,
+                                    tuple(evidence.groups[match].label for match in record.matches if match != keys[owner]),
+                                    scale, members, bucket,
+                                    tuple((support, color) for _, _, support, color in members))
+                          for record, members, owner, bucket, position in local_entries
+                      ) + '</ol></div>')
+    legend = "".join(f'<span><i class="support-swatch" style="background:{color}"></i>{escape(label)}</span>'
+                     for label, _, color in junctions)
+    options = "".join(f'<option value="{position}">{escape(label)}</option>'
+                      for position, (label, _, _) in enumerate(junctions))
+    preview = sum(min(10, len(rows)) for rows in buckets.values())
+    sampled = any(sum(evidence.groups[key].eligible.values()) > len(evidence.groups[key].records) for key in keys)
+    return (
+        f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
+        f'<div class="support-legend">{legend}<span>Faded: multimapping</span>'
+        '<span>Dotted outline: multiplicity unknown</span><span>Dashed lower edge: strand unverified</span>'
+        '<span>Striped: multiple selected junctions</span></div>'
+        f'<p>{len(retained)} distinct embedded alignment records · <span class="shown-count">Currently shown: {preview}</span></p>'
+        + ('<p class="sampling-note">Sampled evidence: at least one junction exceeds its embedding limit. '
+           'See junction annotations and alignment counts below for per-junction totals.</p>' if sampled else '')
+        + '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
+        '<label>Support <select class="support-filter" aria-label="Junction support">'
+        f'<option value="all">All support</option>{options}</select></label>'
         '<button class="read-expand" type="button" aria-expanded="false">Expand reads</button>'
         '<button class="read-previous" type="button">Previous reads</button>'
         '<button class="read-next" type="button">Next reads</button>'
         '<span class="read-page" role="status" aria-live="polite"></span></div>'
         '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'
-        + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
-        + '<ol class="read-rows">' + "".join(
-            _read_row(row, position, tuple(evidence.groups[match].label for match in row.matches if match != key))
-            for position, row in enumerate(group.records)
-        )
-        + '</ol></section>'
+        + ('<p>No eligible alignment records (0).</p>' if not retained else '')
+        + '<div class="pileup-scroll">' + "".join(tracks) + '</div>'
+        '<p class="scale-note">Color identifies supported junctions. Each physical alignment appears once in this figure. '
+        'Counts on the guides are STAR support, separate from the displayed alignment sample. '
+        'Exon labels mark splice boundaries, not full exon extents. '
+        'Nonuniform scale: empty gaps longer than 80 nt are compressed at // marks on the shared ruler. '
+        'Click a read for details; hover over operations for exact lengths and coordinates.</p>'
+        '<details class="pileup-help"><summary>How to read the pileup</summary>'
+        '<p>Blocks are aligned bases; colored splice lines highlight selected junctions. '
+        'Red lines: deletions; purple marks: insertions; gold marks: soft/hard clips; gray marks: padding. '
+        'Read bases are not embedded. Different chromosomes use separate labeled axes within this figure.</p>'
+        '<p>Aligned anchors in Read details count contiguous M, = and X bases immediately '
+        'abutting the named junction on the genomic left and right. Any other operation ends an anchor. '
+        'These are not STAR maximum overhang; no anchor or MAPQ threshold is applied.</p></details></section>'
     )
 
 
@@ -216,7 +377,7 @@ def _alignment_provenance(evidence: AlignmentEvidence | None) -> str:
         '<aside class="alignment-provenance"><h2>Alignment evidence provenance</h2>'
         f'<dl class="provenance">{fields}</dl>'
         f'<p>Sampling limit: {evidence.limit} records per junction per mapping class. '
-        'All eligible records are counted; embedded samples are deterministic. Initial previews show up to 10 records per junction.</p>'
+        'All eligible records are counted; embedded samples are deterministic. Initial previews show up to 10 records per support group.</p>'
         '<p>STAR support is separate from alignment-record counts. Differences can reflect upstream STAR filtering, '
         'paired-template counting, alignment output choices, and this display policy. '
         'Records are not molecule or transcript counts.</p>'
@@ -253,12 +414,14 @@ def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | No
         '<p class="scale-note">Bars use one linear scale within this variant. '
         'Donor and acceptor roles follow transcript orientation on either strand.</p>'
         f'<div class="evidence"><strong>{escape(label)}</strong><p>{escape(explanation)}</p></div>'
+        + _combined_pileup(index, result, evidence)
+        + '<details class="junction-details"><summary>Junction annotations and alignment counts</summary>'
         + "".join(
             _schematic(name, support) + _alignment_group(
                 evidence, f"v{index}-j{position}",
             ) for position, (name, support) in enumerate(junctions)
         )
-        + '<a class="back-link" href="#overview">Back to all variants</a></article>'
+        + '</details><a class="back-link" href="#overview">Back to all variants</a></article>'
     )
 
 

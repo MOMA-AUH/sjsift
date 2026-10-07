@@ -12,9 +12,11 @@ sjsift --junctions sample.SJ.out.tab --definitions catalog.toml \
 `sample.bam.csi`, or `sample.csi`. `--alignment-limit N` is a positive integer,
 default 200, **per junction per mapping class**. Alignment options require
 `--alignments`, which requires `--html-output`. Indexes are never created by
-sjsift. Every defining and configured reference junction has its own immediate preview.
+sjsift. Defining and reference junctions share one pileup figure per variant.
 Custom roles, references on other contigs or strands, and shared references use
-the same inclusion rules. Each group can expand into pages of 50 embedded records.
+the same inclusion rules. Different chromosomes have separate labeled axes within
+the figure. Previews include up to ten records per support group; expansion shows
+up to 50 per group per page.
 
 ## CRAM and its explicit local FASTA
 
@@ -91,8 +93,10 @@ read name, read group and read-1/read-2 labels help recognize related records.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
-performed. A record matching several selected junctions appears in each
-qualifying group with the same stable record ID and an **Also matches** list.
+performed. A record matching several selected junctions retains membership in each
+qualifying group but appears only once per variant figure, identified by its stable
+record ID. Striped blocks and a **Supports** list show its local memberships;
+**Also matches** lists the other qualifying groups, including other variants.
 Membership indicates exact supporting groups even if independently sampled
 records are not retained in every group. Excluded opposite/conflicting groups
 are not listed as supporting membership. Reference observations and samples
@@ -103,28 +107,51 @@ sampling independently caps each junction/class subset, retaining all records
 below its cap. Extraction memory for retained records is bounded by those caps;
 it does not keep a set of every observed read. Caps limit records, not HTML bytes.
 Eligible, embedded and currently shown counts have separate labels, as do strand
-totals and exclusion reasons. The initial preview displays up to ten records.
+totals and exclusion reasons. Full per-junction counts are in **Junction annotations
+and alignment counts**. The figure counts distinct embedded physical records,
+not the sum of memberships. Its preview displays up to ten records per support
+group, sorted by support group, genomic start and end. A shared record is assigned
+to its first matching group in catalog order (variant first) for paging; its colors
+and support filter still reflect all local memberships.
 **All** is the initial filter. **Unique only** shows exactly NH=1 records,
 including eligible secondary, supplementary, duplicate and QC-flagged records.
-It excludes unknown multiplicity. Changing the filter resets to the first page;
-collapsing restores a ten-record preview. Paging and filtering change only the
+It excludes unknown multiplicity. The **Support** filter selects any matching
+membership, including shared reads. Changing either filter resets to the first page;
+collapsing restores the preview. Paging and filtering change only the
 currently shown count. Full eligible/embedded counts and strand totals always
 describe the entire group. Sampled groups state the per-class cap explicitly;
 the last page is labeled and its Next button disabled.
 
 ## Structural geometry and anchors
 
-One row displays the complete alignment CIGAR in increasing genomic coordinates,
-independent of alignment orientation and transcript strand. M, = and X are
-aligned blocks; dotted N is a splice gap; red D is a deletion; purple I is an
-insertion; gold S/H mark soft/hard clipping; gray P is padding. Operation labels
-give exact lengths, and tooltips retain 1-based inclusive reference coordinates
-or interbase positions for operations that consume no reference. The scale is
-nonuniform: widths are bounded for readability, and N/D gaps longer than 80 nt
-carry visible `//` breaks. No nucleotide sequence or mismatch bases are shown.
+Reads form a compact pileup beneath a shared genomic coordinate ruler and colored
+junction guides labeled with donor/acceptor exons and STAR support. Guides mark
+splice boundaries, not complete exon extents. Blue identifies variant support,
+teal same-donor support, purple same-acceptor support, and gray custom reference
+roles. Multimapping records are faded; unknown multiplicity has a dotted outline.
+Each row displays the complete alignment CIGAR in
+increasing genomic coordinates, independent of alignment orientation and
+transcript strand. Matching coordinates line up across all rows. M, = and X are
+aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
+marks are insertions; gold S/H mark soft/hard clipping; gray P is padding.
+Dashed lower block edges distinguish unverified transcript strand without replacing
+the support color. Colored splice lines highlight selected junctions. Hover over an
+operation for its exact length and 1-based inclusive coordinates or interbase
+position. Clips and insertions mark boundaries without consuming reference width.
 
-Read details give **genomic left/right aligned anchors** at this group's selected
-splice. Each is the sum of consecutive M, = and X operations immediately abutting
+The scale is nonuniform: gaps longer than 80 nt with no aligned bases in any
+embedded record are compressed, with `//` marks on the ruler. All other regions
+share one linear scale. Selected splice boundaries are preserved. The transform
+uses all embedded records across the variant's groups on that chromosome and stays
+fixed when filtering or paging. No nucleotide sequence or mismatch bases are
+shown. Click a read (or focus it and press Enter) to disclose its name and
+metadata. With JavaScript, opening a read closes the previous inspection in
+that figure. Native read inspection also works without JavaScript.
+
+Read details give **genomic left/right aligned anchors** at the explicitly named
+extraction junction. For a shared read, this is the first group in catalog order
+whose independent sample retained it; strand sources refer to that same group.
+Each anchor is the sum of consecutive M, = and X operations immediately abutting
 that N. Any I, D, N, S, H or P terminates the sum; a nonaligned immediate neighbor
 gives zero. Left/right do not swap on the minus strand. For example,
 `10M2I5=2D3X100N7M2I10M` has anchors 3 and 7 at its skip. These measurements
