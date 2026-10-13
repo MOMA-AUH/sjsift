@@ -89,7 +89,7 @@ Avoid generic `utils.py`, adapter hierarchies, plugin seams, or a separately sup
 Runtime dependency: `pysam>=0.24.0,<0.25` for indexed alignment access. Use
 `argparse`, `csv`, `dataclasses`, `pathlib`, and `tomllib` from the standard library
 for the rest. `alignment_evidence.py` owns input validation, regional retrieval,
-classification, full counts, deterministic sampling and structural serialization.
+classification, full counts and structural serialization of every eligible record.
 
 Development dependencies belong in a `dev` optional dependency group and initially comprise:
 

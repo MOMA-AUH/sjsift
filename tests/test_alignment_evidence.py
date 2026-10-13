@@ -69,18 +69,18 @@ def test_nh_alone_defines_mapping_class_even_with_low_mapq_and_flags(tmp_path, n
     assert row.mapq == 0
 
 
-def test_sampling_is_bounded_per_class_but_counts_and_identical_records_are_preserved(tmp_path):
-    reads = [record("identical", tags={"NH": 1}) for _ in range(7)]
-    reads += [record("multi", tags={"NH": 2}), record("unknown")]
+def test_all_mapping_classes_and_identical_records_are_retained_without_a_cap(tmp_path):
+    reads = [record("identical", tags={} if nh is None else {"NH": nh})
+             for nh in (1, 2, None) for _ in range(205)]
     path = bam(tmp_path, reads)
-    result = extract_evidence(CATALOG, path, limit=3)
-    assert result == extract_evidence(CATALOG, path, limit=3)
+    result = extract_evidence(CATALOG, path)
+    assert result == extract_evidence(CATALOG, path)
     group = result.groups["v0-j0"]
-    assert group.eligible == {"unique": 7, "multimapping": 1, "unknown": 1}
-    assert len(group.records) == 5
-    assert len({r.record_id for r in group.records}) == 5
-    assert sum(r.mapping_class == "unique" for r in group.records) == 3
-    assert len(extract_evidence(CATALOG, path, limit=10).groups["v0-j0"].records) == 9
+    assert group.eligible == {"unique": 205, "multimapping": 205, "unknown": 205}
+    assert len(group.records) == 615
+    assert len({r.record_id for r in group.records}) == 615
+    for kind, count in group.eligible.items():
+        assert sum(r.mapping_class == kind for r in group.records) == count
 
 
 def test_structural_operations_retain_coordinates_without_sequences(tmp_path):

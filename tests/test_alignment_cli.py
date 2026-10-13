@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-from alignment_fixtures import bam, cli_inputs, record
+from alignment_fixtures import bam, cli_inputs, cram, fasta, record
 
 
 def invoke(*args):
@@ -18,7 +18,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
                            record("raw-name", flag=129, tags={"NH": 2})])
     html = tmp_path / "report.html"
     original = invoke(*args)
-    result = invoke(*args, "--alignments", reads, "--html-output", html, "--alignment-limit", "1")
+    result = invoke(*args, "--alignments", reads, "--html-output", html)
     assert result.returncode == 0, result.stderr
     assert result.stdout == original.stdout
     text = html.read_text()
@@ -31,10 +31,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
 @pytest.mark.parametrize("options,message", [
     (["--alignments", "missing.bam"], "requires --html-output"),
     (["--alignment-index", "missing.bai"], "require --alignments"),
-    (["--alignment-limit", "1"], "require --alignments"),
     (["--reference", "reference.fa"], "require --alignments"),
-    (["--alignment-limit", "0"], "positive integer"),
-    (["--alignment-limit", "-1"], "positive integer"),
 ])
 def test_alignment_option_dependencies_fail_before_output(tmp_path, options, message):
     result = invoke(*cli_inputs(tmp_path), *options)
@@ -62,23 +59,31 @@ def test_invalid_alignment_inputs_stop_before_any_report_output(tmp_path, proble
     assert not any(p.exists() for p in outputs)
 
 
-def test_explicit_index_and_limits_preserve_tsv_and_deterministic_safe_html(tmp_path):
+@pytest.mark.parametrize("kind", ["BAM", "CRAM"])
+def test_explicit_index_embeds_all_reads_in_deterministic_safe_html_and_preserves_tsv(tmp_path, kind):
     args = cli_inputs(tmp_path)
     hostile = '</script><img/src=x/onerror=alert(1)>'
-    reads = bam(tmp_path, [record(hostile, tags={"NH": 1}) for _ in range(12)])
+    reads = bam(tmp_path, [record(hostile, tags={"NH": 1}) for _ in range(205)])
+    options = []
+    if kind == "CRAM":
+        reference = fasta(tmp_path)
+        reads = cram(tmp_path, reads, reference)
+        options = ["--reference", reference]
     index = tmp_path / "custom.index"
-    Path(str(reads) + ".bai").rename(index)
-    outputs = [tmp_path / f"report{i}.html" for i in range(3)]
-    results = [invoke(*args, "--alignments", reads, "--alignment-index", index, "--alignment-limit", cap, "--html-output", output)
-               for cap, output in zip(("2", "2", "20"), outputs)]
+    Path(str(reads) + (".crai" if kind == "CRAM" else ".bai")).rename(index)
+    outputs = [tmp_path / f"report{i}.html" for i in range(2)]
+    results = [invoke(*args, "--alignments", reads, "--alignment-index", index, *options, "--html-output", output)
+               for output in outputs]
     assert all(r.returncode == 0 for r in results)
     assert len({r.stdout for r in results}) == 1
+    assert results[0].stdout == invoke(*args).stdout
     assert outputs[0].read_bytes() == outputs[1].read_bytes()
-    html = outputs[2].read_text()
-    assert "Eligible: 12" in html and "Embedded: 12" in html and "Currently shown: 10" in html
+    html = outputs[0].read_text()
+    assert "Eligible: 205 · Embedded: 205" in html
     assert hostile not in html and "&lt;/script&gt;" in html
-    assert html.count('<li class="read-row') == 12
-    assert html.count(' hidden>') >= 2
+    assert html.count('<li class="read-row') == 205
+    rows = html.split('<li class="read-row')[1:]
+    assert sum(' hidden' not in row.split('>', 1)[0] for row in rows) == 10
     assert "No eligible alignment records (0)" in invoke_empty_report(tmp_path, args)
 
 

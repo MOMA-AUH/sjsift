@@ -57,15 +57,15 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
     assert "Alignment evidence not requested" not in html
 
 
-def test_rare_defining_evidence_is_independent_from_abundant_reference_samples(tmp_path):
+def test_rare_defining_and_abundant_reference_evidence_are_both_fully_retained(tmp_path):
     variant = replace(CATALOG.variants[0], reference_junctions=(reference(),))
     catalog = replace(CATALOG, variants=(variant,))
-    path = bam(tmp_path, [record("rare", tags={"NH": 1})] + [record(f"abundant-{i}", start=200, tags={"NH": 1}) for i in range(150)])
-    groups = extract_evidence(catalog, path, limit=3).groups
+    path = bam(tmp_path, [record("rare", tags={"NH": 1})] + [record(f"abundant-{i}", start=200, tags={"NH": 1}) for i in range(250)])
+    groups = extract_evidence(catalog, path).groups
     assert groups["v0-j0"].eligible["unique"] == 1
     assert [r.read_name for r in groups["v0-j0"].records] == ["rare"]
-    assert groups["v0-j1"].eligible["unique"] == 150
-    assert len(groups["v0-j1"].records) == 3
+    assert groups["v0-j1"].eligible["unique"] == 250
+    assert len(groups["v0-j1"].records) == 250
 
 
 def test_reference_on_other_contig_and_strand_uses_its_own_policy(tmp_path):
@@ -148,7 +148,6 @@ def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_pa
     assert html.count('aria-label="Shared genomic coordinate ruler"') == 1
     assert len(rows) == 62
     assert len([row for row in rows if 'hidden' not in row]) == 12
-    assert 'Currently shown: 12' in html
     variant_rows = [row for row in rows if row['data-support'] == '0']
     donor_rows = [row for row in rows if row['data-support'] == '1']
     acceptor_rows = [row for row in rows if row['data-support'] == '2']

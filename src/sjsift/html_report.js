@@ -117,7 +117,6 @@
         row.hidden = !shown.has(row);
         if (row.hidden) row.querySelector(".read-inspection").open = false;
       }
-      find(".shown-count").textContent = `Currently shown: ${shown.size} (${matching.length} embedded match filter)`;
       find(".read-filter-empty").hidden = matching.length !== 0;
       expand.textContent = expanded ? "Collapse reads" : "Expand reads";
       expand.setAttribute("aria-expanded", String(expanded));

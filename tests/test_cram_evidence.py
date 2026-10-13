@@ -11,7 +11,7 @@ from test_alignment_cli import invoke
 from test_reference_alignments import reference
 
 
-def test_equivalent_cram_preserves_bam_evidence_and_sampling(tmp_path):
+def test_equivalent_cram_preserves_all_bam_evidence_without_downsampling(tmp_path):
     variant = replace(CATALOG.variants[0], reference_junctions=(reference(),))
     catalog = replace(CATALOG, variants=(variant,))
     reads = [record(f"read-{i}", cigar="4S20M100N20M100N20M3S", flag=flag,
@@ -21,13 +21,16 @@ def test_equivalent_cram_preserves_bam_evidence_and_sampling(tmp_path):
         (16, {"NH": 1, "jM": [21, 22]}), (0, {"TS": "-"}),
         (0, {"TS": "+", "XS": "-"}), (0, {}),
     ])]
-    reads += [record("identical", tags={"NH": 1}) for _ in range(2)]
+    reads += [record("identical", tags={"NH": 1}) for _ in range(205)]
     source = bam(tmp_path, reads)
     ref = fasta(tmp_path)
     path = cram(tmp_path, source, ref)
-    expected = extract_evidence(catalog, source, limit=3)
-    actual = extract_evidence(catalog, path, reference_path=ref, limit=3)
+    expected = extract_evidence(catalog, source)
+    actual = extract_evidence(catalog, path, reference_path=ref)
     assert expected.groups == actual.groups
+    assert len(actual.groups["v0-j0"].records) > 200
+    for group in actual.groups.values():
+        assert len(group.records) == sum(group.eligible.values())
     assert actual.provenance["Format"] == "CRAM"
     assert actual.provenance["Reference FASTA"] == "reference.fa"
     assert "M5" in actual.provenance["Reference assurance"]

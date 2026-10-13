@@ -43,8 +43,6 @@ def test_infers_one_distinct_sample_across_read_groups(tmp_path, kind):
     assert 'Inputs' not in header and 'sample.SJ.out.tab' not in header
     footer = html.split('<footer>')[1]
     assert 'Inputs and configuration' in footer and 'sample.SJ.out.tab' in footer
-    assert 'Sampling limit' not in footer
-    assert 'Sampling limit: 200 records per junction per mapping class.' in html.split('<footer>')[0]
 
 
 @pytest.mark.parametrize("kind", ["BAM", "CRAM"])
@@ -70,7 +68,7 @@ def test_multiple_samples_require_valid_selection_and_only_embed_that_sample(tmp
         record("chosen-c", tags={"RG": "c"}), record("no-sample", tags={"RG": "unknown"}), record("no-rg")])
     args = cli_inputs(tmp_path, sample_name=name)
     report, tsv = tmp_path / "out.html", tmp_path / "out.tsv"
-    result = invoke(*args, *options, "--html-output", report, "--output", tsv, "--alignment-limit", "1")
+    result = invoke(*args, *options, "--html-output", report, "--output", tsv)
     if name != "chosen":
         assert result.returncode == 2 and '--sample-name' in result.stderr
         assert not report.exists() and not tsv.exists() and not result.stdout
@@ -78,7 +76,8 @@ def test_multiple_samples_require_valid_selection_and_only_embed_that_sample(tmp
     assert result.returncode == 0, result.stderr
     html = report.read_text()
     assert '<p class="sample-name">chosen</p>' in html
-    assert 'Eligible: 2 · Embedded: 1' in html
+    assert 'Eligible: 2 · Embedded: 2' in html
+    assert 'chosen-a' in html and 'chosen-c' in html
     assert 'other-read' not in html and 'no-sample' not in html and 'no-rg' not in html
     baseline = invoke(*args)
     assert baseline.returncode == 0 and tsv.read_text() == baseline.stdout

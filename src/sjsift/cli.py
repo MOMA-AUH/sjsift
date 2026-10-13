@@ -12,16 +12,6 @@ from .quantify import QuantifyError, quantify
 from .report import ReportError, write_reports
 
 
-def _positive_integer(value: str) -> int:
-    try:
-        number = int(value)
-        if number > 0:
-            return number
-    except ValueError:
-        pass
-    raise argparse.ArgumentTypeError("must be a positive integer")
-
-
 def _sample_name(value: str) -> str:
     if not value.strip():
         raise argparse.ArgumentTypeError("sample name must not be blank")
@@ -70,7 +60,6 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--alignments", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
     parser.add_argument("--alignment-index", metavar="PATH", help="explicit local BAM/CRAM index (otherwise discovered)")
     parser.add_argument("--reference", metavar="PATH", help="explicit local indexed FASTA, required for CRAM; remote reference lookup is disabled")
-    parser.add_argument("--alignment-limit", type=_positive_integer, metavar="N", help="maximum embedded records per junction per mapping class (default: 200)")
     parser.add_argument(
         "--version",
         action="version",
@@ -83,7 +72,7 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
     if arguments.alignments and not arguments.html_output:
         parser.error("--alignments requires --html-output")
     if not arguments.alignments and any(option is not None for option in (
-        arguments.alignment_index, arguments.alignment_limit, arguments.reference,
+        arguments.alignment_index, arguments.reference,
     )):
         parser.error("alignment-specific options require --alignments")
     if not arguments.alignments and arguments.sample_name is None:
@@ -102,7 +91,6 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             evidence = extract_evidence(
                 catalog, Path(arguments.alignments),
                 index_path=Path(arguments.alignment_index) if arguments.alignment_index else None,
-                limit=arguments.alignment_limit or 200,
                 reference_path=Path(arguments.reference) if arguments.reference else None,
                 sample_name=arguments.sample_name,
             )

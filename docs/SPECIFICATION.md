@@ -207,7 +207,7 @@ sjsift --version
 - `--html-output PATH` adds an offline HTML report independently of `--context-output`.
 - The HTML starts with `SJSIFT · JUNCTION REPORT` and the sample subtitle. Inputs and configuration appear at the bottom in two-column key-value rows.
 - `--alignments PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
-- `--alignment-index PATH` optionally selects its local index; `--alignment-limit N` sets a positive per-junction/per-class sample cap (default 200).
+- `--alignment-index PATH` optionally selects its local index. All eligible alignment records are embedded without downsampling; there is no `--alignment-limit` option.
 - `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignments`.
 - Both optional reports work with either a main TSV file or main TSV on stdout.
 - All output paths must differ and must not already exist; parent directories must exist.
@@ -329,7 +329,7 @@ The application does not implement:
 - workflow-engine integration, plugin interfaces, or a public Python library API.
 
 The alignment-evidence guide is normative for alignment input, classification,
-sampling, provenance and failure handling. `tests/test_alignment_evidence.py` and
+retention, provenance and failure handling. `tests/test_alignment_evidence.py` and
 `tests/test_alignment_cli.py` exercise its module and CLI/report boundaries.
 `tests/test_cram_evidence.py` covers real CRAM/reference input, BAM equivalence,
 corruption and offline resolution with a working HTTP detector. Installed wheel

@@ -84,8 +84,7 @@ read groups. A supplied name must also match a single named alignment sample.
 
 **Inputs and configuration** appears at the bottom as two-column key-value rows:
 Alignment file, STAR junctions, Assembly, and sjsift version. The alignment file
-is labeled “Not supplied” when absent. The sampling limit per junction per mapping
-class and the preview/page sizes appear beside each alignment viewer.
+is labeled “Not supplied” when absent.
 Basenames identify the
 supplied files; neither a supplied name nor alignment metadata verifies the anonymous
 STAR file's sample identity. The catalog's assembly cannot independently establish the assembly
@@ -121,7 +120,7 @@ loss.
 
 Supply `--alignments sample.bam` to embed selected structural evidence. Read
 [alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
-counts, sampling, input checks and the raw identifiers retained when sharing.
+counts, input checks and the raw identifiers retained when sharing.
 For CRAM, use `--alignments sample.cram --reference genome.fa` with local existing
 alignment and FASTA indexes. The explicit FASTA is always required and remote
 reference retrieval is disabled. The generated report contains no reference bases
@@ -140,15 +139,16 @@ qualifying junction groups; record IDs are stable within the report and identica
 input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
 
-The initial figure shows up to ten alignment rows per support group. **Expand reads**
+All eligible alignment records are embedded without downsampling. The initial
+figure shows up to ten alignment rows per support group. **Expand reads**
 pages through the embedded evidence, up to 50 rows per group at a time;
 **Collapse reads** restores the preview. Shared reads belong to the first matching
 group in catalog order for pagination. **All / Unique only** and **Support** change
 the displayed subset, leaving full counts
 and STAR support unchanged. Unique only means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
-filter-empty state. Limits apply independently to every junction and mapping
-class, and sampled evidence is labeled.
+filter-empty state. Paging affects visibility only; every eligible read remains
+available in the report.
 
 Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
 ruler. Matching positions align vertically; thin splice lines connect aligned

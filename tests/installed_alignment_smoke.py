@@ -23,7 +23,7 @@ def main():
             results.append(result.stdout)
             text = output.read_text()
             assert "installed-smoke" in text and "Eligible: 1" in text
-            assert "Currently shown: 1" in text
+            assert text.count('<li class="read-row') == 1
             assert "CIGAR: 20M100N20M" in text
             assert "ACGTACGTACGT" not in text and "AAAAAAAAAAAA" not in text
         assert results[0] == results[1]

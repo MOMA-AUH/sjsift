@@ -140,4 +140,3 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .op-P { background: #aaa; }
 .read-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; font-size: .85rem; }
 .read-page { flex-basis: 100%; }
-.sampling-note { font-weight: 600; }

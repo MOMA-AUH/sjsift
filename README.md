@@ -118,9 +118,9 @@ blue for variant support, teal for same-donor support, and purple for same-accep
 support, with solid colors at full opacity. Labeled junction guides share the genomic
 ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
-index, and `--alignment-limit N` caps each junction/mapping-class sample (default
-200). See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion, strand,
-sampling, count provenance and the raw identifiers retained in shared reports.
+index. All eligible reads are embedded without downsampling; the viewer pages
+through them. See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion,
+strand, count provenance and the raw identifiers retained in shared reports.
 
 For CRAM, supply the matching **local indexed FASTA** explicitly:
 

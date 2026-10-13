@@ -9,8 +9,8 @@ sjsift --junctions sample.SJ.out.tab --definitions catalog.toml \
 ```
 
 `--alignment-index PATH` overrides discovery of `sample.bam.bai`, `sample.bai`,
-`sample.bam.csi`, or `sample.csi`. `--alignment-limit N` is a positive integer,
-default 200, **per junction per mapping class**. Alignment options require
+`sample.bam.csi`, or `sample.csi`. All eligible records are embedded without
+downsampling; `--alignment-limit` is no longer supported. Alignment options require
 `--alignments`, which requires `--html-output`. Indexes are never created by
 sjsift. Defining and reference junctions share one pileup figure per variant.
 Custom roles, references on other contigs or strands, and shared references use
@@ -45,7 +45,7 @@ reference retrieval; a wrong FASTA is never repaired by downloading another one.
 Tests include a real HTTP listener with a successful unguarded-HTSlib positive
 control, followed by zero requests from sjsift with valid, wrong or absent input.
 
-BAM and CRAM use the same record-classification, count, sample and rendering
+BAM and CRAM use the same record-classification, count, retention and rendering
 path. Reference validation establishes available CRAM/FASTA compatibility only;
 the anonymous STAR input still cannot establish sample identity or assembly.
 Provenance records FASTA/index basenames and the checks performed. Reference
@@ -86,7 +86,7 @@ NH alone determines mapping class: an integer 1 is **unique**, an integer above
 Primary status and MAPQ cannot establish uniqueness. Qualifying secondary,
 supplementary, duplicate-marked and QC-failure records are included and labeled.
 
-## Counts, identity, and sampling
+## Counts, identity, and read retention
 
 One row is one physical alignment record. Both mates may appear separately;
 read name, read group and read-1/read-2 labels help recognize related records.
@@ -95,21 +95,18 @@ separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
 performed. A record matching several selected junctions retains membership in each
 qualifying group but appears only once per variant figure, identified by its stable
-record ID. Striped blocks and a **Supports** list show its local memberships;
+record ID. Highlighted splice lines and a **Supports** list show its local memberships;
 **Also matches** lists the other qualifying groups, including other variants.
-Membership indicates exact supporting groups even if independently sampled
-records are not retained in every group. Excluded opposite/conflicting groups
-are not listed as supporting membership. Reference observations and samples
-remain independent, so abundant references cannot displace rare defining reads.
+Membership indicates exact supporting groups. Excluded opposite/conflicting groups
+are not listed as supporting membership. Every eligible defining and reference
+record is retained, so abundant references cannot displace rare defining reads.
 
-Every eligible record is counted before sampling. Deterministic SHA-256 bottom-k
-sampling independently caps each junction/class subset, retaining all records
-below its cap. Extraction memory for retained records is bounded by those caps;
-it does not keep a set of every observed read. Caps limit records, not HTML bytes.
-Eligible, embedded and currently shown counts have separate labels, as do strand
-totals and exclusion reasons. Full per-junction counts are in **Junction annotations
-and alignment counts**. The figure counts distinct embedded physical records,
-not the sum of memberships. Its preview displays up to ten records per support
+Every eligible record is counted and embedded. There is no per-junction or
+per-mapping-class cap. Extraction memory and HTML size grow with the number of
+eligible records. Full per-junction eligible/embedded counts, strand totals and
+exclusion reasons are in **Junction annotations and alignment counts**.
+The figure displays each physical alignment only once, even when it has multiple
+memberships. Its preview displays up to ten records per support
 group, sorted by support group, genomic start and end. A shared record is assigned
 to its first matching group in catalog order (variant first) for paging and block
 color; its highlighted splice lines and support filter still reflect all local memberships.
@@ -117,10 +114,9 @@ color; its highlighted splice lines and support filter still reflect all local m
 including eligible secondary, supplementary, duplicate and QC-flagged records.
 It excludes unknown multiplicity. The **Support** filter selects any matching
 membership, including shared reads. Changing either filter resets to the first page;
-collapsing restores the preview. Paging and filtering change only the
-currently shown count. Full eligible/embedded counts and strand totals always
-describe the entire group. Sampled groups state the per-class cap explicitly;
-the last page is labeled and its Next button disabled.
+collapsing restores the preview. Paging and filtering change only which records
+are visible. Full eligible/embedded counts and strand totals always describe the
+entire group. The last page is labeled and its Next button disabled.
 
 ## Structural geometry and anchors
 
@@ -151,7 +147,7 @@ that figure. Native read inspection also works without JavaScript.
 
 Read details give **genomic left/right aligned anchors** at the explicitly named
 extraction junction. For a shared read, this is the first group in catalog order
-whose independent sample retained it; strand sources refer to that same group.
+that the record supports; strand sources refer to that same group.
 Each anchor is the sum of consecutive M, = and X operations immediately abutting
 that N. Any I, D, N, S, H or P terminates the sum; a nonaligned immediate neighbor
 gives zero. Left/right do not swap on the minus strand. For example,

@@ -108,16 +108,18 @@ def test_long_gap_geometry_coordinates_flags_and_safe_offline_report(tmp_path):
     assert "Content-Security-Policy" in html and "connect-src 'none'" in html
 
 
-def test_sampled_counts_initial_preview_and_controls_are_separate(tmp_path):
-    path = bam(tmp_path, [record(f"read-{i}", tags={"NH": 1}) for i in range(70)]
+def test_all_reads_are_embedded_with_preview_controls_and_without_sampling_text(tmp_path):
+    path = bam(tmp_path, [record(f"read-{i}", tags={"NH": 1}) for i in range(270)]
                + [record("unknown")])
-    html = render(CATALOG, extract_evidence(CATALOG, path, limit=55))
-    assert "Eligible: 71 · Embedded: 56" in html and "Currently shown: 10" in html
-    assert "Sampled evidence" in html and "55 records per junction per mapping class" in html
+    html = render(CATALOG, extract_evidence(CATALOG, path))
+    assert "Eligible: 271 · Embedded: 271" in html
+    for removed in ("distinct embedded alignment records", "Currently shown:", "Sampling limit:",
+                    "Sampled evidence:", "embedded samples are deterministic", "shown-count"):
+        assert removed not in html
     assert '<option value="all" selected>All</option>' in html
     assert '<option value="unique">Unique only</option>' in html
     assert "Expand reads" in html and "Previous reads" in html and "Next reads" in html
-    assert html.count('<li class="read-row') == 56
+    assert html.count('<li class="read-row') == 271
     # Static HTML itself provides only ten immediate previews without JavaScript.
     rows = html.split('<li class="read-row')[1:]
     assert sum(' hidden' not in row.split('>', 1)[0] for row in rows) == 10

@@ -1,4 +1,4 @@
-"""Extract bounded structural evidence independently of STAR quantification."""
+"""Extract structural evidence independently of STAR quantification."""
 
 from array import array
 from bisect import bisect_left
@@ -6,7 +6,6 @@ from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass, field
 from pathlib import Path
 import hashlib
-import heapq
 import os
 import tempfile
 
@@ -71,7 +70,6 @@ class JunctionEvidence:
 class AlignmentEvidence:
     groups: dict[str, JunctionEvidence]
     provenance: dict[str, str]
-    limit: int
     sample_name: str | None = None
 
 
@@ -169,16 +167,6 @@ def _strand(read, introns, intron_index, strand, header):
     return status, tuple([source for source, _ in sources] + notes)
 
 
-def _retain(heap, record, key, limit):
-    # Stable bottom-k hash sample, bounded during extraction, independently per class.
-    rank = int.from_bytes(hashlib.sha256(f"{key}/{record.record_id}".encode()).digest(), "big")
-    item = (-rank, record.record_id, record)
-    if len(heap) < limit:
-        heapq.heappush(heap, item)
-    elif item > heap[0]:
-        heapq.heapreplace(heap, item)
-
-
 def _anchors(geometry, intron_index):
     """Contiguous M/= /X lengths immediately left/right of the selected N."""
     position = [i for i, op in enumerate(geometry) if op.op == "N"][intron_index]
@@ -213,7 +201,7 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence, match
 
 
 def _extract_evidence(
-    catalog: Catalog, path: Path, *, index_path: Path, limit: int = 200,
+    catalog: Catalog, path: Path, *, index_path: Path,
     reference_path: Path | None = None,
     sample_name: str | None = None,
 ) -> AlignmentEvidence:
@@ -288,15 +276,15 @@ def _extract_evidence(
                         group.strand_totals[status] += 1
                         record_id = f"r{read.reference_id}-{region}-{ordinal}"
                         record = _serialize(read, record_id, geometry, mapping_class, status, evidence, matches, intron_index)
-                        _retain(retained[key][mapping_class], record, key, limit)
+                        retained[key][mapping_class].append(record)
     for key, group in groups.items():
         group.records = tuple(
-            item[2] for kind in MAPPING_CLASSES
-            for item in sorted(retained[key][kind], key=lambda item: item[1])
+            record for kind in MAPPING_CLASSES
+            for record in sorted(retained[key][kind], key=lambda record: record.record_id)
         )
     provenance.update({"Alignment file": path.name, "Format": "CRAM" if reference_path else "BAM", "pysam": pysam.__version__,
                        "HTSlib": pysam.__samtools_version__, "Index": index_path.name})
-    return AlignmentEvidence(groups, provenance, limit, sample_name)
+    return AlignmentEvidence(groups, provenance, sample_name)
 
 
 def _select_sample(header, requested):
@@ -399,18 +387,16 @@ def _validate_reference(header, path):
 
 
 def extract_evidence(
-    catalog: Catalog, path: Path, *, index_path: Path | None = None, limit: int = 200,
+    catalog: Catalog, path: Path, *, index_path: Path | None = None,
     reference_path: Path | None = None,
     sample_name: str | None = None,
 ) -> AlignmentEvidence:
     """Validate local indexed BAM/CRAM and return evidence before output creation.
 
     Regional access counts alignment records, not templates. Every requested
-    region is decoded to completion even after the independent sample caps fill.
+    region is decoded to completion and every eligible record is retained.
     """
     try:
-        if type(limit) is not int or limit < 1:
-            raise AlignmentError("alignment limit must be a positive integer")
         if not path.is_file():
             raise AlignmentError("alignment input must be a local file")
         with path.open("rb") as source:
@@ -433,7 +419,7 @@ def extract_evidence(
                 # AlignmentFile.check_truncation does not reject missing CRAM EOF.
                 # Use pysam's bundled header/EOF check; no external executable.
                 pysam.quickcheck("--", str(path))
-            return _extract_evidence(catalog, path, index_path=index_path, limit=limit,
+            return _extract_evidence(catalog, path, index_path=index_path,
                                      reference_path=reference_path, sample_name=sample_name)
     except (OSError, ValueError, KeyError, IndexError, OverflowError, pysam.SamtoolsError) as error:
         raise AlignmentError(f"{path}: cannot extract alignment evidence: {error}") from None

@@ -249,9 +249,6 @@ def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
         f'<p>Transcript strand totals: agreeing {group.strand_totals["agreeing"]}; '
         f'unverified {group.strand_totals["unverified"]}. '
         f'Excluded: opposite {group.exclusions["opposite"]}; conflicting {group.exclusions["conflicting"]}.</p>'
-        + (f'<p class="sampling-note">Sampled evidence: {len(group.records)} of {eligible} eligible records embedded. '
-           f'Limit: {evidence.limit} records per junction per mapping class.</p>' if eligible > len(group.records)
-           else '<p>All eligible records are embedded.</p>')
         + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
         + '</section>'
     )
@@ -298,8 +295,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         members = [(position, label, support, color) for position, (label, support, color) in enumerate(junctions)
                    if keys[position] in record.matches]
         bucket = min(position for position, _, _, _ in members)
-        # Keep the metadata's extraction junction explicit even if another group's
-        # independent sample omitted this shared physical record.
+        # Keep the metadata's extraction junction explicit for shared records.
         members.sort(key=lambda member: (member[0] != owner, member[0]))
         buckets.setdefault(bucket, []).append((record, members, owner))
     entries = []
@@ -330,18 +326,10 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                      for label, _, color in junctions)
     options = "".join(f'<option value="{position}">{escape(label)}</option>'
                       for position, (label, _, _) in enumerate(junctions))
-    preview = sum(min(10, len(rows)) for rows in buckets.values())
-    sampled = any(sum(evidence.groups[key].eligible.values()) > len(evidence.groups[key].records) for key in keys)
     return (
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
         f'<div class="support-legend">{legend}</div>'
-        f'<p>{len(retained)} distinct embedded alignment records · <span class="shown-count">Currently shown: {preview}</span></p>'
-        f'<p>Sampling limit: {evidence.limit} records per junction per mapping class. '
-        'All eligible records are counted; embedded samples are deterministic. '
-        'Preview: up to 10 records per support group. Expanded: up to 50 per support group per page.</p>'
-        + ('<p class="sampling-note">Sampled evidence: at least one junction exceeds its embedding limit. '
-           'See junction annotations and alignment counts below for per-junction totals.</p>' if sampled else '')
-        + '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
+        '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
         '<label>Support <select class="support-filter" aria-label="Junction support">'
         f'<option value="all">All support</option>{options}</select></label>'
@@ -353,7 +341,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         + ('<p>No eligible alignment records (0).</p>' if not retained else '')
         + '<div class="pileup-scroll">' + "".join(tracks) + '</div>'
         '<p class="scale-note">Color identifies supported junctions. Each physical alignment appears once in this figure. '
-        'Counts on the guides are STAR support, separate from the displayed alignment sample. '
+        'Counts on the guides are STAR support, separate from the displayed alignment records. '
         'Exon labels mark splice boundaries, not full exon extents. '
         'Nonuniform scale: empty gaps longer than 80 nt are compressed at // marks on the shared ruler. '
         'Click a read for details; hover over operations for exact lengths and coordinates.</p>'
