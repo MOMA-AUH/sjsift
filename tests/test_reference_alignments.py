@@ -49,7 +49,8 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
     assert html.count("Eligible: 1 · Embedded: 1") == 2
     assert html.count('<li class="read-row') == 1
     assert 'data-support="0 1"' in html
-    assert 'repeating-linear-gradient(135deg,#3159ad' in html
+    assert 'style="--read-color:#3159ad"' in html
+    assert 'repeating-linear-gradient' not in html
     assert "Supports: Variant; &lt;/script&gt;" in html
     assert "Also matches: skip · &lt;/script&gt;" in html
     assert hostile not in html and '<img' not in html

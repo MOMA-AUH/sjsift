@@ -72,6 +72,7 @@ class AlignmentEvidence:
     groups: dict[str, JunctionEvidence]
     provenance: dict[str, str]
     limit: int
+    sample_name: str | None = None
 
 
 def _geometry(read: pysam.AlignedSegment) -> tuple[CigarOperation, ...]:
@@ -214,6 +215,7 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence, match
 def _extract_evidence(
     catalog: Catalog, path: Path, *, index_path: Path, limit: int = 200,
     reference_path: Path | None = None,
+    sample_name: str | None = None,
 ) -> AlignmentEvidence:
     """Return selected-junction record evidence; never modify STAR support."""
     targets = []
@@ -233,6 +235,9 @@ def _extract_evidence(
         stream.check_index()
         header = stream.header.to_dict()
         provenance = _validate_header(catalog, header)
+        sample_name, selected_read_groups = _select_sample(header, sample_name)
+        if selected_read_groups is not None:
+            provenance["Read selection"] = "Only read groups belonging to the selected sample; unassigned records excluded"
         if reference_path:
             provenance.update(_validate_reference(header, reference_path))
         for _, junction in targets:
@@ -256,6 +261,8 @@ def _extract_evidence(
                     rg, kind = _tag(read, "RG")
                     if rg is not None and (kind != "Z" or rg not in {r["ID"] for r in header.get("RG", [])}):
                         raise AlignmentError("alignment has an unknown or invalid read group")
+                    if selected_read_groups is not None and rg not in selected_read_groups:
+                        continue
                     # Each physical record belongs to the first requested position it overlaps.
                     # This avoids repeat-fetch duplication without collapsing identical records.
                     if read.is_unmapped or bisect_left(positions, read.reference_start) != region:
@@ -289,7 +296,25 @@ def _extract_evidence(
         )
     provenance.update({"Alignment file": path.name, "Format": "CRAM" if reference_path else "BAM", "pysam": pysam.__version__,
                        "HTSlib": pysam.__samtools_version__, "Index": index_path.name})
-    return AlignmentEvidence(groups, provenance, limit)
+    return AlignmentEvidence(groups, provenance, limit, sample_name)
+
+
+def _select_sample(header, requested):
+    read_groups = header.get("RG", [])
+    samples = {group["SM"] for group in read_groups if group.get("SM", "").strip()}
+    if requested is not None:
+        if not requested.strip():
+            raise AlignmentError("sample name must not be blank")
+        if samples and requested not in samples:
+            raise AlignmentError(f"--sample-name {requested!r} does not exist in alignment header; available samples: {', '.join(sorted(samples))}")
+    elif len(samples) > 1:
+        raise AlignmentError(f"multiple samples in alignment header; --sample-name is required; available samples: {', '.join(sorted(samples))}")
+    selected = requested if requested is not None else next(iter(samples), None)
+    selected_read_groups = (
+        {group["ID"] for group in read_groups if group.get("SM") == selected}
+        if len(samples) > 1 else None
+    )
+    return selected, selected_read_groups
 
 
 def _validate_header(catalog, header):
@@ -299,15 +324,13 @@ def _validate_header(catalog, header):
     identifiers = [r.get("ID") for r in read_groups]
     if None in identifiers or len(set(identifiers)) != len(identifiers):
         raise AlignmentError("missing or duplicate read-group identifiers")
-    samples = {r["SM"] for r in read_groups if r.get("SM")}
-    if len(samples) > 1:
-        raise AlignmentError("multiple samples in alignment header; only one sample is supported")
+    samples = {r["SM"] for r in read_groups if r.get("SM", "").strip()}
     required = {j.chromosome for v in catalog.variants for j in (v, *v.reference_junctions)}
     assemblies = {sq["AS"] for sq in header.get("SQ", []) if sq["SN"] in required and sq.get("AS")}
     if assemblies and assemblies != {catalog.genome_assembly}:
         raise AlignmentError("alignment assembly metadata disagrees with catalog assembly")
     return {
-        "Alignment sample": next(iter(samples)) if samples else "Unavailable: no sample metadata",
+        "Alignment samples": ", ".join(sorted(samples)) if samples else "Unavailable: no sample metadata",
         "Sample assurance": "STAR sample identity cannot be verified; missing read-group/sample metadata may limit alignment assurance",
         "Assembly assurance": "Available assembly labels agree; sequence equivalence and STAR assembly remain unverified" if assemblies else "Assembly unverified: contig names and bounds alone do not establish equivalence",
     }
@@ -378,6 +401,7 @@ def _validate_reference(header, path):
 def extract_evidence(
     catalog: Catalog, path: Path, *, index_path: Path | None = None, limit: int = 200,
     reference_path: Path | None = None,
+    sample_name: str | None = None,
 ) -> AlignmentEvidence:
     """Validate local indexed BAM/CRAM and return evidence before output creation.
 
@@ -409,6 +433,7 @@ def extract_evidence(
                 # AlignmentFile.check_truncation does not reject missing CRAM EOF.
                 # Use pysam's bundled header/EOF check; no external executable.
                 pysam.quickcheck("--", str(path))
-            return _extract_evidence(catalog, path, index_path=index_path, limit=limit, reference_path=reference_path)
+            return _extract_evidence(catalog, path, index_path=index_path, limit=limit,
+                                     reference_path=reference_path, sample_name=sample_name)
     except (OSError, ValueError, KeyError, IndexError, OverflowError, pysam.SamtoolsError) as error:
         raise AlignmentError(f"{path}: cannot extract alignment evidence: {error}") from None

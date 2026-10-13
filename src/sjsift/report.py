@@ -104,6 +104,7 @@ def write_reports(
     html_output_path: Path | None = None,
     junctions_name: str = "",
     definitions_name: str = "",
+    sample_name: str = "",
     compatibility_warning: bool = False,
     alignment_evidence: AlignmentEvidence | None = None,
 ) -> None:
@@ -118,6 +119,7 @@ def write_reports(
             write_html,
             junctions_name=junctions_name,
             definitions_name=definitions_name,
+            sample_name=sample_name,
             compatibility_warning=compatibility_warning,
             alignment_evidence=alignment_evidence,
         )))

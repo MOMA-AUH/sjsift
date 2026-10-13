@@ -145,7 +145,7 @@ reference_junctions = []
         junctions.write_bytes(gzip.compress(junctions.read_bytes()))
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -167,7 +167,7 @@ def test_output_option_writes_the_stdout_report_byte_for_byte(
 ) -> None:
     junctions, definitions = write_single_variant_inputs(tmp_path)
     stdout_result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -175,7 +175,7 @@ def test_output_option_writes_the_stdout_report_byte_for_byte(
     output = tmp_path / f"report-{option.lstrip('-')}.tsv"
 
     file_result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -245,7 +245,7 @@ annotation_source = "Synthetic test annotation"
     output = tmp_path / "report.tsv"
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -278,7 +278,7 @@ def test_context_output_without_references_contains_only_its_header(
     context_output = tmp_path / "context.tsv"
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -302,7 +302,7 @@ def test_existing_context_output_is_refused_without_creating_main_output(
     context_output.write_text("do not replace me\n", encoding="utf-8")
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -324,7 +324,7 @@ def test_existing_context_output_is_refused_without_creating_main_output(
 @pytest.mark.parametrize("context_file", [False, True])
 def test_html_is_additive_and_preserves_tsv_bytes(tmp_path, main_file, context_file):
     junctions, definitions = write_single_variant_inputs(tmp_path)
-    arguments = ["--junctions", str(junctions), "--definitions", str(definitions)]
+    arguments = ["--sample-name", "sample", "--junctions", str(junctions), "--definitions", str(definitions)]
     baseline = run_console_script(*arguments)
     output = tmp_path / "main.tsv"
     context = tmp_path / "context.tsv"
@@ -366,7 +366,7 @@ def test_html_destination_failure_preserves_existing_files_and_cleans_new_files(
     original = html.read_bytes() if html.exists() else None
 
     result = run_console_script(
-        "--junctions", str(junctions), "--definitions", str(definitions),
+        "--sample-name", "sample", "--junctions", str(junctions), "--definitions", str(definitions),
         "--output", str(output), "--context-output", str(context), "--html-output", str(html),
     )
 
@@ -389,7 +389,7 @@ def test_html_path_cannot_alias_a_tsv_path(tmp_path, other_option):
     alias_parent.mkdir()
     alias = alias_parent / ".." / "result"
     result = run_console_script(
-        "--junctions", str(junctions), "--definitions", str(definitions),
+        "--sample-name", "sample", "--junctions", str(junctions), "--definitions", str(definitions),
         other_option, str(output), "--html-output", str(alias),
     )
     assert result.returncode == 2
@@ -405,7 +405,7 @@ def test_existing_output_is_refused_without_modification(tmp_path: Path) -> None
     output.write_bytes(original)
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -433,7 +433,7 @@ def test_incompatible_star_file_reports_zeros_with_one_compatibility_warning(
     junctions.write_text(junction_text, encoding="utf-8")
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -480,7 +480,7 @@ def test_curated_catalog_context_preserves_shared_and_missing_support(
     html_output = tmp_path / "report.html"
 
     result = run_console_script(
-        "--junctions", str(junctions),
+        "--sample-name", "sample", "--junctions", str(junctions),
         "--definitions", str(definitions),
         "--context-output", str(context_output),
         "--html-output", str(html_output),
@@ -531,7 +531,7 @@ chr7\t55200414\t55202516\t1\t1\t0\t3\t4\t29
     )
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(REPOSITORY_ROOT / "definitions" / "grch38.toml"),
@@ -614,7 +614,7 @@ def test_invalid_catalog_is_a_concise_cli_error(
     junctions.write_text("", encoding="utf-8")
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -634,7 +634,7 @@ def test_unreadable_catalog_is_a_concise_cli_error(tmp_path: Path) -> None:
     junctions.write_text("", encoding="utf-8")
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -652,7 +652,7 @@ def test_unreadable_star_file_is_a_concise_cli_error(tmp_path: Path) -> None:
     junctions = tmp_path / "missing.SJ.out.tab"
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -684,7 +684,7 @@ def test_invalid_gzip_input_is_a_concise_error_without_output(
     output = tmp_path / "report.tsv"
 
     result = run_console_script(
-        "--junctions", str(junctions), "--definitions", str(definitions),
+        "--sample-name", "sample", "--junctions", str(junctions), "--definitions", str(definitions),
         "--output", str(output),
     )
 
@@ -702,7 +702,7 @@ def test_output_creation_failure_is_a_concise_cli_error(tmp_path: Path) -> None:
     output = tmp_path / "missing-directory" / "report.tsv"
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -724,7 +724,7 @@ def test_input_failure_does_not_create_a_partial_output(tmp_path: Path) -> None:
     output = tmp_path / "report.tsv"
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),
@@ -753,7 +753,7 @@ def test_unexpected_top_level_failure_returns_status_one(
 
     status = cli.main(
         [
-            "--junctions",
+            "--sample-name", "sample", "--junctions",
             str(junctions),
             "--definitions",
             str(definitions),
@@ -804,7 +804,7 @@ reference_junctions = []
     junctions.write_text(junction_text, encoding="utf-8")
 
     result = run_console_script(
-        "--junctions",
+        "--sample-name", "sample", "--junctions",
         str(junctions),
         "--definitions",
         str(definitions),

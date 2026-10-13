@@ -10,7 +10,7 @@ evidence; there are no remote resources or browser network requests.
 Run the current development version with a schema-3 catalog with a new destination path:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab \
+sjsift --sample-name sample --junctions sample.SJ.out.tab \
   --definitions definitions/grch38.toml \
   --output sample.tsv \
   --context-output sample.context.tsv \
@@ -75,9 +75,20 @@ compatibility warning as before and embeds a corresponding warning in the HTML.
 
 ## Provenance and file behavior
 
-The header records the input and catalog basenames, the catalog assembly label,
-and the sjsift version. Basenames identify the supplied files; no sample identity
-is inferred. The catalog's assembly cannot independently establish the assembly
+The report opens with **SJSIFT · JUNCTION REPORT** and the sample name as a subtitle;
+the browser title also includes the sample name. Supply `--sample-name NAME`, or
+let sjsift infer the single distinct `@RG SM` name from a BAM/CRAM input. Missing
+sample metadata requires an explicit name. Multiple names require an explicit
+selection matching the header; alignment evidence then includes only that sample's
+read groups. A supplied name must also match a single named alignment sample.
+
+**Inputs and configuration** appears at the bottom as two-column key-value rows:
+Alignment file, STAR junctions, Assembly, and sjsift version. The alignment file
+is labeled “Not supplied” when absent. The sampling limit per junction per mapping
+class and the preview/page sizes appear beside each alignment viewer.
+Basenames identify the
+supplied files; neither a supplied name nor alignment metadata verifies the anonymous
+STAR file's sample identity. The catalog's assembly cannot independently establish the assembly
 used to create the STAR file.
 
 Each junction includes a local schematic with donor and acceptor exon labels,
@@ -113,16 +124,16 @@ Supply `--alignments sample.bam` to embed selected structural evidence. Read
 counts, sampling, input checks and the raw identifiers retained when sharing.
 For CRAM, use `--alignments sample.cram --reference genome.fa` with local existing
 alignment and FASTA indexes. The explicit FASTA is always required and remote
-reference retrieval is disabled. FASTA provenance contains basenames and available
-compatibility assurance, never reference bases or absolute paths. The generated
-report opens independently of both source CRAM and FASTA.
+reference retrieval is disabled. The generated report contains no reference bases
+or absolute paths and opens independently of both source CRAM and FASTA.
 
 Defining and configured reference junctions share one pileup per variant, with
 colored junction guides labeled by exon connection and STAR support. Variant reads
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
-roles are gray. Multimapping reads are faded; unknown multiplicity has a dotted
-outline. A dashed lower edge marks unverified transcript strand. Shared reads
-appear once with striped blocks and a **Supports** list. Each junction retains its
+roles are gray. Reads use solid colors at full opacity regardless of mapping class
+or transcript-strand evidence. Shared reads appear once, colored by their first
+matching group in catalog order (variant first), with a **Supports** list.
+Mapping class and strand evidence remain available in read details. Each junction retains its
 own annotation and counts under **Junction annotations and alignment counts**.
 **Also matches** identifies shared physical records across
 qualifying junction groups; record IDs are stable within the report and identical
@@ -150,4 +161,4 @@ within the figure. Click a read, or focus it and press Enter, to open
 strand sources and the explicitly defined genomic left/right aligned anchors;
 these are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
-all counts and provenance remain readable; filtering and paging require JavaScript.
+all counts and junction annotations remain readable; filtering and paging require JavaScript.

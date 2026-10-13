@@ -111,8 +111,8 @@ totals and exclusion reasons. Full per-junction counts are in **Junction annotat
 and alignment counts**. The figure counts distinct embedded physical records,
 not the sum of memberships. Its preview displays up to ten records per support
 group, sorted by support group, genomic start and end. A shared record is assigned
-to its first matching group in catalog order (variant first) for paging; its colors
-and support filter still reflect all local memberships.
+to its first matching group in catalog order (variant first) for paging and block
+color; its highlighted splice lines and support filter still reflect all local memberships.
 **All** is the initial filter. **Unique only** shows exactly NH=1 records,
 including eligible secondary, supplementary, duplicate and QC-flagged records.
 It excludes unknown multiplicity. The **Support** filter selects any matching
@@ -128,14 +128,15 @@ Reads form a compact pileup beneath a shared genomic coordinate ruler and colore
 junction guides labeled with donor/acceptor exons and STAR support. Guides mark
 splice boundaries, not complete exon extents. Blue identifies variant support,
 teal same-donor support, purple same-acceptor support, and gray custom reference
-roles. Multimapping records are faded; unknown multiplicity has a dotted outline.
+roles. All records use solid block colors at full opacity. Shared records use the
+color of their first matching group in catalog order (variant first).
 Each row displays the complete alignment CIGAR in
 increasing genomic coordinates, independent of alignment orientation and
 transcript strand. Matching coordinates line up across all rows. M, = and X are
 aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
 marks are insertions; gold S/H mark soft/hard clipping; gray P is padding.
-Dashed lower block edges distinguish unverified transcript strand without replacing
-the support color. Colored splice lines highlight selected junctions. Hover over an
+Mapping class and transcript-strand evidence are shown in read details.
+Colored splice lines highlight selected junctions. Hover over an
 operation for its exact length and 1-based inclusive coordinates or interbase
 position. Clips and insertions mark boundaries without consuming reference width.
 
@@ -167,8 +168,15 @@ Evidence not requested is distinct from an observed zero eligible count.
 ## Validation and portability
 
 A usable local index, coordinate sort declaration, required literal contigs and
-coordinate bounds are checked. Multiple distinct `@RG SM` values are rejected;
-missing metadata is disclosed. Available `@SQ AS` labels must equal the catalog
+coordinate bounds are checked. The report sample name is inferred from a single
+distinct nonblank `@RG SM` value unless `--sample-name NAME` is supplied. Explicit
+names must match a header sample when sample metadata exists. No usable `SM` values
+requires an explicit name. Multiple distinct names require an explicit matching
+selection: only records with an `RG` belonging to that sample contribute counts
+and embedded evidence. Records without a sample-assigned read group are excluded
+in this multi-sample case. For single-sample or unnamed files, records without
+read groups remain eligible as before. Unknown or invalid read-group tags remain
+errors. Missing metadata is disclosed. Available `@SQ AS` labels must equal the catalog
 assembly. Header labels do not establish sequence equivalence, and anonymous
 STAR data cannot prove sample identity or genome assembly. The caller must
 supply compatible inputs. Regional decoding errors stop the whole invocation.

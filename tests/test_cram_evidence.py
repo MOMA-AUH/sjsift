@@ -90,10 +90,9 @@ def test_cram_cli_explicit_and_conventional_indexes_preserve_tsv_and_privacy(tmp
     assert result.returncode == 0, result.stderr
     assert result.stdout == baseline.stdout
     html = output.read_text()
-    assert "raw-read" in html and "CRAM" in html and "reference.fa" in html
+    assert "raw-read" in html and "reads.cram" in html
     assert "ACGTACGTACGT" not in html and "IIIIIIIIIIII" not in html and "AAAAAAAAAAAA" not in html
     assert str(tmp_path) not in html
-    assert "STAR sample identity cannot be verified" in html
 
 
 def test_bgzip_reference_requires_existing_gzi_and_supports_real_decoding(tmp_path):

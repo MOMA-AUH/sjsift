@@ -22,6 +22,12 @@ def _positive_integer(value: str) -> int:
     raise argparse.ArgumentTypeError("must be a positive integer")
 
 
+def _sample_name(value: str) -> str:
+    if not value.strip():
+        raise argparse.ArgumentTypeError("sample name must not be blank")
+    return value
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sjsift",
@@ -38,6 +44,12 @@ def _parser() -> argparse.ArgumentParser:
         metavar="PATH",
         required=True,
         help="TOML variant-definition catalog",
+    )
+    parser.add_argument(
+        "--sample-name",
+        type=_sample_name,
+        metavar="NAME",
+        help="sample name for the report; required unless a single sample can be inferred from BAM/CRAM read groups",
     )
     parser.add_argument(
         "-o",
@@ -74,6 +86,8 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
         arguments.alignment_index, arguments.alignment_limit, arguments.reference,
     )):
         parser.error("alignment-specific options require --alignments")
+    if not arguments.alignments and arguments.sample_name is None:
+        parser.error("--sample-name is required without --alignments")
     try:
         catalog = load_catalog(Path(arguments.definitions))
     except CatalogError as error:
@@ -90,9 +104,12 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
                 index_path=Path(arguments.alignment_index) if arguments.alignment_index else None,
                 limit=arguments.alignment_limit or 200,
                 reference_path=Path(arguments.reference) if arguments.reference else None,
+                sample_name=arguments.sample_name,
             )
         except AlignmentError as error:
             parser.error(str(error))
+        if evidence.sample_name is None:
+            parser.error("--sample-name is required: alignment header has no sample names to infer")
     try:
         write_reports(
             catalog.genome_assembly,
@@ -105,6 +122,7 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             definitions_name=Path(arguments.definitions).name,
             compatibility_warning=quantification.compatibility_warning,
             alignment_evidence=evidence,
+            sample_name=evidence.sample_name if evidence else arguments.sample_name,
         )
     except ReportError as error:
         parser.error(str(error))

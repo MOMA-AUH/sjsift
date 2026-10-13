@@ -191,18 +191,21 @@ sjsift preserves the input evidence.
 ## CLI contract
 
 ```text
-sjsift --junctions PATH --definitions PATH [-o PATH] [--context-output PATH] [--html-output PATH]
+sjsift --junctions PATH --definitions PATH [--sample-name NAME] [-o PATH] [--context-output PATH] [--html-output PATH]
 sjsift --help
 sjsift --version
 ```
 
 - `--junctions PATH` is required and names one `SJ.out.tab` file.
 - `--definitions PATH` is required and names one TOML catalog.
+- `--sample-name NAME` supplies a nonblank report sample name, shown in the HTML subtitle and browser title. It is required even for TSV-only output unless one distinct nonblank `@RG SM` name can be inferred from a BAM/CRAM input.
+- If an alignment header contains sample names, a supplied name must match one exactly. Multiple names require explicit selection; only records assigned to the selected sample's read groups contribute alignment evidence. Records without sample-assigned read groups are excluded in that case. STAR support remains unchanged.
 - `-o PATH` and `--output PATH` are equivalent and optional.
 - Without `--output`, TSV is written to standard output.
 - Diagnostics and warnings are written to standard error; standard output contains only the result table.
 - `--context-output PATH` adds a reference-junction TSV.
 - `--html-output PATH` adds an offline HTML report independently of `--context-output`.
+- The HTML starts with `SJSIFT · JUNCTION REPORT` and the sample subtitle. Inputs and configuration appear at the bottom in two-column key-value rows.
 - `--alignments PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
 - `--alignment-index PATH` optionally selects its local index; `--alignment-limit N` sets a positive per-junction/per-class sample cap (default 200).
 - `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignments`.

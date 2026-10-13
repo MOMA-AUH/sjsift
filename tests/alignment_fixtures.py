@@ -47,7 +47,7 @@ def bam(tmp_path, reads, header=None, name="reads.bam", index=True):
     return path
 
 
-def cli_inputs(tmp_path):
+def cli_inputs(tmp_path, sample_name="sample"):
     catalog = tmp_path / "catalog.toml"
     catalog.write_text('''schema_version = 3
 genome_assembly = "synthetic"
@@ -65,7 +65,10 @@ annotation_source = "Synthetic fixture"
 ''')
     sj = tmp_path / "sample.SJ.out.tab"
     sj.write_text("chr1\t101\t200\t1\t1\t0\t8\t2\t20\n")
-    return ["--junctions", str(sj), "--definitions", str(catalog)]
+    args = ["--junctions", str(sj), "--definitions", str(catalog)]
+    if sample_name is not None:
+        args.extend(["--sample-name", sample_name])
+    return args
 
 
 def fasta(tmp_path, sequence="A" * 2000, name="reference.fa", contig="chr1"):

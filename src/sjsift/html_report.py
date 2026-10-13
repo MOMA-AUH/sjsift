@@ -202,15 +202,12 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
               memberships, bucket: int, junctions) -> str:
     flags = ", ".join(record.flags) or "primary; no additional flags"
     strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
-    colors = list(dict.fromkeys(color for _, _, _, color in memberships))
-    fill = colors[0] if len(colors) == 1 else "repeating-linear-gradient(135deg," + ",".join(
-        f"{color} {index * 4}px {(index + 1) * 4}px" for index, color in enumerate(colors)
-    ) + ")"
+    color = next(color for index, _, _, color in memberships if index == bucket)
     support_labels = "; ".join(label for _, label, _, _ in memberships)
     return (
         f'<li class="read-row {record.strand_status}" data-mapping="{record.mapping_class}"'
         f' data-bucket="{bucket}" data-support="{" ".join(str(index) for index, _, _, _ in memberships)}"'
-        f' style="--read-color:{colors[0]};--read-fill:{fill}"'
+        f' style="--read-color:{color}"'
         f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
         '<details class="read-inspection"><summary class="read-hit" '
         f'aria-label="Inspect {escape(record.read_name, quote=True)}; {escape(support_labels, quote=True)}; {record.mapping_class}; {strand}">'
@@ -337,10 +334,11 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
     sampled = any(sum(evidence.groups[key].eligible.values()) > len(evidence.groups[key].records) for key in keys)
     return (
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
-        f'<div class="support-legend">{legend}<span>Faded: multimapping</span>'
-        '<span>Dotted outline: multiplicity unknown</span><span>Dashed lower edge: strand unverified</span>'
-        '<span>Striped: multiple selected junctions</span></div>'
+        f'<div class="support-legend">{legend}</div>'
         f'<p>{len(retained)} distinct embedded alignment records · <span class="shown-count">Currently shown: {preview}</span></p>'
+        f'<p>Sampling limit: {evidence.limit} records per junction per mapping class. '
+        'All eligible records are counted; embedded samples are deterministic. '
+        'Preview: up to 10 records per support group. Expanded: up to 50 per support group per page.</p>'
         + ('<p class="sampling-note">Sampled evidence: at least one junction exceeds its embedding limit. '
            'See junction annotations and alignment counts below for per-junction totals.</p>' if sampled else '')
         + '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
@@ -369,24 +367,6 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
     )
 
 
-def _alignment_provenance(evidence: AlignmentEvidence | None) -> str:
-    if evidence is None:
-        return '<aside class="alignment-provenance"><p>Alignment evidence not requested.</p></aside>'
-    fields = "".join(f'<div><dt>{escape(key)}</dt><dd>{escape(value)}</dd></div>' for key, value in evidence.provenance.items())
-    return (
-        '<aside class="alignment-provenance"><h2>Alignment evidence provenance</h2>'
-        f'<dl class="provenance">{fields}</dl>'
-        f'<p>Sampling limit: {evidence.limit} records per junction per mapping class. '
-        'All eligible records are counted; embedded samples are deterministic. Initial previews show up to 10 records per support group.</p>'
-        '<p>STAR support is separate from alignment-record counts. Differences can reflect upstream STAR filtering, '
-        'paired-template counting, alignment output choices, and this display policy. '
-        'Records are not molecule or transcript counts.</p>'
-        '<p>This shareable file retains original read names, read-group/sample identifiers, CIGARs, coordinates, '
-        'mapping quality, flags and strand evidence. It contains no read sequence, base qualities, '
-        'source alignment file or reference sequence.</p></aside>'
-    )
-
-
 def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | None) -> str:
     maximum = max(1, result.total, *(support.total for support in result.reference_junctions))
     junctions = [("Defining junction", result), *(
@@ -400,20 +380,13 @@ def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | No
             f'<td class="number">{support.total}</td>'
             f'<td class="coordinates">{_coordinates(support)}</td></tr>'
         )
-    label, explanation = _observation(result)
     return (
         f'<article id="variant-{index}" class="variant-detail panel">'
         f'<h2 tabindex="-1">{escape(result.definition.identifier)}</h2>'
-        f'<p class="lead-count"><strong>{result.unique}</strong> unique support</p>'
-        f'<p>{result.multimapping} multimapping · {result.total} total defining-junction support</p>'
         '<div class="table-scroll"><table class="detail-table">'
-        '<caption>Defining junction and each configured reference, in catalog order.</caption>'
         '<thead><tr><th scope="col">Junction</th><th scope="col">Support</th>'
         '<th scope="col">Total</th><th scope="col">Coordinates (1-based inclusive intron)</th>'
         f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
-        '<p class="scale-note">Bars use one linear scale within this variant. '
-        'Donor and acceptor roles follow transcript orientation on either strand.</p>'
-        f'<div class="evidence"><strong>{escape(label)}</strong><p>{escape(explanation)}</p></div>'
         + _combined_pileup(index, result, evidence)
         + '<details class="junction-details"><summary>Junction annotations and alignment counts</summary>'
         + "".join(
@@ -432,6 +405,7 @@ def write_html(
     *,
     junctions_name: str = "",
     definitions_name: str = "",
+    sample_name: str = "",
     compatibility_warning: bool = False,
     alignment_evidence: AlignmentEvidence | None = None,
 ) -> None:
@@ -449,15 +423,16 @@ def write_html(
     resources = files("sjsift")
     template = Template(resources.joinpath("html_report.html").read_text(encoding="utf-8"))
     stream.write(template.substitute(
-        title=escape(f"sjsift — {junctions_name}" if junctions_name else "sjsift junction report"),
+        title=escape(f"{sample_name} · SJSIFT junction report" if sample_name else "SJSIFT junction report"),
+        sample_subtitle=f'<p class="sample-name">{escape(sample_name)}</p>' if sample_name else "",
         styles=resources.joinpath("html_report.css").read_text(encoding="utf-8"),
         script=resources.joinpath("html_report.js").read_text(encoding="utf-8"),
         version=escape(__version__),
         assembly=escape(genome_assembly),
         junctions=escape(junctions_name or "Not supplied"),
-        definitions=escape(definitions_name or "Not supplied"),
         count=len(rows),
-        alignment_provenance=_alignment_provenance(alignment_evidence),
+        alignment_file=escape(alignment_evidence.provenance.get("Alignment file", "Not supplied")
+                              if alignment_evidence else "Not supplied"),
         observed=sum(bool(result.total) for result in rows),
         warning=(
             '<aside class="warning" role="note"><strong>Check input compatibility.</strong> '

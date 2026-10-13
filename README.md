@@ -37,22 +37,30 @@ curl -L \
   -o grch38.toml
 
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions grch38.toml \
   --output sample.sjsift.tsv
 ```
+
+`--sample-name NAME` is required, including for TSV-only runs, unless a single
+distinct sample name can be inferred from the BAM/CRAM read-group `SM` fields.
+It appears beneath the HTML report heading and in the browser title. With no
+sample metadata, supply a name explicitly. With multiple samples, supply a name
+present in the header; only that sample's read groups contribute alignment
+evidence. Explicit names must match when the alignment header contains sample
+names. STAR support counts remain unchanged.
 
 `--junctions` accepts plain text or gzip-compressed data, detected from the
 file contents regardless of filename extension. For example:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab.gz --definitions grch38.toml
+sjsift --sample-name sample --junctions sample.SJ.out.tab.gz --definitions grch38.toml
 ```
 
 Omit `--output` to write the report to standard output:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab --definitions grch38.toml
+sjsift --sample-name sample --junctions sample.SJ.out.tab --definitions grch38.toml
 ```
 
 To write local reference-junction context as a separate long-form TSV, pass
@@ -60,7 +68,7 @@ To write local reference-junction context as a separate long-form TSV, pass
 
 ```bash
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions definitions/grch38.toml \
   --output sample.sjsift.tsv \
   --context-output sample.sjsift.context.tsv
@@ -84,7 +92,7 @@ Add `--html-output` to create a single offline HTML file alongside the TSVs:
 
 ```bash
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions grch38.toml \
   --output sample.sjsift.tsv \
   --context-output sample.sjsift.context.tsv \
@@ -107,7 +115,7 @@ HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
 Add `--alignments sample.bam` for one combined read pileup per variant. Reads are
 blue for variant support, teal for same-donor support, and purple for same-acceptor
-support; multimapping reads are faded. Labeled junction guides share the genomic
+support, with solid colors at full opacity. Labeled junction guides share the genomic
 ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
 index, and `--alignment-limit N` caps each junction/mapping-class sample (default
@@ -117,7 +125,7 @@ sampling, count provenance and the raw identifiers retained in shared reports.
 For CRAM, supply the matching **local indexed FASTA** explicitly:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab --definitions definitions/grch38.toml \
+sjsift --sample-name sample --junctions sample.SJ.out.tab --definitions definitions/grch38.toml \
   --alignments sample.cram --reference genome.fa --html-output sample.html
 ```
 
