@@ -22,7 +22,7 @@ def main():
             assert "skip\tsynthetic\tchr1\t101\t200\t+\t8\t2\t10" in result.stdout
             results.append(result.stdout)
             text = output.read_text()
-            assert "installed-smoke" in text and "Eligible: 1" in text
+            assert "installed-smoke" in text
             assert text.count('<li class="read-row') == 1
             assert "CIGAR: 20M100N20M" in text
             assert "ACGTACGTACGT" not in text and "AAAAAAAAAAAA" not in text

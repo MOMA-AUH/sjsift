@@ -46,7 +46,6 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
         return stream.getvalue()
     html = render()
     assert html == render()
-    assert html.count("Eligible: 1 · Embedded: 1") == 2
     assert html.count('<li class="read-row') == 1
     assert 'data-support="0 1"' in html
     assert 'style="--read-color:#3159ad"' in html
@@ -108,8 +107,7 @@ annotation_source = "Synthetic comparator"
     assert base.stdout == result.stdout
     assert before.read_bytes() == after.read_bytes()
     html = (tmp_path / "report.html").read_text()
-    assert 'id="reads-v0-j1"' in html and "Also matches: skip · custom comparator" in html
-    assert "Eligible: 1 · Embedded: 1" in html
+    assert "Also matches: skip · custom comparator" in html
 
 
 class PileupRows(HTMLParser):
@@ -176,5 +174,4 @@ def test_combined_figure_keeps_other_contigs_separate_and_empty_guides_visible(t
     assert 'chr1 · genomic coordinates →' in html and 'chr2 · genomic coordinates →' in html
     assert html.count('<li class="read-row') == 1
     assert 'data-support="1"' in html
-    assert 'No eligible alignment records (0)' in html
     assert '>←</span>' in html

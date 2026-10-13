@@ -76,7 +76,7 @@ def test_multiple_samples_require_valid_selection_and_only_embed_that_sample(tmp
     assert result.returncode == 0, result.stderr
     html = report.read_text()
     assert '<p class="sample-name">chosen</p>' in html
-    assert 'Eligible: 2 · Embedded: 2' in html
+    assert html.count('<li class="read-row') == 2
     assert 'chosen-a' in html and 'chosen-c' in html
     assert 'other-read' not in html and 'no-sample' not in html and 'no-rg' not in html
     baseline = invoke(*args)

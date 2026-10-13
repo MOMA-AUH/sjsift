@@ -1,12 +1,8 @@
-"""Current catalog annotation and local schematic behavior."""
-import io
-from pathlib import Path
+"""Current catalog annotation validation."""
 
 import pytest
 
 from sjsift.catalog import CatalogError, load_catalog
-from sjsift.html_report import write_html
-from sjsift.quantify import VariantSupport
 
 
 ANNOTATED = '''schema_version = 3
@@ -55,16 +51,3 @@ def test_annotations_are_required_nonempty_text(tmp_path, field, value, junction
     path.write_text(prefix + "\n".join(line for line in lines if not line.startswith(field + " =")))
     with pytest.raises(CatalogError, match=field):
         load_catalog(path)
-
-
-def test_minus_strand_schematic_labels_local_boundaries_and_comparison_basis(tmp_path):
-    path = tmp_path / "catalog.toml"
-    path.write_text(ANNOTATED)
-    catalog = load_catalog(path)
-    stream = io.StringIO()
-    write_html(catalog.genome_assembly, (VariantSupport(catalog.variants[0], 2, 3),), stream)
-    html = stream.getvalue()
-    assert "Donor exon 17" in html and "Acceptor exon E18-C3" in html
-    assert "Donor boundary: 200" in html and "Acceptor boundary: 101" in html
-    assert "Annotation / comparison basis: NM_test.1" in html
-    assert "Local splice boundaries" in html and "not to scale" in html

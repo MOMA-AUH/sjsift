@@ -157,7 +157,6 @@ def test_all_reads_are_embedded_with_preview_controls_and_without_sampling_text(
     path = bam(tmp_path, [record(f"read-{i}", tags={"NH": 1}) for i in range(270)]
                + [record("unknown")])
     html = render(CATALOG, extract_evidence(CATALOG, path))
-    assert "Eligible: 271 · Embedded: 271" in html
     for removed in ("distinct embedded alignment records", "Currently shown:", "Sampling limit:",
                     "Sampled evidence:", "embedded samples are deterministic", "shown-count"):
         assert removed not in html

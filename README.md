@@ -102,7 +102,7 @@ sjsift \
 Open the HTML file in a browser. The overview shows defining-junction and
 reference support side by side, with separate unique and multimapping counts.
 Search by variant ID, sort by support or catalog order, and select a variant
-for detailed counts, coordinates, and local labeled splice-boundary schematics. Reference roles remain separate, including
+for detailed STAR support counts and junction coordinates. Reference roles remain separate, including
 custom roles from your own catalog.
 
 `--html-output` does not require `--context-output`. Without `--output`, the

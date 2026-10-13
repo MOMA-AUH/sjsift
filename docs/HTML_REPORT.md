@@ -90,17 +90,6 @@ supplied files; neither a supplied name nor alignment metadata verifies the anon
 STAR file's sample identity. The catalog's assembly cannot independently establish the assembly
 used to create the STAR file.
 
-Each junction includes a local schematic with donor and acceptor exon labels,
-exact intronic boundary coordinates, transcript strand, and intron length.
-The schematic reads in transcript direction (decreasing coordinates on minus
-strand), is not to scale, and does not imply full exon extents or a complete
-transcript model. Dashed outer edges mark the partial exon views.
-
-Reference accessions identify the annotation or comparison basis, not necessarily
-a transcript containing the aberrant junction. Each group's annotation provenance
-is visible, including explicit ARv7 CE3 and FGFR2 alternative terminal-exon caveats.
-All labels come from required schema fields, never guesses from comments or IDs.
-
 The file embeds all styles and scripts. With JavaScript disabled, the complete
 static overview and all detail sections remain visible and linked. Search,
 sorting, and the single-variant view require a modern JavaScript-enabled browser.
@@ -132,8 +121,7 @@ are blue, same-donor reads teal, and same-acceptor reads purple. Custom referenc
 roles are gray. Reads use solid colors at full opacity regardless of mapping class
 or transcript-strand evidence. Shared reads appear once, colored by their first
 matching group in catalog order (variant first), with a **Supports** list.
-Mapping class and strand evidence remain available in read details. Each junction retains its
-own annotation and counts under **Junction annotations and alignment counts**.
+Mapping class and strand evidence remain available in read details.
 **Also matches** identifies shared physical records across
 qualifying junction groups; record IDs are stable within the report and identical
 input/settings. Empty reference arrays, zero eligible records and alignment
@@ -144,8 +132,7 @@ figure shows up to ten alignment rows per support group. **Expand reads**
 pages through the embedded evidence, up to 50 rows per group at a time;
 **Collapse reads** restores the preview. Shared reads belong to the first matching
 group in catalog order for pagination. **All / Unique only** and **Support** change
-the displayed subset, leaving full counts
-and STAR support unchanged. Unique only means NH=1, regardless of primary,
+the displayed subset, leaving STAR support unchanged. Unique only means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
 filter-empty state. Paging affects visibility only; every eligible read remains
 available in the report.
@@ -164,4 +151,4 @@ within the figure. Click a read, or focus it and press Enter, to open
 strand sources and the explicitly defined genomic left/right aligned anchors;
 these are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
-all counts and junction annotations remain readable; filtering and paging require JavaScript.
+STAR support counts and labeled junction guides remain readable; filtering and paging require JavaScript.

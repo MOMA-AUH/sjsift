@@ -22,7 +22,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
     assert result.returncode == 0, result.stderr
     assert result.stdout == original.stdout
     text = html.read_text()
-    for expected in ("raw-name", "read 1", "read 2", "Alignment records", "Eligible: 2", "Embedded: 2", "20M100N20M", "strand unverified"):
+    for expected in ("raw-name", "read 1", "read 2", "20M100N20M", "strand unverified"):
         assert expected in text
     assert str(tmp_path) not in text
     assert "ACGTACGTACGT" not in text and "IIIIIIIIIIII" not in text
@@ -79,7 +79,6 @@ def test_explicit_index_embeds_all_reads_in_deterministic_safe_html_and_preserve
     assert results[0].stdout == invoke(*args).stdout
     assert outputs[0].read_bytes() == outputs[1].read_bytes()
     html = outputs[0].read_text()
-    assert "Eligible: 205 · Embedded: 205" in html
     assert hostile not in html and "&lt;/script&gt;" in html
     assert html.count('<li class="read-row') == 205
     rows = html.split('<li class="read-row')[1:]

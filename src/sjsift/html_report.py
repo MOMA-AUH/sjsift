@@ -8,7 +8,7 @@ from string import Template
 from typing import TextIO
 
 from . import __version__
-from .alignment_evidence import AlignmentEvidence, AlignmentRecord, MAPPING_CLASSES
+from .alignment_evidence import AlignmentEvidence, AlignmentRecord
 from .quantify import ReferenceJunctionSupport, VariantSupport
 
 
@@ -99,30 +99,6 @@ def _overview_row(
         f'<td>{_counts(result)}{_bar(result, maximum)}</td>'
         + "".join(cells)
         + f'<td class="observation">{escape(_observation(result)[0])}</td></tr>'
-    )
-
-
-def _schematic(label: str, support: VariantSupport | ReferenceJunctionSupport) -> str:
-    junction = support.definition
-    annotation = junction.annotation
-    donor, acceptor = (junction.intron_start, junction.intron_end)
-    if junction.strand == "-":
-        donor, acceptor = acceptor, donor
-    return (
-        '<section class="junction-schematic">'
-        f'<h3>{escape(label)}</h3>'
-        '<p class="scale-note">Local splice boundaries · transcript direction → · not to scale. '
-        'Exon extents and intervening transcript structure are not shown.</p>'
-        '<div class="splice-boundaries">'
-        f'<div class="exon-boundary donor">Donor exon {escape(annotation.donor_exon)}'
-        f'<small>Donor boundary: {donor}</small></div>'
-        f'<div class="splice-gap">↗ ··· ↘<small>{junction.intron_end - junction.intron_start + 1} nt intron</small></div>'
-        f'<div class="exon-boundary acceptor">Acceptor exon {escape(annotation.acceptor_exon)}'
-        f'<small>Acceptor boundary: {acceptor}</small></div></div>'
-        f'<p class="coordinates">{_coordinates(support)} · boundaries are intronic bases</p>'
-        f'<p>Annotation / comparison basis: {escape(annotation.reference_transcript)}. '
-        'This accession supplies labels or a comparator; it need not contain the defining junction.</p>'
-        f'<p class="annotation-source">{escape(annotation.annotation_source)}</p></section>'
     )
 
 
@@ -246,31 +222,6 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
     )
 
 
-def _alignment_group(evidence: AlignmentEvidence | None, key: str) -> str:
-    if evidence is None:
-        return '<p class="alignment-unavailable">Alignment evidence not requested for this junction.</p>'
-    group = evidence.groups[key]
-    eligible = sum(group.eligible.values())
-    counts = "".join(
-        f'<tr><th scope="row">{kind}</th><td>{group.eligible[kind]}</td>'
-        f'<td>{sum(r.mapping_class == kind for r in group.records)}</td></tr>'
-        for kind in MAPPING_CLASSES
-    )
-    return (
-        f'<section class="alignment-count-group" id="reads-{key}">'
-        '<h4>Alignment records</h4>'
-        f'<p>Eligible: {eligible} · Embedded: {len(group.records)}</p>'
-        '<table class="alignment-counts"><caption>Alignment counts by mapping class</caption>'
-        '<thead><tr><th>Class</th><th>Eligible</th><th>Embedded</th></tr></thead>'
-        f'<tbody>{counts}</tbody></table>'
-        f'<p>Transcript strand totals: agreeing {group.strand_totals["agreeing"]}; '
-        f'unverified {group.strand_totals["unverified"]}. '
-        f'Excluded: opposite {group.exclusions["opposite"]}; conflicting {group.exclusions["conflicting"]}.</p>'
-        + ('<p>No eligible alignment records (0).</p>' if not eligible else '')
-        + '</section>'
-    )
-
-
 def _junction_guide(label, support, color, scale):
     junction = support.definition
     annotation = junction.annotation
@@ -382,13 +333,7 @@ def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | No
         '<th scope="col">Total</th><th scope="col">Coordinates (1-based inclusive intron)</th>'
         f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
         + _combined_pileup(index, result, evidence)
-        + '<details class="junction-details"><summary>Junction annotations and alignment counts</summary>'
-        + "".join(
-            _schematic(name, support) + _alignment_group(
-                evidence, f"v{index}-j{position}",
-            ) for position, (name, support) in enumerate(junctions)
-        )
-        + '</details><a class="back-link" href="#overview">Back to all variants</a></article>'
+        + '</article>'
     )
 
 

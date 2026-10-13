@@ -26,7 +26,7 @@ button:disabled { opacity: .45; cursor: default; }
 a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
   outline: 3px solid #95b7ff; outline-offset: 3px;
 }
-.muted, .scale-note { color: #586778; }
+.muted { color: #586778; }
 .report-inputs { padding-top: 20px; border-top: 1px solid var(--line); margin-bottom: 16px; }
 .report-inputs h2 { font-size: 16px; margin: 0 0 8px; }
 .report-inputs .provenance { margin: 0; }
@@ -61,7 +61,6 @@ tbody tr:hover { background: #f7f9fc; }
 .bar > span { display: block; }
 #overview-table .bar { width: 180px; }
 .observation { font-size: 12px; min-width: 165px; }
-.scale-note { font-size: 12px; }
 .detail-table .bar { height: 16px; }
 .number { font-variant-numeric: tabular-nums; }
 .coordinates { font: 12px ui-monospace, monospace; overflow-wrap: anywhere; min-width: 200px; }
@@ -78,25 +77,14 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 }
 @media print {
   body { padding: 0; background: white; }
-  .controls, .detail-navigation, .back-link { display: none; }
+  .controls, .detail-navigation { display: none; }
   .panel { border: 0; }
   .table-scroll { overflow: visible; }
   th, td { padding: 6px; }
   .bar { min-width: 60px; print-color-adjust: exact; }
 }
 
-.junction-schematic { border-top: 1px solid var(--border, #d9dfdf); margin-top: 1.6rem; padding-top: 1rem; }
-.splice-boundaries { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; }
-.exon-boundary { flex: 1; background: #e7f0f1; padding: 1rem; border-block: 2px solid #21767b; overflow-wrap: anywhere; }
-.exon-boundary.donor { border-right: 4px solid #21767b; border-left: 2px dashed #789b9d; }
-.exon-boundary.acceptor { border-left: 4px solid #21767b; border-right: 2px dashed #789b9d; }
-.splice-gap { text-align: center; color: #476569; }
-.splice-boundaries small { display: block; font-size: .8rem; margin-top: .4rem; }
-.annotation-source { color: #526568; font-size: .85rem; overflow-wrap: anywhere; }
-@media (max-width: 600px) { .splice-boundaries { gap: .4rem; } .exon-boundary { padding: .5rem; } }
-
 .alignment-group { padding: 1rem 0; }
-.alignment-counts { max-width: 500px; }
 .pileup-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; margin-top: 12px; }
 .pileup-track { min-width: 600px; padding: 12px; background: white; }
 .pileup-chromosome { font-size: 12px; color: #526174; }
@@ -110,8 +98,6 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .junction-endpoint { position: absolute; top: 0; font: 10px ui-monospace, monospace; }
 .junction-endpoint.left { transform: translateX(-100%); padding-right: 4px; }
 .junction-endpoint.right { padding-left: 4px; }
-.junction-details { margin: 16px 0; font-size: 13px; }
-.junction-details > summary { cursor: pointer; }
 .pileup-ruler { height: 46px; position: relative; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
 .pileup-tick { position: absolute; top: 5px; transform: translateX(-50%); font: 11px ui-monospace, monospace; white-space: nowrap; }
 .pileup-tick::after { content: ""; display: block; height: 7px; border-left: 1px solid #bac5d3; margin: 4px 50% 0; }

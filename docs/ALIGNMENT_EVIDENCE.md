@@ -103,8 +103,7 @@ record is retained, so abundant references cannot displace rare defining reads.
 
 Every eligible record is counted and embedded. There is no per-junction or
 per-mapping-class cap. Extraction memory and HTML size grow with the number of
-eligible records. Full per-junction eligible/embedded counts, strand totals and
-exclusion reasons are in **Junction annotations and alignment counts**.
+eligible records.
 The figure displays each physical alignment only once, even when it has multiple
 memberships. Its preview displays up to ten records per support
 group, sorted by support group, genomic start and end. A shared record is assigned
@@ -115,8 +114,7 @@ including eligible secondary, supplementary, duplicate and QC-flagged records.
 It excludes unknown multiplicity. The **Support** filter selects any matching
 membership, including shared reads. Changing either filter resets to the first page;
 collapsing restores the preview. Paging and filtering change only which records
-are visible. Full eligible/embedded counts and strand totals always describe the
-entire group. The last page is labeled and its Next button disabled.
+are visible. The last page is labeled and its Next button disabled.
 
 ## Structural geometry and anchors
 
@@ -188,7 +186,7 @@ conventions are unchanged.
 
 The single HTML contains structural operations, coordinates, CIGAR, MAPQ,
 selected strand evidence, flags, read names, read-group/sample identifiers,
-annotation and software provenance, and input basenames. It contains no read
+junction exon labels, software provenance, and input basenames. It contains no read
 sequence, base qualities, reference sequence, original alignment file, or
 absolute source paths. Consider the retained raw identifiers before sharing.
 All text is escaped and all assets are inline; no browser network access or
