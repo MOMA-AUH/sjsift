@@ -2,6 +2,7 @@
 from dataclasses import replace
 from html.parser import HTMLParser
 import io
+import re
 
 import pytest
 
@@ -51,13 +52,59 @@ def test_pileup_aligns_shared_coordinates_and_preserves_relative_anchor_lengths(
     assert early[2][1:] == late[3][1:]
     assert early[3][1] == late[4][1]
     assert early[3][2] * 2 == pytest.approx(late[4][2], abs=0.00001)
-    # Clips/insertions mark boundaries without consuming reference width.
-    assert early[0][2] == late[1][2] == early[-1][2] == 0
+    # Soft clips use the aligned-base scale; insertions remain boundary markers.
+    assert early[0][2] == pytest.approx(left_anchor[2] * 4 / 40, abs=0.00001)
+    assert early[-1][2] == pytest.approx(early[3][2] * 3 / 20, abs=0.00001)
+    assert early[0][1] + early[0][2] == pytest.approx(left_anchor[1], abs=0.00001)
+    assert early[-1][1] == pytest.approx(early[3][1] + early[3][2], abs=0.00001)
+    assert late[1][2] == 0
     assert 'aria-label="Shared genomic coordinate ruler"' in html
     assert 'Compressed gap: 101–1,200 (1,100 nt)' in html
     # Names and metadata are inside a closed native disclosure, below its summary.
     assert html.index('</summary><div class="read-metadata">') < html.index('<strong>early</strong>')
     assert '<details class="read-inspection" open' not in html
+
+
+@pytest.mark.parametrize("flag", [0, 16])
+@pytest.mark.parametrize("strand", ["+", "-"])
+def test_long_soft_clips_fit_at_both_ends_and_keep_cigar_order_on_either_strand(tmp_path, flag, strand):
+    catalog = replace(CATALOG, variants=(replace(CATALOG.variants[0], strand=strand),))
+    path = bam(tmp_path, [record(cigar="3H120S20M100N20M240S2H", flag=flag, tags={"TS": strand})])
+    evidence = extract_evidence(catalog, path)
+    html = render(catalog, evidence)
+    hard_left, soft_left, aligned_left, gap, aligned_right, soft_right, hard_right = PileupParser(html).rows[0]
+    assert soft_left[2] == pytest.approx(aligned_left[2] * 6, abs=0.00001)
+    assert soft_right[2] == pytest.approx(aligned_right[2] * 12, abs=0.00001)
+    assert soft_left[1] + soft_left[2] == pytest.approx(aligned_left[1], abs=0.00001)
+    assert soft_right[1] == pytest.approx(aligned_right[1] + aligned_right[2], abs=0.00001)
+    assert soft_left[1] >= 1 and soft_right[1] + soft_right[2] <= 99.00001
+    assert hard_left[2] == hard_right[2] == 0
+    assert "S: 120 nt; boundary 80; unaligned soft clip" in html
+    assert "S: 240 nt; boundary 220; unaligned soft clip" in html
+    # Even a clip extending past chromosome start does not create genomic labels.
+    ticks = [int(label.replace(",", "")) for label in re.findall(
+        r'<span class="pileup-tick[^>]*>([^<]+)</span>', html)]
+    assert ticks[0] == 81 and ticks[-1] == 220
+    assert ticks == sorted(ticks) and all(81 <= tick <= 220 for tick in ticks)
+    assert 'Compressed gap: 101–200' in html
+    row = evidence.groups["v0-j0"].records[0]
+    assert row.start == 80 and row.end == 220
+    assert all(op.start == op.end for op in row.geometry if op.op == "S")
+
+
+def test_soft_clips_keep_the_base_scale_when_extending_into_another_reads_intron(tmp_path):
+    path = bam(tmp_path, [
+        record("clipped", cigar="20M100N20M120S"),
+        record("extra-splice", cigar="20M100N20M500N20M"),
+    ])
+    html = render(CATALOG, extract_evidence(CATALOG, path))
+    clipped, extended = PileupParser(html).rows
+    assert clipped[-1][2] == pytest.approx(clipped[-2][2] * 6, abs=0.00001)
+    assert clipped[-1][1] == extended[-2][1]
+    assert clipped[0][1:] == extended[0][1:]
+    assert clipped[2][1:] == extended[2][1:]
+    assert 'Compressed gap: 341–720' in html
+    assert 'Compressed gap: 221–720' not in html
 
 
 def test_pileup_never_compresses_across_another_embedded_reads_aligned_bases(tmp_path):
@@ -87,7 +134,6 @@ def test_anchors_are_only_contiguous_aligned_bases_abutting_selected_skip(tmp_pa
     assert row.anchors == anchors
     html = render(CATALOG, evidence)
     assert f"Aligned anchors: genomic left {anchors[0]} nt; genomic right {anchors[1]} nt" in html
-    assert "not STAR maximum overhang" in html
 
 
 def test_long_gap_geometry_coordinates_flags_and_safe_offline_report(tmp_path):
@@ -98,7 +144,6 @@ def test_long_gap_geometry_coordinates_flags_and_safe_offline_report(tmp_path):
     html = render(catalog, evidence)
     assert html == render(catalog, evidence)
     assert 'class="gap-break"' in html and "1100 nt; 101–1200" in html
-    assert "Nonuniform scale" in html
     for operation in ("M", "equal", "X", "N", "I", "D", "S", "H"):
         assert f"op-{operation}" in html
     for flag in ("secondary", "supplementary", "duplicate", "QC failure"):

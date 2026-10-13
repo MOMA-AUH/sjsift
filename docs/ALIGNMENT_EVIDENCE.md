@@ -130,14 +130,20 @@ Each row displays the complete alignment CIGAR in
 increasing genomic coordinates, independent of alignment orientation and
 transcript strand. Matching coordinates line up across all rows. M, = and X are
 aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
-marks are insertions; gold S/H mark soft/hard clipping; gray P is padding.
+marks are insertions; gold S blocks show soft clipping at actual length, gold H
+ticks mark hard clipping, and gray P is padding.
 Mapping class and transcript-strand evidence are shown in read details.
 Colored splice lines highlight selected junctions. Hover over an
 operation for its exact length and 1-based inclusive coordinates or interbase
-position. Clips and insertions mark boundaries without consuming reference width.
+position. Soft clips extend left from the alignment start or right from its end,
+using the same width per base as aligned blocks. These visual extensions do not
+assign reference coordinates to clipped bases or change the aligned coordinates.
+Extra space at the figure edges accommodates the longest clips; the genomic ruler
+labels only the reference span. Hard clips and insertions remain fixed-width
+boundary markers.
 
-The scale is nonuniform: gaps longer than 80 nt with no aligned bases in any
-embedded record are compressed, with `//` marks on the ruler. All other regions
+The scale is nonuniform: gaps longer than 80 nt with no aligned blocks or displayed
+soft clips in any embedded record are compressed, with `//` marks on the ruler. All other regions
 share one linear scale. Selected splice boundaries are preserved. The transform
 uses all embedded records across the variant's groups on that chromosome and stays
 fixed when filtering or paging. No nucleotide sequence or mismatch bases are

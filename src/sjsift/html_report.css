@@ -110,8 +110,8 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .junction-endpoint { position: absolute; top: 0; font: 10px ui-monospace, monospace; }
 .junction-endpoint.left { transform: translateX(-100%); padding-right: 4px; }
 .junction-endpoint.right { padding-left: 4px; }
-.pileup-help, .junction-details { margin: 16px 0; font-size: 13px; }
-.pileup-help > summary, .junction-details > summary { cursor: pointer; }
+.junction-details { margin: 16px 0; font-size: 13px; }
+.junction-details > summary { cursor: pointer; }
 .pileup-ruler { height: 46px; position: relative; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
 .pileup-tick { position: absolute; top: 5px; transform: translateX(-50%); font: 11px ui-monospace, monospace; white-space: nowrap; }
 .pileup-tick::after { content: ""; display: block; height: 7px; border-left: 1px solid #bac5d3; margin: 4px 50% 0; }
@@ -134,7 +134,7 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .op-N { top: 8px; height: 1px; background: #7e8d9b; }
 .op-N.selected-junction { height: 2px; top: 7px; }
 .op-D { top: 7px; height: 2px; background: #be4646; }
-.op-I, .op-S, .op-H, .op-P { width: 3px !important; top: 1px; height: 14px; transform: translateX(-50%); z-index: 1; }
+.op-I, .op-H, .op-P { width: 3px !important; top: 1px; height: 14px; transform: translateX(-50%); z-index: 1; }
 .op-I { background: #8b62b1; }
 .op-S, .op-H { background: #b88630; }
 .op-P { background: #aaa; }

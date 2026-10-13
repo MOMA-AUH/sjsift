@@ -126,6 +126,15 @@ def _schematic(label: str, support: VariantSupport | ReferenceJunctionSupport) -
     )
 
 
+def _display_interval(record: AlignmentRecord, operation) -> tuple[int, int]:
+    """Extend soft clips visually without assigning them reference coordinates."""
+    if operation.op == "S":
+        if operation.start == record.start:
+            return operation.start - operation.length, operation.start
+        return operation.start, operation.start + operation.length
+    return operation.start, operation.end
+
+
 @dataclass(frozen=True)
 class _PileupScale:
     """One coordinate transform for all embedded records on a figure's chromosome."""
@@ -133,43 +142,48 @@ class _PileupScale:
     start: int
     end: int
     breaks: tuple[tuple[int, int], ...]
+    left_padding: int
+    right_padding: int
 
     @classmethod
     def for_records(cls, records: tuple[AlignmentRecord, ...], boundaries: tuple[int, ...] = ()):
         start = min([record.start for record in records] + list(boundaries))
         end = max([record.end for record in records] + list(boundaries))
-        # Never compress a region containing an aligned base in ANY record.
-        intervals = sorted([(op.start, op.end) for record in records
+        # Preserve the base scale across aligned blocks and displayed soft clips.
+        intervals = sorted([_display_interval(record, op) for record in records
                             for op in record.geometry if op.op not in "ND"]
                            + [(boundary, boundary) for boundary in boundaries])
+        left_padding = max(0, start - min(left for left, _ in intervals))
+        right_padding = max(0, max(right for _, right in intervals) - end)
         cursor, breaks = start, []
         for left, right in [*intervals, (end, end)]:
             if left - cursor > 80:
                 breaks.append((cursor, left))
             cursor = max(cursor, right)
-        return cls(start, end, tuple(breaks))
+        return cls(start, end, tuple(breaks), left_padding, right_padding)
 
     def project(self, coordinate: float) -> float:
-        return coordinate - self.start - sum(
+        return coordinate - self.start + self.left_padding - sum(
             max(0, min(coordinate, right) - left) * (1 - 24 / (right - left))
             for left, right in self.breaks
         )
 
     def percent(self, coordinate: float) -> float:
-        # Leave room at both edges for clips and insertions at interbase positions.
-        return 1 + 98 * self.project(coordinate) / max(1, self.project(self.end))
+        # Leave room at both edges for fixed-width markers.
+        return 1 + 98 * self.project(coordinate) / max(1, self.project(self.end) + self.right_padding)
 
     def ruler(self, chromosome: str) -> str:
         ticks = []
-        width = self.project(self.end)
+        # Label only the reference span; outer soft-clip space has no coordinates.
+        width = self.project(self.end) - self.left_padding
         for index in range(5):
-            projected = width * index / 4
-            coordinate = self.start + projected
+            projected = self.left_padding + width * index / 4
+            coordinate = self.start + projected - self.left_padding
             for left, right in self.breaks:
                 offset = max(0, min(24, projected - self.project(left)))
                 coordinate += offset * ((right - left) / 24 - 1)
             base = min(self.end, int(coordinate) + 1)
-            ticks.append(f'<span class="pileup-tick tick-{index}" style="left:{1 + 98 * index / 4}%">{base:,}</span>')
+            ticks.append(f'<span class="pileup-tick tick-{index}" style="left:{self.percent(coordinate):.6f}%">{base:,}</span>')
         breaks = "".join(
             f'<span class="gap-break" style="left:{self.percent((left + right) / 2):.6f}%" '
             f'title="Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)">//</span>'
@@ -185,8 +199,11 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -
     for operation in record.geometry:
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
-        left = scale.percent(operation.start)
-        width = scale.percent(operation.end) - left
+        if operation.op == "S":
+            description += "; unaligned soft clip"
+        start, end = _display_interval(record, operation)
+        left = scale.percent(start)
+        width = scale.percent(end) - left
         selected = next((color for support, color in junctions
                          if operation.op == "N" and operation.start == support.definition.intron_start - 1
                          and operation.end == support.definition.intron_end), None)
@@ -340,18 +357,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'
         + ('<p>No eligible alignment records (0).</p>' if not retained else '')
         + '<div class="pileup-scroll">' + "".join(tracks) + '</div>'
-        '<p class="scale-note">Color identifies supported junctions. Each physical alignment appears once in this figure. '
-        'Counts on the guides are STAR support, separate from the displayed alignment records. '
-        'Exon labels mark splice boundaries, not full exon extents. '
-        'Nonuniform scale: empty gaps longer than 80 nt are compressed at // marks on the shared ruler. '
-        'Click a read for details; hover over operations for exact lengths and coordinates.</p>'
-        '<details class="pileup-help"><summary>How to read the pileup</summary>'
-        '<p>Blocks are aligned bases; colored splice lines highlight selected junctions. '
-        'Red lines: deletions; purple marks: insertions; gold marks: soft/hard clips; gray marks: padding. '
-        'Read bases are not embedded. Different chromosomes use separate labeled axes within this figure.</p>'
-        '<p>Aligned anchors in Read details count contiguous M, = and X bases immediately '
-        'abutting the named junction on the genomic left and right. Any other operation ends an anchor. '
-        'These are not STAR maximum overhang; no anchor or MAPQ threshold is applied.</p></details></section>'
+        '</section>'
     )
 
 

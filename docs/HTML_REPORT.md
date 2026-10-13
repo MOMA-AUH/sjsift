@@ -152,10 +152,13 @@ available in the report.
 
 Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
 ruler. Matching positions align vertically; thin splice lines connect aligned
-blocks. Gaps longer than 80 nt without any embedded aligned bases are compressed
+blocks. Gaps longer than 80 nt without aligned blocks or displayed soft clips are compressed
 at shared `//` marks. The scale remains fixed when filtering or paging.
 Deletions, insertions and clipping have distinct marks with exact lengths and
-coordinate tooltips. References on other chromosomes have separate labeled axes
+coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
+at the same width per base as aligned blocks, with space for their full lengths.
+They have no assigned reference coordinates. Hard clips remain gold ticks.
+References on other chromosomes have separate labeled axes
 within the figure. Click a read, or focus it and press Enter, to open
 **Read details**, which includes identity, flags,
 strand sources and the explicitly defined genomic left/right aligned anchors;
