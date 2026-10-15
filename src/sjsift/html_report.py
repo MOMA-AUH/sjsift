@@ -178,8 +178,7 @@ class _PileupScale:
         blocks, labels = _exon_edges(junctions, self)
         return ('<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
                 '<svg class="exon-axis" viewBox="0 0 1000 24" preserveAspectRatio="none" aria-hidden="true">'
-                + "".join(backbone) + blocks + '</svg>' + labels + "".join(ticks)
-                + '<span class="axis-caption">Boxes: annotated exons · brackets: extent unknown</span></div>')
+                + "".join(backbone) + blocks + '</svg>' + labels + "".join(ticks) + '</div>')
 
 
 def _exon_annotations(junctions):
@@ -361,9 +360,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
             (extent[0] - 1, extent[1]) for _, _, _, extent, _, _ in _exon_annotations(local_junctions)
             if extent is not None))
         scale = _PileupScale.for_records(tuple(entry[0] for entry in local_entries), boundaries, exon_extents)
-        tracks.append('<div class="pileup-track">'
-                      + f'<div class="pileup-chromosome">{escape(chromosome)} · genomic coordinates →'
-                      '<span>Arc width: total STAR support (log scale) · dashed: zero</span></div>'
+        tracks.append(f'<div class="pileup-track" role="group" aria-label="{escape(chromosome, quote=True)}">'
                       + _junction_arcs(local_junctions, scale, max(1, *(support.total for _, support, _ in junctions)))
                       + scale.ruler(local_junctions)
                       + '<ol class="read-rows">' + "".join(

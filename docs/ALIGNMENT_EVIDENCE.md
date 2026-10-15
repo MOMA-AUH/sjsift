@@ -14,7 +14,7 @@ downsampling; `--alignment-limit` is no longer supported. Alignment options requ
 `--alignment`, which requires `--html-output`. Indexes are never created by
 sjsift. Defining and reference junctions share one pileup figure per variant.
 Custom roles, references on other contigs or strands, and shared references use
-the same inclusion rules. Different chromosomes have separate labeled axes within
+the same inclusion rules. Different chromosomes have separate axes within
 the figure. Previews include up to ten records per support group; expansion shows
 up to 50 per group per page.
 

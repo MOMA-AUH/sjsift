@@ -156,7 +156,7 @@ Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.
 They have no assigned reference coordinates. Hard clips remain gold ticks.
-References on other chromosomes have separate labeled axes
+References on other chromosomes have separate axes
 within the figure. Click a read, or focus it and press Enter, to open
 **Read details**, which includes identity, flags,
 strand sources and the explicitly defined genomic left/right aligned anchors;

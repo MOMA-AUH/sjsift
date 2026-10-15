@@ -171,7 +171,11 @@ def test_combined_figure_keeps_other_contigs_separate_and_empty_guides_visible(t
     html = combined_report(catalog, extract_evidence(catalog, path))
     assert html.count('class="alignment-group"') == 1
     assert html.count('class="pileup-track"') == 2
-    assert 'chr1 · genomic coordinates →' in html and 'chr2 · genomic coordinates →' in html
+    assert 'class="pileup-track" role="group" aria-label="chr1"' in html
+    assert 'class="pileup-track" role="group" aria-label="chr2"' in html
     assert html.count('<li class="read-row') == 1
     assert 'data-support="1"' in html
-    assert '>←</span>' in html
+    assert '>←</span>' not in html
+    assert 'genomic coordinates →' not in html
+    assert 'Arc width: total STAR support' not in html
+    assert 'Boxes: annotated exons' not in html
