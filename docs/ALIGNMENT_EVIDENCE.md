@@ -173,7 +173,7 @@ that figure. Native read inspection also works without JavaScript.
 
 Read details show the read name; one genomic interval · CIGAR · MAPQ · NH line;
 a **Read** line with mate number (or unspecified), forward/reverse orientation;
-flags with their numeric value; and separate **genomic left/right aligned anchors**.
+flags with their numeric value; and one compact line with both **genomic left/right aligned anchors**.
 Anchors refer to the extraction junction: for a shared read, this is the first
 group in catalog order that the record supports.
 Each anchor is the sum of consecutive M, = and X operations immediately abutting

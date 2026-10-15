@@ -350,7 +350,7 @@ def test_anchors_are_only_contiguous_aligned_bases_abutting_selected_skip(tmp_pa
     row = evidence.groups["v0-j0"].records[0]
     assert row.anchors == anchors
     html = render(CATALOG, evidence)
-    assert f"Aligned anchors left: {anchors[0]} nt<br>Aligned anchors right: {anchors[1]} nt" in html
+    assert f"Aligned anchors: left {anchors[0]} nt, right {anchors[1]} nt" in html
 
 
 def test_long_gap_geometry_coordinates_flags_and_safe_offline_report(tmp_path):

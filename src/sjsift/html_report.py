@@ -345,7 +345,7 @@ def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
         f'CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"}</p>'
         f'<p>Read: {escape(record.mate.removeprefix("read "))}, {record.orientation}'
         f'<br>Flags: {escape(flags)} ({record.flag})</p>'
-        f'<p>Aligned anchors left: {record.anchors[0]} nt<br>Aligned anchors right: {record.anchors[1]} nt</p>'
+        f'<p>Aligned anchors: left {record.anchors[0]} nt, right {record.anchors[1]} nt</p>'
         '</div></details></li>'
     )
 

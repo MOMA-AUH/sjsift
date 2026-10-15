@@ -169,7 +169,7 @@ References on other chromosomes have separate axes
 within the figure. Click a read, or focus it and press Enter, to open
 read details: the read name; one genomic interval · CIGAR · MAPQ · NH line;
 a **Read** line with mate number (or unspecified), forward/reverse orientation;
-flags with their numeric value; and separate left/right aligned-anchor lines.
+flags with their numeric value; and one compact line with both aligned-anchor lengths.
 These anchors are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
 STAR support counts and junction arcs remain readable; filtering and paging require JavaScript.
