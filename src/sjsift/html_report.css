@@ -90,8 +90,12 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .pileup-chromosome { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; color: #526174; }
 .pileup-chromosome > span { color: #6b7785; font-size: 11px; }
 .pileup-track + .pileup-track { border-top: 2px solid var(--line); }
-.support-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; }
-.support-swatch { display: inline-block; width: 12px; height: 10px; margin-right: 6px; border-radius: 2px; }
+.support-legend { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; padding: 0; margin: 0 0 18px; font-size: 12px; }
+.support-legend li { display: flex; align-items: flex-start; gap: 8px; min-width: 0; max-width: 100%; }
+.support-legend li > div { min-width: 0; overflow-wrap: anywhere; }
+.support-legend strong { display: block; color: var(--read-color); line-height: 1.5; }
+.support-legend li span { display: block; color: #526174; font-size: 11px; line-height: 1.6; }
+.support-swatch { flex: none; width: 12px; height: 10px; margin-top: 4px; border-radius: 2px; background: var(--read-color); }
 .junction-arcs { position: relative; margin-top: 18px; }
 .junction-arcs svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .junction-arc, .junction-foot, .junction-baseline { fill: none; vector-effect: non-scaling-stroke; }
@@ -99,9 +103,6 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .junction-arc.zero-support { stroke-dasharray: 4 5; }
 .junction-foot { stroke-width: 2; }
 .junction-baseline { stroke: #dbe2e9; stroke-width: 1; }
-.junction-arc-label { position: absolute; transform: translateX(-50%); width: max-content; max-width: 36%; text-align: center; color: var(--read-color); background: white; padding: 0 6px; font-size: 11px; line-height: 16px; }
-.junction-arc-label strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.junction-arc-label > span { display: block; color: #526174; white-space: nowrap; }
 .arc-direction { position: absolute; transform: translateX(-50%); font-size: 17px; line-height: 12px; background: white; padding: 0 3px; }
 .pileup-ruler { height: 40px; position: relative; margin-bottom: 6px; }
 .pileup-tick { position: absolute; top: 0; transform: translateX(-50%); font: 10px ui-monospace, monospace; color: #6b7785; white-space: nowrap; }

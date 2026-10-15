@@ -223,12 +223,12 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
 
 
 def _junction_arcs(junctions, scale, maximum):
-    """Sashimi-style connections on the read scale, with separate label lanes."""
-    height = 72 + 44 * len(junctions)
+    """Sashimi-style connections on the read scale, labeled by the legend."""
+    height = 48 + 44 * len(junctions)
     baseline = height - 12
-    paths, labels = [], []
-    # Longer connections arch over shorter ones. Separate lanes also distinguish
-    # coincident junctions and keep labels readable when their midpoints overlap.
+    paths, directions = [], []
+    # Longer connections arch over shorter ones. Separate heights also
+    # distinguish coincident junctions.
     ordered = sorted(junctions, key=lambda item: -(
         scale.project(item[1].definition.intron_end)
         - scale.project(item[1].definition.intron_start - 1)))
@@ -237,7 +237,7 @@ def _junction_arcs(junctions, scale, maximum):
         annotation = junction.annotation
         left = scale.percent(junction.intron_start - 1) * 10
         right = scale.percent(junction.intron_end) * 10
-        apex = 40 + lane * 44
+        apex = 16 + lane * 44
         control = baseline - (baseline - apex) * 4 / 3
         width = 1.5 + 4.5 * log1p(support.total) / log1p(maximum)
         description = (f"{label} · exon {annotation.donor_exon} → {annotation.acceptor_exon}; "
@@ -252,12 +252,7 @@ def _junction_arcs(junctions, scale, maximum):
             f'M {right:.6f} {baseline - 4} v 8" stroke="{color}"/>'
         )
         midpoint = (left + right) / 20
-        labels.append(
-            f'<div class="junction-arc-label" style="left:{max(18, min(82, midpoint)):.6f}%;'
-            f'top:{apex - 34}px;--read-color:{color}" title="{escape(description, quote=True)}">'
-            f'<strong>{escape(label)} · exon {escape(annotation.donor_exon)} → {escape(annotation.acceptor_exon)}</strong>'
-            f'<span>{support.unique} unique + {support.multimapping} multi (STAR)</span>'
-            '</div>'
+        directions.append(
             f'<span class="arc-direction" style="left:{midpoint:.6f}%;top:{apex - 5}px;color:{color}" '
             f'aria-label="Transcript direction">{"→" if junction.strand == "+" else "←"}</span>'
         )
@@ -265,7 +260,7 @@ def _junction_arcs(junctions, scale, maximum):
         f'<div class="junction-arcs" style="height:{height}px">'
         f'<svg viewBox="0 0 1000 {height}" preserveAspectRatio="none" aria-hidden="true">'
         f'<path class="junction-baseline" d="M 10 {baseline} H 990"/>'
-        + "".join(paths) + '</svg>' + "".join(labels) + '</div>'
+        + "".join(paths) + '</svg>' + "".join(directions) + '</div>'
     )
 
 
@@ -317,13 +312,18 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                                     tuple((support, color) for _, _, support, color in members))
                           for record, members, owner, bucket, position in local_entries
                       ) + '</ol></div>')
-    legend = "".join(f'<span><i class="support-swatch" style="background:{color}"></i>{escape(label)}</span>'
-                     for label, _, color in junctions)
+    legend = "".join(
+        f'<li style="--read-color:{color}"><i class="support-swatch" aria-hidden="true"></i>'
+        f'<div><strong>{escape(label)} · exon {escape(support.definition.annotation.donor_exon)}'
+        f' → {escape(support.definition.annotation.acceptor_exon)}</strong>'
+        f'<span>{support.unique} unique + {support.multimapping} multi (STAR)</span></div></li>'
+        for label, support, color in junctions
+    )
     options = "".join(f'<option value="{position}">{escape(label)}</option>'
                       for position, (label, _, _) in enumerate(junctions))
     return (
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
-        f'<div class="support-legend">{legend}</div>'
+        f'<ul class="support-legend" aria-label="Junction support legend">{legend}</ul>'
         '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
         '<label>Support <select class="support-filter" aria-label="Junction support">'

@@ -119,12 +119,13 @@ are visible. The last page is labeled and its Next button disabled.
 ## Structural geometry and anchors
 
 Reads form a compact pileup beneath a shared genomic coordinate ruler and colored
-sashimi-style junction arcs labeled with donor/acceptor exons and STAR support.
+sashimi-style junction arcs. A color legend above the plot lists support types,
+donor/acceptor exons, and STAR support, keeping text clear of the arcs.
 Arcs share a baseline and the same coordinate transform as the reads. Longer
 connections arch over shorter ones; arrowheads indicate transcript direction.
 Line thickness uses total STAR support on a logarithmic scale, shared across
 chromosomes within the variant. Zero-support junctions remain visible as dashed
-arcs. Exact unique and multimapping counts accompany each arc and do not change
+arcs. Exact unique and multimapping counts appear in the legend and do not change
 with read filters. Arcs mark splice boundaries, not complete exon extents;
 no coverage track is inferred from the selected alignment records. Blue identifies variant support,
 teal same-donor support, purple same-acceptor support, and gray custom reference
