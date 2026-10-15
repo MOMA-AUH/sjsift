@@ -150,7 +150,7 @@ and shared unknown boundaries appear once. Blue bars are aligned read segments;
 they need not cover a whole exon. Matching positions align vertically; thin splice
 lines connect aligned read blocks. Gaps longer than 80 nt without annotated exons,
 aligned blocks, or displayed soft clips
-are compressed and marked by waves in the axis, with exact intervals in tooltips.
+are compressed and drawn as straight lines, with exact intervals in tooltips.
 The scale remains fixed when filtering or paging.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends

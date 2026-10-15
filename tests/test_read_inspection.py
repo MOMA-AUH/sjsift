@@ -141,7 +141,8 @@ def test_sashimi_arcs_align_with_reads_and_keep_zero_star_support_visible(tmp_pa
     assert float(arcs["#168375"]["stroke-width"]) > float(arcs["#3159ad"]["stroke-width"])
     assert 'zero-support' in arcs["#9950a5"]["class"]
     assert '0 unique + 0 multi (STAR)' in html
-    assert html.count('aria-label="Transcript direction">' + ('→' if strand == '+' else '←')) == 3
+    assert 'arc-direction' not in html
+    assert 'aria-label="Transcript direction"' not in html
     assert html.index('class="junction-arcs"') < html.index('class="pileup-ruler"') < html.index('<ol class="read-rows">')
 
 
@@ -176,7 +177,7 @@ def test_pileup_aligns_shared_coordinates_and_preserves_relative_anchor_lengths(
 
 @pytest.mark.parametrize("strand", ["+", "-"])
 @pytest.mark.parametrize("empty", [False, True])
-def test_exon_edges_follow_genomic_sides_and_waves_form_a_connected_axis(tmp_path, strand, empty):
+def test_exon_edges_follow_genomic_sides_and_gaps_form_a_straight_connected_axis(tmp_path, strand, empty):
     variant = replace(CATALOG.variants[0], strand=strand)
     catalog = replace(CATALOG, variants=(variant,))
     path = bam(tmp_path, [] if empty else [record(tags={"TS": strand})])
@@ -194,12 +195,14 @@ def test_exon_edges_follow_genomic_sides_and_waves_form_a_connected_axis(tmp_pat
     assert labels == (["1", "3"] if strand == "+" else ["3", "1"])
     assert "full exon extent unknown" in html
     assert len(parsed.axis_paths) == 3
-    first, wave, last = parsed.axis_paths
+    first, gap, last = parsed.axis_paths
     start, _, stop = map(float, re.findall(r"-?\d+(?:\.\d+)?", first["d"]))
-    wave_points = list(map(float, re.findall(r"-?\d+(?:\.\d+)?", wave["d"])))
+    gap_start, gap_y, gap_end = map(float, re.findall(r"-?\d+(?:\.\d+)?", gap["d"]))
     next_start, _, end = map(float, re.findall(r"-?\d+(?:\.\d+)?", last["d"]))
-    assert start <= stop == wave_points[0] < wave_points[-2] == next_start <= end
-    assert wave["class"] == "gap-break" and wave["d"].count("C") == 3
+    assert start <= stop == gap_start < gap_end == next_start <= end
+    assert gap_y == 12
+    assert gap["class"] == "gap-break"
+    assert all(re.findall(r"[A-Za-z]", path["d"]) == ["M", "H"] for path in parsed.axis_paths)
     assert "Compressed gap: 101–200 (100 nt)" in html
     assert "//</span>" not in html
 

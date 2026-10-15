@@ -164,22 +164,14 @@ class _PileupScale:
                 coordinate += offset * ((right - left) / 24 - 1)
             base = min(self.end, int(coordinate) + 1)
             ticks.append(f'<span class="pileup-tick tick-{index}" style="left:{self.percent(coordinate):.6f}%">{base:,}</span>')
-        # A single connected backbone, with short waves replacing compressed gaps.
+        # A straight connected backbone, including compressed gaps.
         backbone = []
         cursor = self.percent(self.start) * 10
         for left, right in self.breaks:
-            midpoint = self.percent((left + right) / 2) * 10
-            half_width = min(18, (self.percent(right) - self.percent(left)) * 5)
-            start, end = midpoint - half_width, midpoint + half_width
-            step = (end - start) / 3
+            start, end = self.percent(left) * 10, self.percent(right) * 10
             backbone.append(f'<path class="axis-line" d="M {cursor:.6f} 12 H {start:.6f}"/>')
-            wave = f'M {start:.6f} 12'
-            for part in range(3):
-                x = start + part * step
-                wave += (f' C {x + step / 3:.6f} 5, {x + 2 * step / 3:.6f} 19, '
-                         f'{x + step:.6f} 12')
             backbone.append(
-                f'<path class="gap-break" d="{wave}"><title>'
+                f'<path class="gap-break" d="M {start:.6f} 12 H {end:.6f}"><title>'
                 f'Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)</title></path>')
             cursor = end
         backbone.append(f'<path class="axis-line" d="M {cursor:.6f} 12 H {self.percent(self.end) * 10:.6f}"/>')
@@ -298,7 +290,7 @@ def _junction_arcs(junctions, scale, maximum):
     """Sashimi-style connections on the read scale, labeled by the legend."""
     height = 48 + 44 * len(junctions)
     baseline = height - 12
-    paths, directions = [], []
+    paths = []
     # Longer connections arch over shorter ones. Separate heights also
     # distinguish coincident junctions.
     ordered = sorted(junctions, key=lambda item: -(
@@ -323,15 +315,10 @@ def _junction_arcs(junctions, scale, maximum):
             f'<path class="junction-foot" d="M {left:.6f} {baseline - 4} v 8 '
             f'M {right:.6f} {baseline - 4} v 8" stroke="{color}"/>'
         )
-        midpoint = (left + right) / 20
-        directions.append(
-            f'<span class="arc-direction" style="left:{midpoint:.6f}%;top:{apex - 5}px;color:{color}" '
-            f'aria-label="Transcript direction">{"→" if junction.strand == "+" else "←"}</span>'
-        )
     return (
         f'<div class="junction-arcs" style="height:{height}px">'
         f'<svg viewBox="0 0 1000 {height}" preserveAspectRatio="none" aria-hidden="true">'
-        + "".join(paths) + '</svg>' + "".join(directions) + '</div>'
+        + "".join(paths) + '</svg></div>'
     )
 
 

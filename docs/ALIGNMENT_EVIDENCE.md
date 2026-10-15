@@ -122,7 +122,7 @@ Reads form a compact pileup beneath a shared genomic coordinate ruler and colore
 sashimi-style junction arcs. A color legend above the plot lists support types,
 donor/acceptor exons, and STAR support, keeping text clear of the arcs.
 Arcs share a baseline and the same coordinate transform as the reads. Longer
-connections arch over shorter ones; arrowheads indicate transcript direction.
+connections arch over shorter ones. Transcript strand remains in coordinate tooltips.
 Line thickness uses total STAR support on a logarithmic scale, shared across
 chromosomes within the variant. Zero-support junctions remain visible as dashed
 arcs. Exact unique and multimapping counts appear in the legend and do not change
@@ -149,7 +149,7 @@ boundary markers.
 
 The scale is nonuniform: gaps longer than 80 nt with no annotated exon extents,
 aligned blocks, or displayed soft clips in any embedded record are compressed,
-with wavy sections in the connected axis and exact gap intervals in tooltips.
+with straight sections in the connected axis and exact gap intervals in tooltips.
 Neutral exon boxes show the catalog's full annotated extents on the aligned-base
 scale, including bases without reads. Labels follow genomic orientation on either
 strand. Unknown extents use brackets at the known splice boundary. Shared exon
