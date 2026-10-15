@@ -114,12 +114,30 @@ class PileupRows(HTMLParser):
     def __init__(self, html):
         super().__init__()
         self.rows = []
+        self.bar_colors = []
+        self.arc_colors = {}
+        self._arc_color = None
+        self.label_colors = []
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if tag == "li" and "read-row" in attrs.get("class", "").split():
             self.rows.append(attrs)
+        if attrs.get("class") == "bar":
+            self.bar_colors.append(attrs.get("style", "").removeprefix("--support-color:"))
+        if "junction-arc" in attrs.get("class", "").split():
+            self._arc_color = attrs["stroke"]
+        if tag == "th" and attrs.get("scope") == "row" and "style" in attrs:
+            self.label_colors.append(attrs["style"].removeprefix("color:"))
+
+    def handle_data(self, data):
+        if self._arc_color is not None:
+            self.arc_colors[data.split(" · exon ", 1)[0]] = self._arc_color
+
+    def handle_endtag(self, tag):
+        if tag == "path":
+            self._arc_color = None
 
 
 def combined_report(catalog, evidence):
@@ -130,6 +148,35 @@ def combined_report(catalog, evidence):
         for variant in catalog.variants
     ), stream, alignment_evidence=evidence)
     return stream.getvalue()
+
+
+def test_support_colors_match_tables_arcs_and_reads_for_standard_and_custom_roles(tmp_path):
+    references = (reference("same_donor", 101, 200), reference("same_acceptor", 201, 300),
+                  reference("custom A", 401, 500), reference("custom B", 601, 700))
+    variant = replace(CATALOG.variants[0], intron_end=300, reference_junctions=references)
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M"), record("donor"),
+                          record("acceptor", start=180), record("custom A", start=380),
+                          record("custom B", start=580)])
+    previous = None
+    for refs in (references, references[::-1]):
+        catalog = replace(CATALOG, variants=(replace(variant, reference_junctions=refs),))
+        html = combined_report(catalog, extract_evidence(catalog, path))
+        parsed = PileupRows(html)
+        colors = parsed.bar_colors[:5]  # Overview row, in declared role order.
+        assert len(set(colors)) == 5
+        assert parsed.bar_colors[5:] == colors  # Detail table.
+        assert not parsed.label_colors
+        assert [row["style"].removeprefix("--read-color:") for row in parsed.rows] == colors
+        by_role = dict(zip((None, *(ref.role for ref in refs)), colors))
+        labels = {None: "Variant", "same_donor": "Same donor", "same_acceptor": "Same acceptor"}
+        assert parsed.arc_colors == {labels.get(role, role): color for role, color in by_role.items()}
+        assert by_role[None] == "#3159ad"
+        assert by_role["same_donor"] == "#168375"
+        assert by_role["same_acceptor"] == "#9950a5"
+        assert previous is None or by_role == previous
+        previous = by_role
+        assert "Reference unique" not in html
+        assert "Same donor unique" in html and "Same acceptor unique" in html
 
 
 def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_path):

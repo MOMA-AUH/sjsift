@@ -16,6 +16,17 @@ from .quantify import ReferenceJunctionSupport, VariantSupport
 _ROLE_LABELS = {"same_donor": "Same donor", "same_acceptor": "Same acceptor"}
 
 
+def _support_colors(roles):
+    colors = {None: "#3159ad", "same_donor": "#168375", "same_acceptor": "#9950a5"}
+    for index, role in enumerate(sorted(set(roles) - colors.keys())):
+        colors[role] = f"hsl({(30 + index * 137.508) % 360:.3f}, 60%, 40%)"
+    return colors
+
+
+def _support_color(support, colors):
+    return colors[support.definition.role if isinstance(support, ReferenceJunctionSupport) else None]
+
+
 def _role_label(role: str) -> str:
     return _ROLE_LABELS.get(role, role)
 
@@ -60,14 +71,13 @@ def _counts(support: VariantSupport | ReferenceJunctionSupport) -> str:
 def _bar(
     support: VariantSupport | ReferenceJunctionSupport,
     maximum: int,
-    reference: bool = False,
+    color: str,
 ) -> str:
     unique_width = 100 * (support.unique / maximum)
     multi_width = 100 * (support.multimapping / maximum)
-    kind = "reference" if reference else "variant"
     return (
-        '<span class="bar" aria-hidden="true">'
-        f'<span class="{kind}" style="width:{unique_width:.6f}%"></span>'
+        f'<span class="bar" style="--support-color:{color}" aria-hidden="true">'
+        f'<span class="unique-support" style="width:{unique_width:.6f}%"></span>'
         f'<span class="multimapping" style="width:{multi_width:.6f}%"></span></span>'
     )
 
@@ -81,7 +91,7 @@ def _coordinates(support: VariantSupport | ReferenceJunctionSupport) -> str:
 
 
 def _overview_row(
-    index: int, result: VariantSupport, roles: list[str], maximum: int
+    index: int, result: VariantSupport, roles: list[str], maximum: int, colors
 ) -> str:
     definition = result.definition
     references = {support.definition.role: support for support in result.reference_junctions}
@@ -89,7 +99,7 @@ def _overview_row(
     for role in roles:
         reference = references.get(role)
         content = (
-            _counts(reference) + _bar(reference, maximum, reference=True)
+            _counts(reference) + _bar(reference, maximum, colors[role])
             if reference is not None else '<span class="muted">Not configured</span>'
         )
         cells.append(f"<td>{content}</td>")
@@ -97,7 +107,7 @@ def _overview_row(
         f'<tr data-index="{index}" data-unique="{result.unique}" data-total="{result.total}">'
         f'<th scope="row"><a href="#variant-{index}">{escape(definition.identifier)}</a>'
         f'<small>{escape(definition.chromosome)} · {escape(definition.strand)}</small></th>'
-        f'<td>{_counts(result)}{_bar(result, maximum)}</td>'
+        f'<td>{_counts(result)}{_bar(result, maximum, colors[None])}</td>'
         + "".join(cells)
         + f'<td class="observation">{escape(_observation(result)[0])}</td></tr>'
     )
@@ -382,13 +392,12 @@ def _junction_arcs(junctions, scale, maximum):
     )
 
 
-def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvidence | None) -> str:
+def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvidence | None, colors) -> str:
     if evidence is None:
         return '<p class="alignment-unavailable">Alignment evidence not requested.</p>'
     # Keys and colors are generated here; catalog text is never used in CSS or selectors.
-    junctions = [("Variant", result, "#3159ad"), *(
-        (_role_label(support.definition.role), support,
-         {"same_donor": "#168375", "same_acceptor": "#9950a5"}.get(support.definition.role, "#677481"))
+    junctions = [("Variant", result, colors[None]), *(
+        (_role_label(support.definition.role), support, _support_color(support, colors))
         for support in result.reference_junctions
     )]
     keys = [f"v{index}-j{position}" for position in range(len(junctions))]
@@ -450,16 +459,17 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
     )
 
 
-def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | None) -> str:
+def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | None, colors) -> str:
     maximum = max(1, result.total, *(support.total for support in result.reference_junctions))
     junctions = [("Defining junction", result), *(
         (_role_label(support.definition.role), support) for support in result.reference_junctions
     )]
     rows = []
-    for position, (label, support) in enumerate(junctions):
+    for label, support in junctions:
+        color = _support_color(support, colors)
         rows.append(
             f'<tr><th scope="row">{escape(label)}</th>'
-            f'<td>{_counts(support)}{_bar(support, maximum, reference=position > 0)}</td>'
+            f'<td>{_counts(support)}{_bar(support, maximum, color)}</td>'
             f'<td class="number">{support.total}</td>'
             f'<td class="coordinates">{_coordinates(support)}</td></tr>'
         )
@@ -470,7 +480,7 @@ def _detail(index: int, result: VariantSupport, evidence: AlignmentEvidence | No
         '<thead><tr><th scope="col">Junction</th><th scope="col">Support</th>'
         '<th scope="col">Total</th><th scope="col">Coordinates (1-based inclusive intron)</th>'
         f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
-        + _combined_pileup(index, result, evidence)
+        + _combined_pileup(index, result, evidence, colors)
         + '</article>'
     )
 
@@ -495,6 +505,7 @@ def write_html(
     roles = list(dict.fromkeys(
         support.definition.role for result in rows for support in result.reference_junctions
     ))
+    colors = _support_colors(roles)
     maximum = max(1, *(support.total for result in rows for support in (result, *result.reference_junctions)))
     ordered = sorted(enumerate(rows), key=lambda pair: (-pair[1].unique, -pair[1].total, pair[0]))
     resources = files("sjsift")
@@ -517,9 +528,14 @@ def write_html(
             'The file may be empty; check genome assembly and chromosome naming.</aside>'
             if compatibility_warning else ""
         ),
+        support_legend="".join(
+            f'<span class="swatch" style="background:{colors[role]}" aria-hidden="true"></span>'
+            + escape("Variant unique" if role is None else f"{_role_label(role)} unique")
+            for role in (None, *roles)
+        ),
         reference_headers="".join(
             f'<th scope="col">Reference · {escape(_role_label(role))}</th>' for role in roles
         ),
-        overview_rows="".join(_overview_row(index, result, roles, maximum) for index, result in ordered),
-        detail_sections="".join(_detail(index, result, alignment_evidence) for index, result in enumerate(rows)),
+        overview_rows="".join(_overview_row(index, result, roles, maximum, colors) for index, result in ordered),
+        detail_sections="".join(_detail(index, result, alignment_evidence, colors) for index, result in enumerate(rows)),
     ))

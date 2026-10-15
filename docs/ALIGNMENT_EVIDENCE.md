@@ -128,8 +128,9 @@ chromosomes within the variant. Zero-support junctions remain visible as dashed
 arcs. Exact unique and multimapping counts appear in the preceding support table and do not change
 with read filters. Arcs mark splice boundaries, not complete exon extents;
 no coverage track is inferred from the selected alignment records. Blue identifies variant support,
-teal same-donor support, purple same-acceptor support, and gray custom reference
-roles. All records use solid block colors at full opacity. Shared records use the
+teal same-donor support, and purple same-acceptor support. Custom reference roles
+receive distinct colors, consistently shared by the tables, arcs, and alignment
+tracks throughout the report. All records use solid block colors at full opacity. Shared records use the
 color of their first matching group in catalog order (variant first).
 Each row displays the complete alignment CIGAR in
 increasing genomic coordinates, independent of alignment orientation and

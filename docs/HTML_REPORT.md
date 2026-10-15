@@ -46,6 +46,11 @@ Bars stack unique and multimapping counts without weighting. Overview bars use
 one linear scale across the entire catalog, including when filtered. Detail
 bars use one scale within the selected variant. Tiny bars can be visually hard
 to distinguish from zero; exact numeric counts are always displayed.
+Support types use one color throughout the overview and detail table, sashimi arcs,
+and alignment tracks: variant blue, same donor teal, and same acceptor purple.
+Each custom reference role gets a distinct color, assigned consistently throughout
+the report. Junction labels retain the standard text color.
+The neutral multimapping segment remains separate from the colored unique segment.
 
 ## Reading the evidence
 
@@ -122,7 +127,7 @@ baseline aligned to the reads, with the genomic ruler just below. Arc thickness
 uses total STAR support on a logarithmic scale; dashed arcs mark zero support.
 Exact unique and multimapping counts remain visible in the preceding support table. Variant reads
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
-roles are gray. Reads use solid colors at full opacity regardless of mapping class
+roles each have their own color. Reads use solid colors at full opacity regardless of mapping class
 or transcript-strand evidence. Shared reads appear once, colored by their first
 matching group in catalog order (variant first), with a **Supports** list.
 Mapping class and strand evidence remain available in read details.
