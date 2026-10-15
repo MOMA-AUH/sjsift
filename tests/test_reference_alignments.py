@@ -102,7 +102,7 @@ annotation_source = "Synthetic comparator"
     before = tmp_path / "before.context.tsv"
     after = tmp_path / "after.context.tsv"
     base = invoke(*args, "--context-output", before)
-    result = invoke(*args, "--alignments", path, "--context-output", after, "--html-output", tmp_path / "report.html")
+    result = invoke(*args, "--alignment", path, "--context-output", after, "--html-output", tmp_path / "report.html")
     assert result.returncode == 0, result.stderr
     assert base.stdout == result.stdout
     assert before.read_bytes() == after.read_bytes()

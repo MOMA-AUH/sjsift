@@ -57,7 +57,7 @@ def _parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="write an offline HTML overview and variant details to PATH",
     )
-    parser.add_argument("--alignments", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
+    parser.add_argument("--alignment", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
     parser.add_argument("--alignment-index", metavar="PATH", help="explicit local BAM/CRAM index (otherwise discovered)")
     parser.add_argument("--reference", metavar="PATH", help="explicit local indexed FASTA, required for CRAM; remote reference lookup is disabled")
     parser.add_argument(
@@ -69,14 +69,14 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
-    if arguments.alignments and not arguments.html_output:
-        parser.error("--alignments requires --html-output")
-    if not arguments.alignments and any(option is not None for option in (
+    if arguments.alignment and not arguments.html_output:
+        parser.error("--alignment requires --html-output")
+    if not arguments.alignment and any(option is not None for option in (
         arguments.alignment_index, arguments.reference,
     )):
-        parser.error("alignment-specific options require --alignments")
-    if not arguments.alignments and arguments.sample_name is None:
-        parser.error("--sample-name is required without --alignments")
+        parser.error("alignment-specific options require --alignment")
+    if not arguments.alignment and arguments.sample_name is None:
+        parser.error("--sample-name is required without --alignment")
     try:
         catalog = load_catalog(Path(arguments.definitions))
     except CatalogError as error:
@@ -86,10 +86,10 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
     except QuantifyError as error:
         parser.error(str(error))
     evidence = None
-    if arguments.alignments:
+    if arguments.alignment:
         try:
             evidence = extract_evidence(
-                catalog, Path(arguments.alignments),
+                catalog, Path(arguments.alignment),
                 index_path=Path(arguments.alignment_index) if arguments.alignment_index else None,
                 reference_path=Path(arguments.reference) if arguments.reference else None,
                 sample_name=arguments.sample_name,

@@ -13,8 +13,8 @@ def alignment(tmp_path, kind, read_groups, reads):
     path = bam(tmp_path, reads, header=header)
     if kind == "CRAM":
         reference = fasta(tmp_path)
-        return ["--alignments", cram(tmp_path, path, reference), "--reference", reference]
-    return ["--alignments", path]
+        return ["--alignment", cram(tmp_path, path, reference), "--reference", reference]
+    return ["--alignment", path]
 
 
 @pytest.mark.parametrize("html", [False, True])

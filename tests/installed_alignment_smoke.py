@@ -16,7 +16,7 @@ def main():
         for alignment, options in ((path, []), (cram_path, ["--reference", str(reference)])):
             output = root / f"{alignment.suffix[1:]}.html"
             result = subprocess.run([
-                "sjsift", *cli_inputs(root), "--alignments", str(alignment),
+                "sjsift", *cli_inputs(root), "--alignment", str(alignment),
                 "--html-output", str(output), *options,
             ], capture_output=True, text=True, check=True)
             assert "skip\tsynthetic\tchr1\t101\t200\t+\t8\t2\t10" in result.stdout

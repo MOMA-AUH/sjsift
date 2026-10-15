@@ -18,7 +18,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
                            record("raw-name", flag=129, tags={"NH": 2})])
     html = tmp_path / "report.html"
     original = invoke(*args)
-    result = invoke(*args, "--alignments", reads, "--html-output", html)
+    result = invoke(*args, "--alignment", reads, "--html-output", html)
     assert result.returncode == 0, result.stderr
     assert result.stdout == original.stdout
     text = html.read_text()
@@ -29,9 +29,9 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
 
 
 @pytest.mark.parametrize("options,message", [
-    (["--alignments", "missing.bam"], "requires --html-output"),
-    (["--alignment-index", "missing.bai"], "require --alignments"),
-    (["--reference", "reference.fa"], "require --alignments"),
+    (["--alignment", "missing.bam"], "requires --html-output"),
+    (["--alignment-index", "missing.bai"], "require --alignment"),
+    (["--reference", "reference.fa"], "require --alignment"),
 ])
 def test_alignment_option_dependencies_fail_before_output(tmp_path, options, message):
     result = invoke(*cli_inputs(tmp_path), *options)
@@ -53,7 +53,7 @@ def test_invalid_alignment_inputs_stop_before_any_report_output(tmp_path, proble
     if problem == "sam": reads.write_text("@HD\tVN:1.6\tSO:coordinate\n@SQ\tSN:chr1\tLN:2000\n")
     if problem == "missing_file": reads.unlink()
     outputs = [tmp_path / f"out.{ext}" for ext in ("tsv", "context.tsv", "html")]
-    result = invoke(*cli_inputs(tmp_path), "--alignments", reads, "--output", outputs[0], "--context-output", outputs[1], "--html-output", outputs[2])
+    result = invoke(*cli_inputs(tmp_path), "--alignment", reads, "--output", outputs[0], "--context-output", outputs[1], "--html-output", outputs[2])
     assert result.returncode == 2, result.stderr
     assert not result.stdout and "Traceback" not in result.stderr
     assert not any(p.exists() for p in outputs)
@@ -72,7 +72,7 @@ def test_explicit_index_embeds_all_reads_in_deterministic_safe_html_and_preserve
     index = tmp_path / "custom.index"
     Path(str(reads) + (".crai" if kind == "CRAM" else ".bai")).rename(index)
     outputs = [tmp_path / f"report{i}.html" for i in range(2)]
-    results = [invoke(*args, "--alignments", reads, "--alignment-index", index, *options, "--html-output", output)
+    results = [invoke(*args, "--alignment", reads, "--alignment-index", index, *options, "--html-output", output)
                for output in outputs]
     assert all(r.returncode == 0 for r in results)
     assert len({r.stdout for r in results}) == 1
@@ -89,7 +89,7 @@ def test_explicit_index_embeds_all_reads_in_deterministic_safe_html_and_preserve
 def invoke_empty_report(tmp_path, args):
     reads = bam(tmp_path, [], name="empty.bam")
     output = tmp_path / "empty.html"
-    result = invoke(*args, "--alignments", reads, "--html-output", output)
+    result = invoke(*args, "--alignment", reads, "--html-output", output)
     assert result.returncode == 0
     return output.read_text()
 
@@ -100,7 +100,7 @@ def test_alignment_report_respects_existing_output_and_cleans_new_files(tmp_path
     output = tmp_path / "keep.html"
     output.write_text("keep")
     new = tmp_path / "new.tsv"
-    result = invoke(*args, "--alignments", reads, "--html-output", output, "--output", new)
+    result = invoke(*args, "--alignment", reads, "--html-output", output, "--output", new)
     assert result.returncode == 2 and not result.stdout
     assert output.read_text() == "keep" and not new.exists()
 
@@ -110,7 +110,7 @@ def test_available_alignment_assembly_labels_must_agree(tmp_path, assembly, succ
     header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000, "AS": assembly}], "RG": [{"ID": "lane1", "SM": "sample"}]}
     path = bam(tmp_path, [record(tags={"RG": "lane1"})], header=header)
     output = tmp_path / "report.html"
-    result = invoke(*cli_inputs(tmp_path), "--alignments", path, "--html-output", output)
+    result = invoke(*cli_inputs(tmp_path), "--alignment", path, "--html-output", output)
     if success:
         assert result.returncode == 0
         assert output.exists()
@@ -126,6 +126,6 @@ def test_indexed_cram_requires_reference_before_index_discovery(tmp_path):
     with pysam.AlignmentFile(path, "wc", header=header, format_options=["no_ref=1"]) as stream:
         stream.write(record())
     pysam.index(str(path))
-    result = invoke(*cli_inputs(tmp_path), "--alignments", path, "--html-output", tmp_path / "report.html")
+    result = invoke(*cli_inputs(tmp_path), "--alignment", path, "--html-output", tmp_path / "report.html")
     assert result.returncode == 2 and "CRAM requires --reference" in result.stderr
     assert not result.stdout and not (tmp_path / "report.html").exists()

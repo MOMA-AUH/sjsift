@@ -5,13 +5,13 @@ alongside the required STAR file and schema-3 catalog:
 
 ```bash
 sjsift --junctions sample.SJ.out.tab --definitions catalog.toml \
-  --alignments sample.bam --html-output sample.html --output sample.tsv
+  --alignment sample.bam --html-output sample.html --output sample.tsv
 ```
 
 `--alignment-index PATH` overrides discovery of `sample.bam.bai`, `sample.bai`,
 `sample.bam.csi`, or `sample.csi`. All eligible records are embedded without
 downsampling; `--alignment-limit` is no longer supported. Alignment options require
-`--alignments`, which requires `--html-output`. Indexes are never created by
+`--alignment`, which requires `--html-output`. Indexes are never created by
 sjsift. Defining and reference junctions share one pileup figure per variant.
 Custom roles, references on other contigs or strands, and shared references use
 the same inclusion rules. Different chromosomes have separate labeled axes within

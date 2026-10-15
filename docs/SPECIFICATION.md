@@ -206,9 +206,9 @@ sjsift --version
 - `--context-output PATH` adds a reference-junction TSV.
 - `--html-output PATH` adds an offline HTML report independently of `--context-output`.
 - The HTML starts with `SJSIFT · JUNCTION REPORT` and the sample subtitle. Inputs and configuration appear at the bottom in two-column key-value rows.
-- `--alignments PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
+- `--alignment PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
 - `--alignment-index PATH` optionally selects its local index. All eligible alignment records are embedded without downsampling; there is no `--alignment-limit` option.
-- `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignments`.
+- `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignment`.
 - Both optional reports work with either a main TSV file or main TSV on stdout.
 - All output paths must differ and must not already exist; parent directories must exist.
 - Inputs cannot be provided via standard input.

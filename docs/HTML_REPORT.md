@@ -107,10 +107,10 @@ loss.
 
 ## Optional alignment previews
 
-Supply `--alignments sample.bam` to embed selected structural evidence. Read
+Supply `--alignment sample.bam` to embed selected structural evidence. Read
 [alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
 counts, input checks and the raw identifiers retained when sharing.
-For CRAM, use `--alignments sample.cram --reference genome.fa` with local existing
+For CRAM, use `--alignment sample.cram --reference genome.fa` with local existing
 alignment and FASTA indexes. The explicit FASTA is always required and remote
 reference retrieval is disabled. The generated report contains no reference bases
 or absolute paths and opens independently of both source CRAM and FASTA.

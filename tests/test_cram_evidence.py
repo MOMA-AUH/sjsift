@@ -70,7 +70,7 @@ def test_bad_cram_inputs_create_no_outputs_or_implicit_indexes(tmp_path, problem
     args = cli_inputs(tmp_path)
     before = {p: p.read_bytes() for p in tmp_path.iterdir()}
     outputs = [tmp_path / f"out.{ext}" for ext in ("tsv", "context.tsv", "html")]
-    result = invoke(*args, "--alignments", path, "--reference", ref,
+    result = invoke(*args, "--alignment", path, "--reference", ref,
                     "--output", outputs[0], "--context-output", outputs[1], "--html-output", outputs[2])
     assert result.returncode == 2, result.stderr
     assert "cannot extract alignment evidence" in result.stderr
@@ -89,7 +89,7 @@ def test_cram_cli_explicit_and_conventional_indexes_preserve_tsv_and_privacy(tmp
     options = ["--alignment-index", index] if index_name == "custom.index" else []
     output = tmp_path / "report.html"
     baseline = invoke(*args)
-    result = invoke(*args, "--alignments", path, "--reference", ref, "--html-output", output, *options)
+    result = invoke(*args, "--alignment", path, "--reference", ref, "--html-output", output, *options)
     assert result.returncode == 0, result.stderr
     assert result.stdout == baseline.stdout
     html = output.read_text()
@@ -145,7 +145,7 @@ def test_cram_preserves_existing_output_and_removes_new_destinations(tmp_path):
     keep = tmp_path / "keep.html"
     keep.write_text("existing report")
     new = tmp_path / "new.tsv"
-    result = invoke(*cli_inputs(tmp_path), "--alignments", path, "--reference", ref,
+    result = invoke(*cli_inputs(tmp_path), "--alignment", path, "--reference", ref,
                     "--html-output", keep, "--output", new)
     assert result.returncode == 2 and not result.stdout
     assert keep.read_text() == "existing report" and not new.exists()
@@ -198,11 +198,11 @@ def test_cram_never_contacts_inherited_refget_with_real_network_detector(tmp_pat
         monkeypatch.setenv("REF_CACHE", str(tmp_path / "unused-cache" / "%s"))
         ref = fasta(tmp_path)
         args = cli_inputs(tmp_path)
-        good = invoke(*args, "--alignments", replaced, "--reference", ref, "--html-output", tmp_path / "good.html")
+        good = invoke(*args, "--alignment", replaced, "--reference", ref, "--html-output", tmp_path / "good.html")
         assert good.returncode == 0, good.stderr
         wrong = fasta(tmp_path, "C" * 2000, name="wrong.fa")
-        bad = invoke(*args, "--alignments", replaced, "--reference", wrong, "--html-output", tmp_path / "bad.html")
-        missing = invoke(*args, "--alignments", replaced, "--html-output", tmp_path / "missing.html")
+        bad = invoke(*args, "--alignment", replaced, "--reference", wrong, "--html-output", tmp_path / "bad.html")
+        missing = invoke(*args, "--alignment", replaced, "--html-output", tmp_path / "missing.html")
         assert bad.returncode == missing.returncode == 2
         assert not requests, "sjsift must never attempt remote reference resolution"
         assert not (tmp_path / "bad.html").exists() and not (tmp_path / "missing.html").exists()
