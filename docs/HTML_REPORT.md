@@ -142,9 +142,16 @@ filter-empty state. Paging affects visibility only; every eligible read remains
 available in the report.
 
 Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
-ruler. Matching positions align vertically; thin splice lines connect aligned
-blocks. Gaps longer than 80 nt without aligned blocks or displayed soft clips are compressed
-at shared `//` marks. The scale remains fixed when filtering or paging.
+ruler. Labeled exon boxes span the catalog's annotated exon extents on the same
+base scale as the reads, including uncovered exon bases. Hover for the exon label,
+transcript, source, inclusive coordinates, and length. An unknown extent is shown
+as a bracket at the splice boundary, never as a full exon box. Shared exon extents
+and shared unknown boundaries appear once. Blue bars are aligned read segments;
+they need not cover a whole exon. Matching positions align vertically; thin splice
+lines connect aligned read blocks. Gaps longer than 80 nt without annotated exons,
+aligned blocks, or displayed soft clips
+are compressed and marked by waves in the axis, with exact intervals in tooltips.
+The scale remains fixed when filtering or paging.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.

@@ -51,3 +51,39 @@ def test_annotations_are_required_nonempty_text(tmp_path, field, value, junction
     path.write_text(prefix + "\n".join(line for line in lines if not line.startswith(field + " =")))
     with pytest.raises(CatalogError, match=field):
         load_catalog(path)
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+@pytest.mark.parametrize("reference", [False, True])
+def test_optional_exon_extents_use_inclusive_coordinates_and_transcript_sides(tmp_path, strand, reference):
+    text = ANNOTATED.replace('strand = "-"', f'strand = "{strand}"')
+    if reference:
+        text = text.replace("reference_junctions = []\n", "")
+        text += "\n[[variants.reference_junctions]]\n" + text.split("[[variants]]\n")[1].replace(
+            'id = "terminal"', 'role = "comparison"').replace("intron_end = 200", "intron_end = 300")
+    end = 300 if reference else 200
+    left, right = (1, 100), (end + 1, end + 50)
+    donor, acceptor = (left, right) if strand == "+" else (right, left)
+    text += f"donor_extent = {list(donor)}\nacceptor_extent = {list(acceptor)}\n"
+    path = tmp_path / "catalog.toml"
+    path.write_text(text)
+    variant = load_catalog(path).variants[0]
+    annotation = variant.reference_junctions[0].annotation if reference else variant.annotation
+    assert annotation.donor_extent == donor
+    assert annotation.acceptor_extent == acceptor
+
+
+@pytest.mark.parametrize("extent", ['[]', '[201]', '[201, 220, 230]', '"201–220"',
+                                   '[true, 220]', '[201, 220.0]', '[0, 220]',
+                                   '[220, 201]', '[202, 220]', '[1, 100]'])
+@pytest.mark.parametrize("reference", [False, True])
+def test_exon_extents_reject_invalid_or_nonadjacent_coordinates(tmp_path, extent, reference):
+    text = ANNOTATED
+    if reference:
+        text = text.replace("reference_junctions = []\n", "")
+        text += "\n[[variants.reference_junctions]]\n" + text.split("[[variants]]\n")[1].replace(
+            'id = "terminal"', 'role = "comparison"').replace("intron_start = 101", "intron_start = 151")
+    path = tmp_path / "catalog.toml"
+    path.write_text(text + f"donor_extent = {extent}\n")
+    with pytest.raises(CatalogError, match="donor_extent"):
+        load_catalog(path)

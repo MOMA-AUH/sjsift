@@ -17,6 +17,7 @@ reference_transcript = "NM_000044.6"
 donor_exon = "3"
 acceptor_exon = "CE3"
 annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; CE3 is a curated cryptic terminal exon (Hu 2009; DRAGEN 4.4 hg38 junction), not present in NM_000044.6. Full CE3 extent is not asserted."
+donor_extent = [67686010, 67686126]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -28,6 +29,8 @@ reference_transcript = "NM_000044.6"
 donor_exon = "3"
 acceptor_exon = "4"
 annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [67686010, 67686126]
+acceptor_extent = [67711402, 67711689]
 
 [[variants]]
 id = "ARv567es"
@@ -39,6 +42,8 @@ reference_transcript = "NM_000044.6"
 donor_exon = "4"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [67711402, 67711689]
+acceptor_extent = [67723686, 67730619]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -50,6 +55,8 @@ reference_transcript = "NM_000044.6"
 donor_exon = "4"
 acceptor_exon = "5"
 annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [67711402, 67711689]
+acceptor_extent = [67717478, 67717622]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -61,6 +68,8 @@ reference_transcript = "NM_000044.6"
 donor_exon = "7"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000374690.9; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [67722827, 67722984]
+acceptor_extent = [67723686, 67730619]
 
 [[variants]]
 id = "BRAFdel2-10"
@@ -72,6 +81,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "1"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140924566, 140924929]
+acceptor_extent = [140781576, 140781693]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -83,6 +94,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "1"
 acceptor_exon = "2"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140924566, 140924929]
+acceptor_extent = [140850111, 140850212]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -94,6 +107,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "10"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140783021, 140783157]
+acceptor_extent = [140781576, 140781693]
 
 [[variants]]
 id = "BRAFdel2-8"
@@ -105,6 +120,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "1"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140924566, 140924929]
+acceptor_extent = [140787548, 140787584]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -116,6 +133,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "1"
 acceptor_exon = "2"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140924566, 140924929]
+acceptor_extent = [140850111, 140850212]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -127,6 +146,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "8"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140794308, 140794467]
+acceptor_extent = [140787548, 140787584]
 
 [[variants]]
 id = "BRAFdel3-10"
@@ -138,6 +159,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "2"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140850111, 140850212]
+acceptor_extent = [140781576, 140781693]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -149,6 +172,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "2"
 acceptor_exon = "3"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140850111, 140850212]
+acceptor_extent = [140834609, 140834872]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -160,6 +185,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "10"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140783021, 140783157]
+acceptor_extent = [140781576, 140781693]
 
 [[variants]]
 id = "BRAFdel3-8"
@@ -171,6 +198,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "2"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140850111, 140850212]
+acceptor_extent = [140787548, 140787584]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -182,6 +211,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "2"
 acceptor_exon = "3"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140850111, 140850212]
+acceptor_extent = [140834609, 140834872]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -193,6 +224,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "8"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140794308, 140794467]
+acceptor_extent = [140787548, 140787584]
 
 [[variants]]
 id = "BRAFdel4-10"
@@ -204,6 +237,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "3"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140834609, 140834872]
+acceptor_extent = [140781576, 140781693]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -215,6 +250,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "3"
 acceptor_exon = "4"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140834609, 140834872]
+acceptor_extent = [140808892, 140808995]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -226,6 +263,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "10"
 acceptor_exon = "11"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140783021, 140783157]
+acceptor_extent = [140781576, 140781693]
 
 [[variants]]
 id = "BRAFdel4-8"
@@ -237,6 +276,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "3"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140834609, 140834872]
+acceptor_extent = [140787548, 140787584]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -248,6 +289,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "3"
 acceptor_exon = "4"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140834609, 140834872]
+acceptor_extent = [140808892, 140808995]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -259,6 +302,8 @@ reference_transcript = "NM_004333.6"
 donor_exon = "8"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000646891.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [140794308, 140794467]
+acceptor_extent = [140787548, 140787584]
 
 [[variants]]
 id = "EGFRvIVa"
@@ -270,6 +315,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "24"
 acceptor_exon = "28"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55200316, 55200413]
+acceptor_extent = [55205256, 55211628]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -281,6 +328,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "24"
 acceptor_exon = "25"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55200316, 55200413]
+acceptor_extent = [55201188, 55201355]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -292,6 +341,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "27"
 acceptor_exon = "28"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55202517, 55202625]
+acceptor_extent = [55205256, 55211628]
 
 [[variants]]
 id = "EGFRvIII"
@@ -303,6 +354,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "1"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55019017, 55019365]
+acceptor_extent = [55155830, 55155946]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -314,6 +367,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "1"
 acceptor_exon = "2"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55019017, 55019365]
+acceptor_extent = [55142286, 55142437]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -325,6 +380,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "7"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55154011, 55154152]
+acceptor_extent = [55155830, 55155946]
 
 [[variants]]
 id = "EGFRvIIIb"
@@ -336,6 +393,8 @@ reference_transcript = "NM_001346900.2"
 donor_exon = "1"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55109723, 55109958]
+acceptor_extent = [55155830, 55155946]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -347,6 +406,8 @@ reference_transcript = "NM_001346900.2"
 donor_exon = "1"
 acceptor_exon = "2"
 annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55109723, 55109958]
+acceptor_extent = [55142286, 55142437]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -358,6 +419,8 @@ reference_transcript = "NM_001346900.2"
 donor_exon = "7"
 acceptor_exon = "8"
 annotation_source = "GENCODE v49 / ENST00000450046.2; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55154011, 55154152]
+acceptor_extent = [55155830, 55155946]
 
 [[variants]]
 id = "EGFRvIVb"
@@ -369,6 +432,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "24"
 acceptor_exon = "27"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55200316, 55200413]
+acceptor_extent = [55202517, 55202625]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -380,6 +445,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "24"
 acceptor_exon = "25"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55200316, 55200413]
+acceptor_extent = [55201188, 55201355]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -391,6 +458,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "26"
 acceptor_exon = "27"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55201735, 55201782]
+acceptor_extent = [55202517, 55202625]
 
 [[variants]]
 id = "EGFRvII"
@@ -402,6 +471,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "13"
 acceptor_exon = "16"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55161499, 55161631]
+acceptor_extent = [55171175, 55171213]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -413,6 +484,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "13"
 acceptor_exon = "14"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55161499, 55161631]
+acceptor_extent = [55163733, 55163823]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -424,6 +497,8 @@ reference_transcript = "NM_005228.5"
 donor_exon = "15"
 acceptor_exon = "16"
 annotation_source = "GENCODE v49 / ENST00000275493.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55165280, 55165437]
+acceptor_extent = [55171175, 55171213]
 
 [[variants]]
 id = "EGFRvIIb"
@@ -435,6 +510,8 @@ reference_transcript = "NM_201284.2"
 donor_exon = "13"
 acceptor_exon = "16"
 annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55161499, 55161631]
+acceptor_extent = [55170307, 55171037]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -446,6 +523,8 @@ reference_transcript = "NM_201284.2"
 donor_exon = "13"
 acceptor_exon = "14"
 annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55161499, 55161631]
+acceptor_extent = [55163733, 55163823]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -457,6 +536,8 @@ reference_transcript = "NM_201284.2"
 donor_exon = "15"
 acceptor_exon = "16"
 annotation_source = "GENCODE v49 / ENST00000344576.7; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [55165280, 55165437]
+acceptor_extent = [55170307, 55171037]
 
 [[variants]]
 id = "FGFR2-E18-C3"
@@ -468,6 +549,7 @@ reference_transcript = "NM_000141.5"
 donor_exon = "E17"
 acceptor_exon = "E18-C3"
 annotation_source = "GENCODE v49 / ENST00000358487.10; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; Zingg 2022 biological labels E17/E18-C1/E18-C3; comparator annotation ranks 17/18. E18-C3 is an alternative terminal exon, not present in NM_000141.5. Full alternative exon extent is not asserted."
+donor_extent = [121483698, 121483803]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -479,6 +561,8 @@ reference_transcript = "NM_000141.5"
 donor_exon = "E17"
 acceptor_exon = "E18-C1"
 annotation_source = "GENCODE v49 / ENST00000358487.10; pinned exon evidence in docs/curation/gencode-v49-exons.tsv; Zingg 2022 biological labels E17/E18-C1/E18-C3; comparator annotation ranks 17/18. E18-C3 is an alternative terminal exon, not present in NM_000141.5. Full alternative exon extent is not asserted."
+donor_extent = [121483698, 121483803]
+acceptor_extent = [121478332, 121480021]
 
 [[variants]]
 id = "METex7-8"
@@ -490,6 +574,8 @@ reference_transcript = "NM_000245.4"
 donor_exon = "6"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116755355, 116755515]
+acceptor_extent = [116758459, 116758620]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -501,6 +587,8 @@ reference_transcript = "NM_000245.4"
 donor_exon = "6"
 acceptor_exon = "7"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116755355, 116755515]
+acceptor_extent = [116757437, 116757539]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -512,6 +600,8 @@ reference_transcript = "NM_000245.4"
 donor_exon = "8"
 acceptor_exon = "9"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116757638, 116757774]
+acceptor_extent = [116758459, 116758620]
 
 [[variants]]
 id = "METex14"
@@ -523,6 +613,8 @@ reference_transcript = "NM_000245.4"
 donor_exon = "13"
 acceptor_exon = "15"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116771498, 116771654]
+acceptor_extent = [116774881, 116775111]
 
 [[variants.reference_junctions]]
 role = "same_donor"
@@ -534,6 +626,8 @@ reference_transcript = "NM_000245.4"
 donor_exon = "13"
 acceptor_exon = "14"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116771498, 116771654]
+acceptor_extent = [116771849, 116771989]
 
 [[variants.reference_junctions]]
 role = "same_acceptor"
@@ -545,3 +639,5 @@ reference_transcript = "NM_000245.4"
 donor_exon = "14"
 acceptor_exon = "15"
 annotation_source = "GENCODE v49 / ENST00000397752.8; pinned exon evidence in docs/curation/gencode-v49-exons.tsv"
+donor_extent = [116771849, 116771989]
+acceptor_extent = [116774881, 116775111]

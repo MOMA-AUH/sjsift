@@ -98,20 +98,24 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .support-swatch { flex: none; width: 12px; height: 10px; margin-top: 4px; border-radius: 2px; background: var(--read-color); }
 .junction-arcs { position: relative; margin-top: 18px; }
 .junction-arcs svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.junction-arc, .junction-foot, .junction-baseline { fill: none; vector-effect: non-scaling-stroke; }
+.junction-arc, .junction-foot { fill: none; vector-effect: non-scaling-stroke; }
 .junction-arc { stroke-linecap: round; }
 .junction-arc.zero-support { stroke-dasharray: 4 5; }
 .junction-foot { stroke-width: 2; }
-.junction-baseline { stroke: #dbe2e9; stroke-width: 1; }
 .arc-direction { position: absolute; transform: translateX(-50%); font-size: 17px; line-height: 12px; background: white; padding: 0 3px; }
-.pileup-ruler { height: 40px; position: relative; margin-bottom: 6px; }
-.pileup-tick { position: absolute; top: 0; transform: translateX(-50%); font: 10px ui-monospace, monospace; color: #6b7785; white-space: nowrap; }
-.pileup-tick::after { content: ""; display: block; height: 5px; border-left: 1px solid #cbd4df; margin: 4px 50% 0; }
+.pileup-ruler { height: 76px; position: relative; margin-top: -24px; margin-bottom: 6px; }
+.exon-axis { display: block; width: 100%; height: 24px; }
+.axis-line, .gap-break { fill: none; stroke: #9cabbc; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.exon-edge { fill: #e1e8f0; stroke: #aebccd; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.exon-boundary { fill: none; stroke: #73869c; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.exon-edge-label { position: absolute; top: 4px; height: 16px; text-align: center; font: 10px/16px system-ui, sans-serif; color: #344c66; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.axis-caption { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); color: #738093; font-size: 10px; white-space: nowrap; }
+.pileup-tick { position: absolute; top: 32px; transform: translateX(-50%); font: 10px ui-monospace, monospace; color: #6b7785; white-space: nowrap; }
+.pileup-tick::before { content: ""; display: block; height: 5px; border-left: 1px solid #cbd4df; margin: -7px 50% 4px; }
 .tick-0 { transform: none; }
 .tick-4 { transform: translateX(-100%); }
-.tick-0::after { margin-left: 0; }
-.tick-4::after { margin-left: 100%; }
-.gap-break { position: absolute; top: 23px; transform: translateX(-50%); color: #586778; font: bold 12px ui-monospace, monospace; }
+.tick-0::before { margin-left: 0; }
+.tick-4::before { margin-left: 100%; }
 .read-rows { list-style: none; padding: 0; margin: 0; }
 .read-row { margin: 0; padding: 0; }
 .read-hit { display: block; cursor: pointer; list-style: none; }

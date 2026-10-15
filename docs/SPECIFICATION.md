@@ -101,9 +101,19 @@ may describe cryptic or alternative terminal exons, rather than numeric ranks.
 The accession identifies the annotation/comparison basis; it does not assert
 that the reference transcript contains the defining aberrant junction.
 
+Each junction may also specify `donor_extent` and/or `acceptor_extent` as
+`[start, end]` arrays of positive integers in 1-based inclusive genomic coordinates.
+Start must not exceed end. Each extent must abut its corresponding splice boundary:
+on the plus strand the donor ends at `intron_start - 1` and the acceptor starts at
+`intron_end + 1`; on the minus strand these genomic sides are reversed. The cited
+`annotation_source` must establish the full extent. Omit an extent when unknown;
+the report draws a boundary bracket instead. Existing schema-3 catalogs without
+these optional fields remain valid.
+
 Every variant requires `reference_junctions`, an array of tables that may be
-empty (`reference_junctions = []`). References have exactly `role`, `chromosome`,
-`intron_start`, `intron_end`, `strand`, and the four annotation fields above.
+empty (`reference_junctions = []`). References require `role`, `chromosome`,
+`intron_start`, `intron_end`, `strand`, and the four annotation fields above,
+and permit the same optional exon extents.
 Their junction fields follow the same rules; `role` is a nonempty string without
 tabs or line breaks. See the [schema-3 example](REFERENCE_JUNCTION_CONTEXT.md#catalog-schema-version-3).
 No legacy loaders, migrations, or annotation fallbacks are provided.
@@ -325,7 +335,7 @@ The application does not implement:
 - scores, thresholds, clinical calls, or variant/reference fractions;
 - inferred sample identity or independent verification of the input assembly;
 - automatic catalog discovery, annotation download, or catalog updates;
-- whole-transcript models or complete exon extents;
+- whole-transcript models or exon extents inferred from reads;
 - workflow-engine integration, plugin interfaces, or a public Python library API.
 
 The alignment-evidence guide is normative for alignment input, classification,

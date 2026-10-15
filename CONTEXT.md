@@ -73,9 +73,15 @@ comparison basis, not a claim that it contains the aberrant junction.
 _Avoid_: Variant transcript accession, inferred exon label
 
 **Local junction schematic**:
-Labeled splice boundaries in transcript orientation, with exact intronic
-coordinates and no claim about full exon extents or complete transcript structure.
+Labeled splice boundaries with exact intronic coordinates and transcript direction,
+optionally accompanied by annotated exon extents, without claiming complete transcript structure.
 _Avoid_: Full transcript model, exon coverage
+
+**Annotated exon extent**:
+The full genomic interval of an exon explicitly established by the cited annotation,
+expressed as 1-based inclusive start and end coordinates. Read coverage and a known
+splice boundary alone do not establish this extent.
+_Avoid_: Read span, inferred exon length
 
 **Alignment evidence**:
 Individual selected-junction alignment records from optional indexed input.

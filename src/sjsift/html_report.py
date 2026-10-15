@@ -123,13 +123,16 @@ class _PileupScale:
     right_padding: int
 
     @classmethod
-    def for_records(cls, records: tuple[AlignmentRecord, ...], boundaries: tuple[int, ...] = ()):
-        start = min([record.start for record in records] + list(boundaries))
-        end = max([record.end for record in records] + list(boundaries))
-        # Preserve the base scale across aligned blocks and displayed soft clips.
+    def for_records(cls, records: tuple[AlignmentRecord, ...], boundaries: tuple[int, ...] = (),
+                    exon_extents: tuple[tuple[int, int], ...] = ()):
+        start = min([record.start for record in records] + list(boundaries)
+                    + [left for left, _ in exon_extents])
+        end = max([record.end for record in records] + list(boundaries)
+                  + [right for _, right in exon_extents])
+        # Preserve the base scale across annotated exons, aligned blocks and soft clips.
         intervals = sorted([_display_interval(record, op) for record in records
                             for op in record.geometry if op.op not in "ND"]
-                           + [(boundary, boundary) for boundary in boundaries])
+                           + [(boundary, boundary) for boundary in boundaries] + list(exon_extents))
         left_padding = max(0, start - min(left for left, _ in intervals))
         right_padding = max(0, max(right for _, right in intervals) - end)
         cursor, breaks = start, []
@@ -149,7 +152,7 @@ class _PileupScale:
         # Leave room at both edges for fixed-width markers.
         return 1 + 98 * self.project(coordinate) / max(1, self.project(self.end) + self.right_padding)
 
-    def ruler(self) -> str:
+    def ruler(self, junctions) -> str:
         ticks = []
         # Label only the reference span; outer soft-clip space has no coordinates.
         width = self.project(self.end) - self.left_padding
@@ -161,13 +164,82 @@ class _PileupScale:
                 coordinate += offset * ((right - left) / 24 - 1)
             base = min(self.end, int(coordinate) + 1)
             ticks.append(f'<span class="pileup-tick tick-{index}" style="left:{self.percent(coordinate):.6f}%">{base:,}</span>')
-        breaks = "".join(
-            f'<span class="gap-break" style="left:{self.percent((left + right) / 2):.6f}%" '
-            f'title="Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)">//</span>'
-            for left, right in self.breaks
-        )
+        # A single connected backbone, with short waves replacing compressed gaps.
+        backbone = []
+        cursor = self.percent(self.start) * 10
+        for left, right in self.breaks:
+            midpoint = self.percent((left + right) / 2) * 10
+            half_width = min(18, (self.percent(right) - self.percent(left)) * 5)
+            start, end = midpoint - half_width, midpoint + half_width
+            step = (end - start) / 3
+            backbone.append(f'<path class="axis-line" d="M {cursor:.6f} 12 H {start:.6f}"/>')
+            wave = f'M {start:.6f} 12'
+            for part in range(3):
+                x = start + part * step
+                wave += (f' C {x + step / 3:.6f} 5, {x + 2 * step / 3:.6f} 19, '
+                         f'{x + step:.6f} 12')
+            backbone.append(
+                f'<path class="gap-break" d="{wave}"><title>'
+                f'Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)</title></path>')
+            cursor = end
+        backbone.append(f'<path class="axis-line" d="M {cursor:.6f} 12 H {self.percent(self.end) * 10:.6f}"/>')
+        blocks, labels = _exon_edges(junctions, self)
         return ('<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
-                + "".join(ticks) + breaks + '</div>')
+                '<svg class="exon-axis" viewBox="0 0 1000 24" preserveAspectRatio="none" aria-hidden="true">'
+                + "".join(backbone) + blocks + '</svg>' + labels + "".join(ticks)
+                + '<span class="axis-caption">Boxes: annotated exons · brackets: extent unknown</span></div>')
+
+
+def _exon_annotations(junctions):
+    """Yield genomic sides and optional inclusive extents in genomic order."""
+    for _, support, _ in junctions:
+        junction = support.definition
+        annotation = junction.annotation
+        exons = ((annotation.donor_exon, annotation.donor_extent),
+                 (annotation.acceptor_exon, annotation.acceptor_extent))
+        if junction.strand == "-":
+            exons = exons[::-1]
+        for boundary, side, (exon, extent) in (
+            (junction.intron_start - 1, "left", exons[0]),
+            (junction.intron_end, "right", exons[1]),
+        ):
+            yield boundary, side, exon, extent, annotation.reference_transcript, annotation.annotation_source
+
+
+def _exon_edges(junctions, scale):
+    """Draw measured exon extents; brackets mark boundaries with unknown extents."""
+    features = {}
+    for boundary, side, exon, extent, transcript, source in _exon_annotations(junctions):
+        # Merge a known exon even when different junctions touch its two ends.
+        key = (extent, None, None) if extent else (None, boundary, side)
+        features.setdefault(key, []).append((exon, transcript, source))
+    blocks, labels = [], []
+    for (extent, boundary, side), annotations in features.items():
+        names = " / ".join(dict.fromkeys(exon for exon, _, _ in annotations))
+        sources = "; ".join(dict.fromkeys(
+            f"exon {exon} ({transcript}); {source}" for exon, transcript, source in annotations))
+        if extent:
+            start, end = extent
+            left = scale.percent(start - 1) * 10
+            width = scale.percent(end) * 10 - left
+            description = f"{sources}; {start:,}–{end:,} ({end - start + 1:,} nt); annotated exon extent"
+            blocks.append(
+                f'<rect class="exon-edge" x="{left:.6f}" y="4" width="{width:.6f}" height="16" rx="2">'
+                f'<title>{escape(description)}</title></rect>')
+        else:
+            x = scale.percent(boundary) * 10
+            tip = x + (-6 if side == "left" else 6)
+            description = (f"{sources}; exon edge at interbase coordinate {boundary:,}; "
+                           "full exon extent unknown")
+            blocks.append(
+                f'<path class="exon-boundary" d="M {tip:.6f} 4 H {x:.6f} V 20 H {tip:.6f}">'
+                f'<title>{escape(description)}</title></path>')
+            width = 36
+            left = max(0, x - width) if side == "left" else min(x, 1000 - width)
+        labels.append(
+            f'<span class="exon-edge-label" style="left:{left / 10:.6f}%;width:{width / 10:.6f}%" '
+            f'title="{escape(description, quote=True)}">{escape(names)}</span>')
+    return "".join(blocks), "".join(labels)
 
 
 def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -> str:
@@ -259,7 +331,6 @@ def _junction_arcs(junctions, scale, maximum):
     return (
         f'<div class="junction-arcs" style="height:{height}px">'
         f'<svg viewBox="0 0 1000 {height}" preserveAspectRatio="none" aria-hidden="true">'
-        f'<path class="junction-baseline" d="M 10 {baseline} H 990"/>'
         + "".join(paths) + '</svg>' + "".join(directions) + '</div>'
     )
 
@@ -299,12 +370,15 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         local_entries = [entry for entry in entries if entry[0].chromosome == chromosome]
         boundaries = tuple(coordinate for _, support, _ in local_junctions
                            for coordinate in (support.definition.intron_start - 1, support.definition.intron_end))
-        scale = _PileupScale.for_records(tuple(entry[0] for entry in local_entries), boundaries)
+        exon_extents = tuple(dict.fromkeys(
+            (extent[0] - 1, extent[1]) for _, _, _, extent, _, _ in _exon_annotations(local_junctions)
+            if extent is not None))
+        scale = _PileupScale.for_records(tuple(entry[0] for entry in local_entries), boundaries, exon_extents)
         tracks.append('<div class="pileup-track">'
                       + f'<div class="pileup-chromosome">{escape(chromosome)} · genomic coordinates →'
                       '<span>Arc width: total STAR support (log scale) · dashed: zero</span></div>'
                       + _junction_arcs(local_junctions, scale, max(1, *(support.total for _, support, _ in junctions)))
-                      + scale.ruler()
+                      + scale.ruler(local_junctions)
                       + '<ol class="read-rows">' + "".join(
                           _read_row(record, position,
                                     tuple(evidence.groups[match].label for match in record.matches if match != keys[owner]),

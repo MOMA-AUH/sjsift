@@ -2,13 +2,14 @@
 from dataclasses import replace
 from html.parser import HTMLParser
 import io
+from pathlib import Path
 import re
 
 import pytest
 
 from alignment_fixtures import CATALOG, bam, record
 from sjsift.alignment_evidence import extract_evidence
-from sjsift.catalog import ReferenceJunction
+from sjsift.catalog import ReferenceJunction, load_catalog
 from sjsift.html_report import write_html
 from sjsift.quantify import ReferenceJunctionSupport, VariantSupport
 
@@ -25,6 +26,9 @@ class PileupParser(HTMLParser):
         super().__init__()
         self.rows = []
         self.arcs = []
+        self.exon_edges = []
+        self.exon_boundaries = []
+        self.axis_paths = []
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
@@ -32,12 +36,77 @@ class PileupParser(HTMLParser):
         classes = attrs.get("class", "").split()
         if tag == "path" and "junction-arc" in classes:
             self.arcs.append(attrs)
+        if tag == "rect" and "exon-edge" in classes:
+            self.exon_edges.append(attrs)
+        if tag == "path" and "exon-boundary" in classes:
+            self.exon_boundaries.append(attrs)
+        if tag == "path" and set(classes) & {"axis-line", "gap-break"}:
+            self.axis_paths.append(attrs)
         if tag == "li" and "read-row" in classes:
             self.rows.append([])
         if "cigar-op" in classes:
             style = dict(item.split(":") for item in attrs["style"].split(";"))
             self.rows[-1].append((attrs["title"], float(style["left"].strip("%")),
                                  float(style["width"].strip("%"))))
+
+
+def test_ar_exon_three_matches_a_read_spanning_its_full_annotated_extent(tmp_path):
+    catalog = load_catalog(Path(__file__).parents[1] / "definitions/grch38.toml")
+    catalog = replace(catalog, variants=(catalog.variants[0],))
+    path = bam(tmp_path, [record(start=67686009, cigar="117M8546N20M")],
+               header={"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chrX", "LN": 100000000}]})
+    html = render(catalog, extract_evidence(catalog, path))
+    parsed = PileupParser(html)
+    exon = parsed.exon_edges[0]
+    aligned = parsed.rows[0][0]
+    assert float(exon["x"]) / 10 == pytest.approx(aligned[1], abs=0.00001)
+    assert float(exon["width"]) / 10 == pytest.approx(aligned[2], abs=0.00001)
+    assert "67,686,010–67,686,126 (117 nt)" in html
+    assert len(parsed.exon_boundaries) == 1  # CE3 has no asserted full extent.
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+@pytest.mark.parametrize("empty", [False, True])
+def test_full_exons_preserve_uncovered_bases_on_both_strands(tmp_path, strand, empty):
+    # Only 20 nt of each exon is covered; the rest must retain the same base scale.
+    extents = ((1, 100), (201, 400))
+    donor, acceptor = extents if strand == "+" else extents[::-1]
+    annotation = replace(CATALOG.variants[0].annotation, donor_extent=donor, acceptor_extent=acceptor)
+    variant = replace(CATALOG.variants[0], strand=strand, annotation=annotation)
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [] if empty else [record(tags={"TS": strand})])
+    html = render(catalog, extract_evidence(catalog, path))
+    parsed = PileupParser(html)
+    left, right = parsed.exon_edges
+    assert not parsed.exon_boundaries
+    assert float(right["width"]) == pytest.approx(2 * float(left["width"]), abs=0.00001)
+    assert float(left["x"]) == pytest.approx(10)
+    assert float(right["x"]) + float(right["width"]) == pytest.approx(990)
+    assert html.count('<path class="gap-break"') == 1  # Only the intron is compressed.
+    assert "Compressed gap: 101–200 (100 nt)" in html
+    arc = list(map(float, re.findall(r"-?\d+(?:\.\d+)?", parsed.arcs[0]["d"])))
+    assert float(left["x"]) + float(left["width"]) == pytest.approx(arc[0], abs=0.00001)
+    assert float(right["x"]) == pytest.approx(arc[-2], abs=0.00001)
+    if not empty:
+        aligned_left, _, aligned_right = parsed.rows[0]
+        assert float(left["width"]) / 10 == pytest.approx(5 * aligned_left[2], abs=0.00001)
+        assert float(right["width"]) / 10 == pytest.approx(10 * aligned_right[2], abs=0.00001)
+
+
+def test_known_exon_shared_by_two_junctions_is_drawn_once(tmp_path):
+    annotation = CATALOG.variants[0].annotation
+    first = replace(CATALOG.variants[0], annotation=replace(annotation, acceptor_extent=(201, 400)))
+    reference = ReferenceJunction("next", "chr1", 401, 500, "+",
+                                 annotation=replace(annotation, donor_exon="3", donor_extent=(201, 400)))
+    variant = replace(first, reference_junctions=(reference,))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [])
+    support = VariantSupport(variant, 0, 0, (ReferenceJunctionSupport(reference, 0, 0),))
+    stream = io.StringIO()
+    write_html("synthetic", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    parsed = PileupParser(stream.getvalue())
+    assert len(parsed.exon_edges) == 1
+    assert len(parsed.exon_boundaries) == 2
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])
@@ -58,6 +127,9 @@ def test_sashimi_arcs_align_with_reads_and_keep_zero_star_support_visible(tmp_pa
     parsed = PileupParser(html)
     arcs = {arc["stroke"]: arc for arc in parsed.arcs}
     assert len(arcs) == 3
+    # The defining junction shares an edge with each reference junction.
+    assert len(parsed.exon_boundaries) == 4
+    assert not parsed.exon_edges
     baselines = set()
     for color, row in zip(("#3159ad", "#168375", "#9950a5"), parsed.rows):
         coordinates = [float(value) for value in re.findall(r"-?\d+(?:\.\d+)?", arcs[color]["d"])]
@@ -100,6 +172,36 @@ def test_pileup_aligns_shared_coordinates_and_preserves_relative_anchor_lengths(
     # Names and metadata are inside a closed native disclosure, below its summary.
     assert html.index('</summary><div class="read-metadata">') < html.index('<strong>early</strong>')
     assert '<details class="read-inspection" open' not in html
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+@pytest.mark.parametrize("empty", [False, True])
+def test_exon_edges_follow_genomic_sides_and_waves_form_a_connected_axis(tmp_path, strand, empty):
+    variant = replace(CATALOG.variants[0], strand=strand)
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [] if empty else [record(tags={"TS": strand})])
+    html = render(catalog, extract_evidence(catalog, path))
+    parsed = PileupParser(html)
+    left, right = (list(map(float, re.findall(r"-?\d+(?:\.\d+)?", marker["d"])))
+                   for marker in parsed.exon_boundaries)
+    arc = [float(value) for value in re.findall(r"-?\d+(?:\.\d+)?", parsed.arcs[0]["d"])]
+    # The exon-facing sides end/start exactly where the junction arc lands.
+    assert left[2] == pytest.approx(arc[0], abs=0.00001)
+    assert right[2] == pytest.approx(arc[-2], abs=0.00001)
+    assert 0 <= left[0] < left[2] < right[2] < right[0] <= 1000
+    assert not parsed.exon_edges
+    labels = re.findall(r'<span class="exon-edge-label"[^>]*>([^<]+)</span>', html)
+    assert labels == (["1", "3"] if strand == "+" else ["3", "1"])
+    assert "full exon extent unknown" in html
+    assert len(parsed.axis_paths) == 3
+    first, wave, last = parsed.axis_paths
+    start, _, stop = map(float, re.findall(r"-?\d+(?:\.\d+)?", first["d"]))
+    wave_points = list(map(float, re.findall(r"-?\d+(?:\.\d+)?", wave["d"])))
+    next_start, _, end = map(float, re.findall(r"-?\d+(?:\.\d+)?", last["d"]))
+    assert start <= stop == wave_points[0] < wave_points[-2] == next_start <= end
+    assert wave["class"] == "gap-break" and wave["d"].count("C") == 3
+    assert "Compressed gap: 101–200 (100 nt)" in html
+    assert "//</span>" not in html
 
 
 @pytest.mark.parametrize("flag", [0, 16])

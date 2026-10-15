@@ -147,8 +147,16 @@ Extra space at the figure edges accommodates the longest clips; the genomic rule
 labels only the reference span. Hard clips and insertions remain fixed-width
 boundary markers.
 
-The scale is nonuniform: gaps longer than 80 nt with no aligned blocks or displayed
-soft clips in any embedded record are compressed, with `//` marks on the ruler. All other regions
+The scale is nonuniform: gaps longer than 80 nt with no annotated exon extents,
+aligned blocks, or displayed soft clips in any embedded record are compressed,
+with wavy sections in the connected axis and exact gap intervals in tooltips.
+Neutral exon boxes show the catalog's full annotated extents on the aligned-base
+scale, including bases without reads. Labels follow genomic orientation on either
+strand. Unknown extents use brackets at the known splice boundary. Shared exon
+extents and shared unknown boundaries appear once, retaining all annotation labels,
+transcript accessions, and sources in tooltips. Known extents include inclusive
+coordinates and length. Read spans are never used to infer exon extents.
+All other regions
 share one linear scale. Selected splice boundaries are preserved. The transform
 uses all embedded records across the variant's groups on that chromosome and stays
 fixed when filtering or paging. No nucleotide sequence or mismatch bases are

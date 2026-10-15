@@ -10,6 +10,7 @@ _TOP_LEVEL_FIELDS = frozenset({"schema_version", "genome_assembly", "variants"})
 _ANNOTATION_FIELDS = frozenset(
     {"reference_transcript", "donor_exon", "acceptor_exon", "annotation_source"}
 )
+_EXON_EXTENT_FIELDS = frozenset({"donor_extent", "acceptor_extent"})
 _VARIANT_FIELDS = frozenset(
     {"id", "chromosome", "intron_start", "intron_end", "strand", "reference_junctions"}
 ) | _ANNOTATION_FIELDS
@@ -24,12 +25,14 @@ class CatalogError(ValueError):
 
 @dataclass(frozen=True)
 class JunctionAnnotation:
-    """Explicit labels and their comparison basis, not a whole transcript model."""
+    """Explicit labels, comparison basis, and optional inclusive exon extents."""
 
     reference_transcript: str
     donor_exon: str
     acceptor_exon: str
     annotation_source: str
+    donor_extent: tuple[int, int] | None = None
+    acceptor_extent: tuple[int, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -78,10 +81,11 @@ def _validate_fields(
     value: dict[str, object],
     expected: frozenset[str],
     context: str,
+    optional: frozenset[str] = frozenset(),
 ) -> None:
     actual = set(value)
     missing = expected - actual
-    unknown = actual - expected
+    unknown = actual - expected - optional
     problems = []
     if missing:
         problems.append(f"missing field(s) {_describe_fields(missing)}")
@@ -120,10 +124,23 @@ def _variant_context(index: int, value: dict[str, object]) -> str:
 
 
 def _parse_annotation(path: Path, value: dict[str, object], context: str) -> JunctionAnnotation:
+    extents = {}
+    for name in sorted(_EXON_EXTENT_FIELDS & value.keys()):
+        extent = value[name]
+        if not isinstance(extent, list) or len(extent) != 2:
+            _fail(path, f"{context}: field {name!r} must be [start, end] (1-based inclusive)")
+        start, end = (_validate_positive_integer(path, coordinate, name, context) for coordinate in extent)
+        if end < start:
+            _fail(path, f"{context}: field {name!r} end must not be less than start")
+        on_left = (name == "donor_extent") == (value["strand"] == "+")
+        abuts = end + 1 == value["intron_start"] if on_left else start - 1 == value["intron_end"]
+        if not abuts:
+            _fail(path, f"{context}: field {name!r} must abut its splice boundary")
+        extents[name] = (start, end)
     return JunctionAnnotation(**{
         name: _validate_string(path, value[name], name, context)
         for name in sorted(_ANNOTATION_FIELDS)
-    })
+    }, **extents)
 
 
 def _parse_reference_junction(
@@ -133,7 +150,7 @@ def _parse_reference_junction(
     if not isinstance(value, dict):
         _fail(path, f"{context}: must be a table")
 
-    _validate_fields(path, value, _REFERENCE_JUNCTION_FIELDS, context)
+    _validate_fields(path, value, _REFERENCE_JUNCTION_FIELDS, context, _EXON_EXTENT_FIELDS)
     role = _validate_string(path, value["role"], "role", context)
     chromosome = _validate_string(path, value["chromosome"], "chromosome", context)
     intron_start = _validate_positive_integer(
@@ -187,7 +204,7 @@ def _parse_variant(
         _fail(path, f"{context}: must be a table")
 
     context = _variant_context(index, value)
-    _validate_fields(path, value, _VARIANT_FIELDS, context)
+    _validate_fields(path, value, _VARIANT_FIELDS, context, _EXON_EXTENT_FIELDS)
     identifier = _validate_string(path, value["id"], "id", context)
     context = f"variant {index} ({identifier!r})"
     chromosome = _validate_string(path, value["chromosome"], "chromosome", context)

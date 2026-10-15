@@ -131,6 +131,14 @@ gene, versioned transcript and exon accessions, chromosome, strand, exon rank,
 and 1-based inclusive exon coordinates. The tests use these exon boundaries to
 check every curated reference without downloading annotations.
 
+The catalog's optional `donor_extent` and `acceptor_extent` fields copy the full
+1-based inclusive exon intervals from this pinned GENCODE evidence. The report
+uses them for exon widths and cites the annotation source in tooltips. These are
+GENCODE extents; the RefSeq accessions remain comparison labels, including the
+outer-boundary differences described above. Full extents for AR CE3 and FGFR2
+E18-C3 remain unknown and are omitted. Tests compare every supplied extent against
+the pinned exon record as well as checking that it abuts the selected junction.
+
 GENCODE defines exon rank from the transcript's 5′ end, including for minus-strand
 transcripts. For two adjacent exons ordered by genomic coordinate, the STAR
 intron interval is `lower exon end + 1` through `higher exon start - 1`.
