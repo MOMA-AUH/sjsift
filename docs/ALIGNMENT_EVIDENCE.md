@@ -1,6 +1,6 @@
 # Alignment evidence in offline reports
 
-The current development version accepts a local coordinate-sorted indexed BAM or CRAM
+sjsift v0.2.1 accepts a local coordinate-sorted indexed BAM or CRAM
 alongside the required STAR file and schema-3 catalog:
 
 ```bash
@@ -30,7 +30,7 @@ format. No alignment or reference index is built automatically.
 All alignment-header contigs must exist at exactly the declared length in the
 FASTA. Their sequence is read in bounded chunks and checked against any available
 header M5 checksum before regional extraction; this can require reading the full
-reference once. Missing M5 checksums are disclosed as limited sequence assurance.
+reference once. Missing M5 checksums limit sequence assurance.
 HTSlib's CRAM slice checks remain enabled. Pysam's bundled header/EOF check
 rejects a missing CRAM end marker, which regional decoding alone can merely warn
 about; this does not require an external samtools executable. A missing or invalid reference/index,
@@ -48,7 +48,8 @@ control, followed by zero requests from sjsift with valid, wrong or absent input
 BAM and CRAM use the same record-classification, count, retention and rendering
 path. Reference validation establishes available CRAM/FASTA compatibility only;
 the anonymous STAR input still cannot establish sample identity or assembly.
-Provenance records FASTA/index basenames and the checks performed. Reference
+Internal extraction provenance records FASTA/index basenames and checks performed;
+the compact HTML displays the alignment basename. Reference
 sequence, read bases/qualities and absolute paths are never embedded. The HTML
 remains usable after both CRAM and FASTA have been removed.
 
@@ -138,7 +139,8 @@ transcript strand. Matching coordinates line up across all rows. M, = and X are
 aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
 marks are insertions; gold S blocks show soft clipping at actual length, gold H
 ticks mark hard clipping, and gray P is padding.
-Mapping class and transcript-strand evidence are shown in read details.
+Mapping class and transcript-strand status are included in accessible read labels;
+the compact read details show NH without strand-source diagnostics.
 Colored splice lines highlight selected junctions. Hover over an
 operation for its exact length and 1-based inclusive coordinates or interbase
 position. Soft clips extend left from the alignment start or right from its end,
@@ -193,6 +195,14 @@ difference alone is not an input error. Do not add reference opportunities or
 interpret these records as independent molecules or full-length transcripts.
 Evidence not requested is distinct from an observed zero eligible count.
 
+In v0.2.1, alignment records are not reconciled to the reads contributing to
+STAR's reported support. Both mates can appear separately, and alignment output
+can include records that did not contribute to STAR's junction counts. A report
+can therefore contain multimapping alignments beside zero STAR multimapping
+support, or more unique alignment records than STAR unique support. The TSV and
+support tables retain STAR's original values. Reconciliation is tracked separately
+in [issue #40](https://github.com/MOMA-AUH/sjsift/issues/40).
+
 ## Validation and portability
 
 A usable local index, coordinate sort declaration, required literal contigs and
@@ -204,7 +214,7 @@ selection: only records with an `RG` belonging to that sample contribute counts
 and embedded evidence. Records without a sample-assigned read group are excluded
 in this multi-sample case. For single-sample or unnamed files, records without
 read groups remain eligible as before. Unknown or invalid read-group tags remain
-errors. Missing metadata is disclosed. Available `@SQ AS` labels must equal the catalog
+errors. Available `@SQ AS` labels must equal the catalog
 assembly. Header labels do not establish sequence equivalence, and anonymous
 STAR data cannot prove sample identity or genome assembly. The caller must
 supply compatible inputs. Regional decoding errors stop the whole invocation.
@@ -212,9 +222,11 @@ All evidence extraction finishes before any output is created. Existing output
 refusal, cleanup of newly created files on ordinary errors and stderr/exit-status
 conventions are unchanged.
 
-The single HTML contains structural operations, coordinates, CIGAR, MAPQ,
-selected strand evidence, flags, read names, read-group/sample identifiers,
-junction exon labels, software provenance, and input basenames. It contains no read
+The single HTML contains structural operations, coordinates, CIGAR, MAPQ, NH,
+transcript-strand status labels, flags, read names, the selected sample name,
+junction exon labels and annotation tooltips, the software version, and STAR and
+alignment input basenames. Detailed extraction diagnostics and reference-validation
+metadata are not displayed in the compact report. It contains no read
 sequence, base qualities, reference sequence, original alignment file, or
 absolute source paths. Consider the retained raw identifiers before sharing.
 All text is escaped and all assets are inline; no browser network access or

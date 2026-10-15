@@ -22,7 +22,7 @@ def test_bam_report_embeds_previews_and_preserves_exact_star_tsv(tmp_path):
     assert result.returncode == 0, result.stderr
     assert result.stdout == original.stdout
     text = html.read_text()
-    for expected in ("raw-name", "read 1", "read 2", "20M100N20M", "strand unverified"):
+    for expected in ("raw-name", "Read: 1,", "Read: 2,", "20M100N20M", "strand unverified"):
         assert expected in text
     assert str(tmp_path) not in text
     assert "ACGTACGTACGT" not in text and "IIIIIIIIIIII" not in text

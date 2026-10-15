@@ -207,8 +207,8 @@ Use semantic versions and `vMAJOR.MINOR.PATCH` Git tags, following skua's releas
    ```bash
    git switch master
    git pull --ff-only origin master
-   git tag -a v0.2.0 -m "Release v0.2.0"
-   git push origin v0.2.0
+   git tag -a v0.2.1 -m "Release v0.2.1"
+   git push origin v0.2.1
    ```
 
 4. The tag-triggered publish workflow checks that the tag matches `pyproject.toml`, rebuilds and tests the Python distributions and conda package from that exact checkout, and retains both artifact sets in GitHub Actions.

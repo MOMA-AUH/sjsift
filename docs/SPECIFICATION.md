@@ -6,7 +6,7 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes the current development version, targeting v0.2.1,
+This document describes sjsift v0.2.1,
 with annotated catalog schema 3. Schemas 1 and 2 are rejected explicitly.
 Before stable v1.0.0, backward compatibility is not guaranteed, including in
 patch releases. Use a catalog matching the installed version. The historical
@@ -27,7 +27,9 @@ Exactly two inputs are required:
 Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Optional local indexed BAM or CRAM may provide structural HTML evidence as described in
 [alignment evidence](ALIGNMENT_EVIDENCE.md). CRAM additionally requires an explicit
 local indexed FASTA via `--reference`. Standard input, SAM, other
-compression formats, directories, URLs, and multiple-sample input are not supported.
+compression formats, directories, URLs, and reports combining multiple samples are
+not supported. A BAM/CRAM containing several samples requires explicit selection
+of one sample through `--sample-name`; the STAR input must belong to that sample.
 
 ### STAR junction file
 

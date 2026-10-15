@@ -94,15 +94,16 @@ flags and MAPQ do not establish uniqueness.
 _Avoid_: Primary means unique
 
 **Transcript-strand evidence**:
-Usable transcript-strand tags or validated per-junction STAR motifs. Agreeing and
-unverified records are displayed separately; opposite/conflicting evidence is
-excluded with counts. Forward/reverse alignment orientation is a different fact.
+Usable transcript-strand tags or validated per-junction STAR motifs. Accessible
+read labels distinguish agreeing and unverified records; opposite/conflicting
+evidence is excluded. Forward/reverse alignment orientation is a different fact.
 _Avoid_: Read orientation proves transcript strand
 
 **Shared alignment membership**:
 One physical alignment record supporting several selected junction groups. It
-has the same record ID in each and an Also matches indication. This is distinct
-from related mates sharing a read name, and does not imply independent molecules.
+appears once per variant figure; highlighted splice lines, support filtering,
+and accessible read labels retain its memberships. This is distinct from
+related mates sharing a read name, and does not imply independent molecules.
 _Avoid_: Deduplicated template, independent reference molecules
 
 **CRAM reference FASTA**:
