@@ -79,20 +79,44 @@
   for (const group of document.querySelectorAll(".alignment-group")) {
     const find = selector => group.querySelector(selector);
     const reads = Array.from(group.querySelectorAll(".read-row"));
+    // Keep inspection compact while retaining native, keyboard-accessible details.
+    for (const row of reads) {
+      const inspection = row.querySelector(".read-inspection");
+      inspection.addEventListener("toggle", () => {
+        if (!inspection.open) return;
+        for (const other of reads) {
+          if (other !== row) other.querySelector(".read-inspection").open = false;
+        }
+      });
+    }
     const filter = find(".read-filter");
+    const supportFilter = find(".support-filter");
     const expand = find(".read-expand");
     const previous = find(".read-previous");
     const next = find(".read-next");
     let expanded = false;
     let page = 0;
     function updateReads() {
-      const matching = reads.filter(row => filter.value === "all" || row.dataset.mapping === "unique");
+      const matching = reads.filter(row =>
+        (filter.value === "all" || row.dataset.mapping === "unique") &&
+        (supportFilter.value === "all" || row.dataset.support.split(" ").includes(supportFilter.value))
+      );
       const size = expanded ? 50 : 10;
-      const pages = Math.max(1, Math.ceil(matching.length / size));
+      // Give each support group a preview so abundant reference reads cannot
+      // push the variant evidence out of the initial figure (or vice versa).
+      const buckets = new Map();
+      for (const row of matching) {
+        const key = row.dataset.bucket;
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(row);
+      }
+      const pages = Math.max(1, ...Array.from(buckets.values(), rows => Math.ceil(rows.length / size)));
       page = Math.min(page, pages - 1);
-      const shown = new Set(matching.slice(page * size, (page + 1) * size));
-      for (const row of reads) row.hidden = !shown.has(row);
-      find(".shown-count").textContent = `Currently shown: ${shown.size} (${matching.length} embedded match filter)`;
+      const shown = new Set(Array.from(buckets.values()).flatMap(rows => rows.slice(page * size, (page + 1) * size)));
+      for (const row of reads) {
+        row.hidden = !shown.has(row);
+        if (row.hidden) row.querySelector(".read-inspection").open = false;
+      }
       find(".read-filter-empty").hidden = matching.length !== 0;
       expand.textContent = expanded ? "Collapse reads" : "Expand reads";
       expand.setAttribute("aria-expanded", String(expanded));
@@ -100,10 +124,11 @@
       previous.disabled = page === 0;
       next.disabled = page === pages - 1;
       find(".read-page").textContent = !matching.length ? "No matching reads." : expanded
-        ? `Page ${page + 1} of ${pages} · records ${page * size + 1}–${page * size + shown.size} of ${matching.length}${page === pages - 1 ? " · End of embedded reads" : ""}`
-        : `Preview: first ${shown.size} of ${matching.length} embedded records. Expand for pages of 50.`;
+        ? `Page ${page + 1} of ${pages} · showing ${shown.size} of ${matching.length} matching records · up to 50 per support group${page === pages - 1 ? " · End of embedded reads" : ""}`
+        : `Preview: ${shown.size} of ${matching.length} embedded records · up to 10 per support group. Expand for more.`;
     }
     filter.addEventListener("change", () => { page = 0; updateReads(); });
+    supportFilter.addEventListener("change", () => { page = 0; updateReads(); });
     expand.addEventListener("click", () => { expanded = !expanded; page = 0; updateReads(); });
     previous.addEventListener("click", () => { page -= 1; updateReads(); });
     next.addEventListener("click", () => { page += 1; updateReads(); });

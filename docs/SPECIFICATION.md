@@ -6,7 +6,7 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes the current development version, targeting v0.2.1,
+This document describes sjsift v0.2.1,
 with annotated catalog schema 3. Schemas 1 and 2 are rejected explicitly.
 Before stable v1.0.0, backward compatibility is not guaranteed, including in
 patch releases. Use a catalog matching the installed version. The historical
@@ -27,7 +27,9 @@ Exactly two inputs are required:
 Both inputs contain UTF-8 text addressed by filesystem paths. As of v0.1.3, STAR junction input may be plain text or gzip-compressed; gzip is detected by its file header regardless of filename extension and decompressed as a stream. Catalog input remains plain text. Invalid or truncated gzip data is an input error. Optional local indexed BAM or CRAM may provide structural HTML evidence as described in
 [alignment evidence](ALIGNMENT_EVIDENCE.md). CRAM additionally requires an explicit
 local indexed FASTA via `--reference`. Standard input, SAM, other
-compression formats, directories, URLs, and multiple-sample input are not supported.
+compression formats, directories, URLs, and reports combining multiple samples are
+not supported. A BAM/CRAM containing several samples requires explicit selection
+of one sample through `--sample-name`; the STAR input must belong to that sample.
 
 ### STAR junction file
 
@@ -101,9 +103,19 @@ may describe cryptic or alternative terminal exons, rather than numeric ranks.
 The accession identifies the annotation/comparison basis; it does not assert
 that the reference transcript contains the defining aberrant junction.
 
+Each junction may also specify `donor_extent` and/or `acceptor_extent` as
+`[start, end]` arrays of positive integers in 1-based inclusive genomic coordinates.
+Start must not exceed end. Each extent must abut its corresponding splice boundary:
+on the plus strand the donor ends at `intron_start - 1` and the acceptor starts at
+`intron_end + 1`; on the minus strand these genomic sides are reversed. The cited
+`annotation_source` must establish the full extent. Omit an extent when unknown;
+the report draws a boundary bracket instead. Existing schema-3 catalogs without
+these optional fields remain valid.
+
 Every variant requires `reference_junctions`, an array of tables that may be
-empty (`reference_junctions = []`). References have exactly `role`, `chromosome`,
-`intron_start`, `intron_end`, `strand`, and the four annotation fields above.
+empty (`reference_junctions = []`). References require `role`, `chromosome`,
+`intron_start`, `intron_end`, `strand`, and the four annotation fields above,
+and permit the same optional exon extents.
 Their junction fields follow the same rules; `role` is a nonempty string without
 tabs or line breaks. See the [schema-3 example](REFERENCE_JUNCTION_CONTEXT.md#catalog-schema-version-3).
 No legacy loaders, migrations, or annotation fallbacks are provided.
@@ -191,21 +203,24 @@ sjsift preserves the input evidence.
 ## CLI contract
 
 ```text
-sjsift --junctions PATH --definitions PATH [-o PATH] [--context-output PATH] [--html-output PATH]
+sjsift --junctions PATH --definitions PATH [--sample-name NAME] [-o PATH] [--context-output PATH] [--html-output PATH]
 sjsift --help
 sjsift --version
 ```
 
 - `--junctions PATH` is required and names one `SJ.out.tab` file.
 - `--definitions PATH` is required and names one TOML catalog.
+- `--sample-name NAME` supplies a nonblank report sample name, shown in the HTML subtitle and browser title. It is required even for TSV-only output unless one distinct nonblank `@RG SM` name can be inferred from a BAM/CRAM input.
+- If an alignment header contains sample names, a supplied name must match one exactly. Multiple names require explicit selection; only records assigned to the selected sample's read groups contribute alignment evidence. Records without sample-assigned read groups are excluded in that case. STAR support remains unchanged.
 - `-o PATH` and `--output PATH` are equivalent and optional.
 - Without `--output`, TSV is written to standard output.
 - Diagnostics and warnings are written to standard error; standard output contains only the result table.
 - `--context-output PATH` adds a reference-junction TSV.
 - `--html-output PATH` adds an offline HTML report independently of `--context-output`.
-- `--alignments PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
-- `--alignment-index PATH` optionally selects its local index; `--alignment-limit N` sets a positive per-junction/per-class sample cap (default 200).
-- `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignments`.
+- The HTML starts with `SJSIFT · JUNCTION REPORT` and the sample subtitle. Inputs and configuration appear at the bottom in two-column key-value rows.
+- `--alignment PATH` supplies local indexed coordinate-sorted BAM/CRAM and requires `--html-output`.
+- `--alignment-index PATH` optionally selects its local index. All eligible alignment records are embedded without downsampling; there is no `--alignment-limit` option.
+- `--reference PATH` supplies the explicit local indexed FASTA required for CRAM, including self-contained CRAM. It applies only to CRAM; all alignment-specific options require `--alignment`.
 - Both optional reports work with either a main TSV file or main TSV on stdout.
 - All output paths must differ and must not already exist; parent directories must exist.
 - Inputs cannot be provided via standard input.
@@ -322,11 +337,11 @@ The application does not implement:
 - scores, thresholds, clinical calls, or variant/reference fractions;
 - inferred sample identity or independent verification of the input assembly;
 - automatic catalog discovery, annotation download, or catalog updates;
-- whole-transcript models or complete exon extents;
+- whole-transcript models or exon extents inferred from reads;
 - workflow-engine integration, plugin interfaces, or a public Python library API.
 
 The alignment-evidence guide is normative for alignment input, classification,
-sampling, provenance and failure handling. `tests/test_alignment_evidence.py` and
+retention, provenance and failure handling. `tests/test_alignment_evidence.py` and
 `tests/test_alignment_cli.py` exercise its module and CLI/report boundaries.
 `tests/test_cram_evidence.py` covers real CRAM/reference input, BAM equivalence,
 corruption and offline resolution with a working HTTP detector. Installed wheel

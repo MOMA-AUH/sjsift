@@ -59,7 +59,7 @@ def test_html_has_exact_counts_both_comparators_and_coordinates_without_javascri
     html = render((support(),), junctions_name="sample.SJ.out.tab", definitions_name="catalog.toml")
     doc = Document(html)
     text = " ".join(doc.text)
-    for expected in ("skip", "Same donor", "Same acceptor", "sample.SJ.out.tab", "catalog.toml",
+    for expected in ("skip", "Same donor", "Same acceptor", "sample.SJ.out.tab",
                      "GRCh38", "18", "90", "84", "20", "95", "88", "chr7:10–20 (+)"):
         assert expected in text
     assert "Variant and reference support" in text

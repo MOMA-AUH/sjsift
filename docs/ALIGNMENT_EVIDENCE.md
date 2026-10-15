@@ -1,20 +1,22 @@
 # Alignment evidence in offline reports
 
-The current development version accepts a local coordinate-sorted indexed BAM or CRAM
+sjsift v0.2.1 accepts a local coordinate-sorted indexed BAM or CRAM
 alongside the required STAR file and schema-3 catalog:
 
 ```bash
 sjsift --junctions sample.SJ.out.tab --definitions catalog.toml \
-  --alignments sample.bam --html-output sample.html --output sample.tsv
+  --alignment sample.bam --html-output sample.html --output sample.tsv
 ```
 
 `--alignment-index PATH` overrides discovery of `sample.bam.bai`, `sample.bai`,
-`sample.bam.csi`, or `sample.csi`. `--alignment-limit N` is a positive integer,
-default 200, **per junction per mapping class**. Alignment options require
-`--alignments`, which requires `--html-output`. Indexes are never created by
-sjsift. Every defining and configured reference junction has its own immediate preview.
+`sample.bam.csi`, or `sample.csi`. All eligible records are embedded without
+downsampling; `--alignment-limit` is no longer supported. Alignment options require
+`--alignment`, which requires `--html-output`. Indexes are never created by
+sjsift. Defining and reference junctions share one pileup figure per variant.
 Custom roles, references on other contigs or strands, and shared references use
-the same inclusion rules. Each group can expand into pages of 50 embedded records.
+the same inclusion rules. Different chromosomes have separate axes within
+the figure. Previews include up to ten records per support group; expansion shows
+up to 50 per group per page.
 
 ## CRAM and its explicit local FASTA
 
@@ -28,7 +30,7 @@ format. No alignment or reference index is built automatically.
 All alignment-header contigs must exist at exactly the declared length in the
 FASTA. Their sequence is read in bounded chunks and checked against any available
 header M5 checksum before regional extraction; this can require reading the full
-reference once. Missing M5 checksums are disclosed as limited sequence assurance.
+reference once. Missing M5 checksums limit sequence assurance.
 HTSlib's CRAM slice checks remain enabled. Pysam's bundled header/EOF check
 rejects a missing CRAM end marker, which regional decoding alone can merely warn
 about; this does not require an external samtools executable. A missing or invalid reference/index,
@@ -43,10 +45,11 @@ reference retrieval; a wrong FASTA is never repaired by downloading another one.
 Tests include a real HTTP listener with a successful unguarded-HTSlib positive
 control, followed by zero requests from sjsift with valid, wrong or absent input.
 
-BAM and CRAM use the same record-classification, count, sample and rendering
+BAM and CRAM use the same record-classification, count, retention and rendering
 path. Reference validation establishes available CRAM/FASTA compatibility only;
 the anonymous STAR input still cannot establish sample identity or assembly.
-Provenance records FASTA/index basenames and the checks performed. Reference
+Internal extraction provenance records FASTA/index basenames and checks performed;
+the compact HTML displays the alignment basename. Reference
 sequence, read bases/qualities and absolute paths are never embedded. The HTML
 remains usable after both CRAM and FASTA have been removed.
 
@@ -77,54 +80,109 @@ Transcript strand and forward/reverse alignment orientation are distinct:
 - All usable sources must agree with the catalog strand. Opposite and mutually
   conflicting evidence have separate exclusion counts; excluded records are
   not embedded. Missing or unusable sources produce **strand unverified** rows,
-  visibly distinguished from agreeing evidence. Details describe the sources.
+  identified in accessible read labels. The compact read details omit strand-source diagnostics.
 
 NH alone determines mapping class: an integer 1 is **unique**, an integer above
 1 is **multimapping**, and absent, nonpositive, or mistyped values are **unknown**.
 Primary status and MAPQ cannot establish uniqueness. Qualifying secondary,
 supplementary, duplicate-marked and QC-failure records are included and labeled.
 
-## Counts, identity, and sampling
+## Counts, identity, and read retention
 
 One row is one physical alignment record. Both mates may appear separately;
-read name, read group and read-1/read-2 labels help recognize related records.
+the read name and numeric flags help recognize related records.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
-performed. A record matching several selected junctions appears in each
-qualifying group with the same stable record ID and an **Also matches** list.
-Membership indicates exact supporting groups even if independently sampled
-records are not retained in every group. Excluded opposite/conflicting groups
-are not listed as supporting membership. Reference observations and samples
-remain independent, so abundant references cannot displace rare defining reads.
+performed. A record matching several selected junctions retains membership in each
+qualifying group but appears only once per variant figure, identified by its stable
+record ID in the embedded HTML. Highlighted splice lines, the support filter,
+and accessible read labels retain its local memberships.
+Membership indicates exact supporting groups. Excluded opposite/conflicting groups
+are not listed as supporting membership. Every eligible defining and reference
+record is retained, so abundant references cannot displace rare defining reads.
 
-Every eligible record is counted before sampling. Deterministic SHA-256 bottom-k
-sampling independently caps each junction/class subset, retaining all records
-below its cap. Extraction memory for retained records is bounded by those caps;
-it does not keep a set of every observed read. Caps limit records, not HTML bytes.
-Eligible, embedded and currently shown counts have separate labels, as do strand
-totals and exclusion reasons. The initial preview displays up to ten records.
+Every eligible record is counted and embedded. There is no per-junction or
+per-mapping-class cap. Extraction memory and HTML size grow with the number of
+eligible records.
+The figure displays each physical alignment only once, even when it has multiple
+memberships. Its preview displays up to ten records per support
+group, sorted by support group, genomic start and end. A shared record is assigned
+to its first matching group in catalog order (variant first) for paging and block
+color; its highlighted splice lines and support filter still reflect all local memberships.
 **All** is the initial filter. **Unique only** shows exactly NH=1 records,
 including eligible secondary, supplementary, duplicate and QC-flagged records.
-It excludes unknown multiplicity. Changing the filter resets to the first page;
-collapsing restores a ten-record preview. Paging and filtering change only the
-currently shown count. Full eligible/embedded counts and strand totals always
-describe the entire group. Sampled groups state the per-class cap explicitly;
-the last page is labeled and its Next button disabled.
+It excludes unknown multiplicity. The **Support** filter selects any matching
+membership, including shared reads. Changing either filter resets to the first page;
+collapsing restores the preview. Paging and filtering change only which records
+are visible. The last page is labeled and its Next button disabled.
 
 ## Structural geometry and anchors
 
-One row displays the complete alignment CIGAR in increasing genomic coordinates,
-independent of alignment orientation and transcript strand. M, = and X are
-aligned blocks; dotted N is a splice gap; red D is a deletion; purple I is an
-insertion; gold S/H mark soft/hard clipping; gray P is padding. Operation labels
-give exact lengths, and tooltips retain 1-based inclusive reference coordinates
-or interbase positions for operations that consume no reference. The scale is
-nonuniform: widths are bounded for readability, and N/D gaps longer than 80 nt
-carry visible `//` breaks. No nucleotide sequence or mismatch bases are shown.
+Reads form a compact pileup beneath a shared genomic coordinate ruler and colored
+sashimi-style junction arcs. Arc tooltips identify support types,
+donor/acceptor exons, and STAR support.
+Arcs share a baseline and the same coordinate transform as the reads. Longer
+connections arch over shorter ones. Transcript strand remains in coordinate tooltips.
+Line thickness uses total STAR support on a logarithmic scale, shared across
+chromosomes within the variant. Zero-support junctions remain visible as dashed
+arcs. Exact unique and multimapping counts appear in the preceding support table and do not change
+with read filters. Arcs mark splice boundaries, not complete exon extents;
+no coverage track is inferred from the selected alignment records. Blue identifies variant support,
+teal same-donor support, and purple same-acceptor support. Custom reference roles
+receive distinct colors, consistently shared by the tables, arcs, and alignment
+tracks throughout the report. All records use solid block colors at full opacity. Shared records use the
+color of their first matching group in catalog order (variant first).
+Each row displays the complete alignment CIGAR in
+increasing genomic coordinates, independent of alignment orientation and
+transcript strand. Matching coordinates line up across all rows. M, = and X are
+aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
+marks are insertions; gold S blocks show soft clipping at actual length, gold H
+ticks mark hard clipping, and gray P is padding.
+Mapping class and transcript-strand status are included in accessible read labels;
+the compact read details show NH without strand-source diagnostics.
+Colored splice lines highlight selected junctions. Hover over an
+operation for its exact length and 1-based inclusive coordinates or interbase
+position. Soft clips extend left from the alignment start or right from its end,
+using the same width per base as aligned blocks. These visual extensions do not
+assign reference coordinates to clipped bases or change the aligned coordinates.
+Extra space at the figure edges accommodates the longest clips; the genomic ruler
+labels only the reference span. Hard clips and insertions remain fixed-width
+boundary markers.
 
-Read details give **genomic left/right aligned anchors** at this group's selected
-splice. Each is the sum of consecutive M, = and X operations immediately abutting
+The scale is nonuniform. For each annotated exon, the plot retains 120 nt of context
+around aligned blocks, displayed soft clips, and selected splice boundaries,
+clipped to the full annotated extent. Short outer remainders of at most 80 nt
+remain visible; longer uncovered tails are trimmed. Gaps longer than 80 nt outside
+that context, aligned blocks, and displayed soft clips are compressed, including
+uncovered sections within long exons. Compressed gaps have straight connections
+with exact intervals in tooltips. A zig-zag in an intron connection indicates
+omitted numbered exons between displayed neighbors from the same transcript and
+strand, using known extents to place the mark. Its tooltip lists the omitted exon
+numbers. Nonnumeric labels such as CE3 do not establish omitted exon numbers.
+Neutral exon boxes show the retained segments on the
+aligned-base scale. Zig-zag edges mark trimmed ends and both sides of compressed
+exon sections. Aligned bases are never compressed or omitted.
+Labels follow genomic orientation on either strand. Unknown extents use vertical
+ticks at the known splice boundary, with labels above the intron line. Shared exon
+extents and shared unknown boundaries appear once, retaining all annotation labels,
+transcript accessions, and sources in tooltips. Known extents include inclusive
+coordinates and length, plus the displayed segment when truncated. Read spans
+determine the view, never the annotated exon extent.
+All other regions
+share one linear scale. Selected splice boundaries are preserved. The transform
+uses all embedded records across the variant's groups on that chromosome and stays
+fixed when filtering or paging. No nucleotide sequence or mismatch bases are
+shown. Click a read (or focus it and press Enter) to disclose its name and
+metadata. With JavaScript, opening a read closes the previous inspection in
+that figure. Native read inspection also works without JavaScript.
+
+Read details show the read name; one genomic interval · CIGAR · MAPQ · NH line;
+a **Read** line with mate number (or unspecified), forward/reverse orientation;
+flags with their numeric value; and one compact line with both **genomic left/right aligned anchors**.
+Anchors refer to the extraction junction: for a shared read, this is the first
+group in catalog order that the record supports.
+Each anchor is the sum of consecutive M, = and X operations immediately abutting
 that N. Any I, D, N, S, H or P terminates the sum; a nonaligned immediate neighbor
 gives zero. Left/right do not swap on the minus strand. For example,
 `10M2I5=2D3X100N7M2I10M` has anchors 3 and 7 at its skip. These measurements
@@ -137,11 +195,26 @@ difference alone is not an input error. Do not add reference opportunities or
 interpret these records as independent molecules or full-length transcripts.
 Evidence not requested is distinct from an observed zero eligible count.
 
+In v0.2.1, alignment records are not reconciled to the reads contributing to
+STAR's reported support. Both mates can appear separately, and alignment output
+can include records that did not contribute to STAR's junction counts. A report
+can therefore contain multimapping alignments beside zero STAR multimapping
+support, or more unique alignment records than STAR unique support. The TSV and
+support tables retain STAR's original values. Reconciliation is tracked separately
+in [issue #40](https://github.com/MOMA-AUH/sjsift/issues/40).
+
 ## Validation and portability
 
 A usable local index, coordinate sort declaration, required literal contigs and
-coordinate bounds are checked. Multiple distinct `@RG SM` values are rejected;
-missing metadata is disclosed. Available `@SQ AS` labels must equal the catalog
+coordinate bounds are checked. The report sample name is inferred from a single
+distinct nonblank `@RG SM` value unless `--sample-name NAME` is supplied. Explicit
+names must match a header sample when sample metadata exists. No usable `SM` values
+requires an explicit name. Multiple distinct names require an explicit matching
+selection: only records with an `RG` belonging to that sample contribute counts
+and embedded evidence. Records without a sample-assigned read group are excluded
+in this multi-sample case. For single-sample or unnamed files, records without
+read groups remain eligible as before. Unknown or invalid read-group tags remain
+errors. Available `@SQ AS` labels must equal the catalog
 assembly. Header labels do not establish sequence equivalence, and anonymous
 STAR data cannot prove sample identity or genome assembly. The caller must
 supply compatible inputs. Regional decoding errors stop the whole invocation.
@@ -149,9 +222,11 @@ All evidence extraction finishes before any output is created. Existing output
 refusal, cleanup of newly created files on ordinary errors and stderr/exit-status
 conventions are unchanged.
 
-The single HTML contains structural operations, coordinates, CIGAR, MAPQ,
-selected strand evidence, flags, read names, read-group/sample identifiers,
-annotation and software provenance, and input basenames. It contains no read
+The single HTML contains structural operations, coordinates, CIGAR, MAPQ, NH,
+transcript-strand status labels, flags, read names, the selected sample name,
+junction exon labels and annotation tooltips, the software version, and STAR and
+alignment input basenames. Detailed extraction diagnostics and reference-validation
+metadata are not displayed in the compact report. It contains no read
 sequence, base qualities, reference sequence, original alignment file, or
 absolute source paths. Consider the retained raw identifiers before sharing.
 All text is escaped and all assets are inline; no browser network access or

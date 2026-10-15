@@ -12,14 +12,10 @@ from .quantify import QuantifyError, quantify
 from .report import ReportError, write_reports
 
 
-def _positive_integer(value: str) -> int:
-    try:
-        number = int(value)
-        if number > 0:
-            return number
-    except ValueError:
-        pass
-    raise argparse.ArgumentTypeError("must be a positive integer")
+def _sample_name(value: str) -> str:
+    if not value.strip():
+        raise argparse.ArgumentTypeError("sample name must not be blank")
+    return value
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -40,6 +36,12 @@ def _parser() -> argparse.ArgumentParser:
         help="TOML variant-definition catalog",
     )
     parser.add_argument(
+        "--sample-name",
+        type=_sample_name,
+        metavar="NAME",
+        help="sample name for the report; required unless a single sample can be inferred from BAM/CRAM read groups",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         metavar="PATH",
@@ -55,10 +57,9 @@ def _parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="write an offline HTML overview and variant details to PATH",
     )
-    parser.add_argument("--alignments", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
+    parser.add_argument("--alignment", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
     parser.add_argument("--alignment-index", metavar="PATH", help="explicit local BAM/CRAM index (otherwise discovered)")
     parser.add_argument("--reference", metavar="PATH", help="explicit local indexed FASTA, required for CRAM; remote reference lookup is disabled")
-    parser.add_argument("--alignment-limit", type=_positive_integer, metavar="N", help="maximum embedded records per junction per mapping class (default: 200)")
     parser.add_argument(
         "--version",
         action="version",
@@ -68,12 +69,14 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
-    if arguments.alignments and not arguments.html_output:
-        parser.error("--alignments requires --html-output")
-    if not arguments.alignments and any(option is not None for option in (
-        arguments.alignment_index, arguments.alignment_limit, arguments.reference,
+    if arguments.alignment and not arguments.html_output:
+        parser.error("--alignment requires --html-output")
+    if not arguments.alignment and any(option is not None for option in (
+        arguments.alignment_index, arguments.reference,
     )):
-        parser.error("alignment-specific options require --alignments")
+        parser.error("alignment-specific options require --alignment")
+    if not arguments.alignment and arguments.sample_name is None:
+        parser.error("--sample-name is required without --alignment")
     try:
         catalog = load_catalog(Path(arguments.definitions))
     except CatalogError as error:
@@ -83,16 +86,18 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
     except QuantifyError as error:
         parser.error(str(error))
     evidence = None
-    if arguments.alignments:
+    if arguments.alignment:
         try:
             evidence = extract_evidence(
-                catalog, Path(arguments.alignments),
+                catalog, Path(arguments.alignment),
                 index_path=Path(arguments.alignment_index) if arguments.alignment_index else None,
-                limit=arguments.alignment_limit or 200,
                 reference_path=Path(arguments.reference) if arguments.reference else None,
+                sample_name=arguments.sample_name,
             )
         except AlignmentError as error:
             parser.error(str(error))
+        if evidence.sample_name is None:
+            parser.error("--sample-name is required: alignment header has no sample names to infer")
     try:
         write_reports(
             catalog.genome_assembly,
@@ -105,6 +110,7 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             definitions_name=Path(arguments.definitions).name,
             compatibility_warning=quantification.compatibility_warning,
             alignment_evidence=evidence,
+            sample_name=evidence.sample_name if evidence else arguments.sample_name,
         )
     except ReportError as error:
         parser.error(str(error))

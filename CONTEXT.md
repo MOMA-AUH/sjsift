@@ -73,9 +73,15 @@ comparison basis, not a claim that it contains the aberrant junction.
 _Avoid_: Variant transcript accession, inferred exon label
 
 **Local junction schematic**:
-Labeled splice boundaries in transcript orientation, with exact intronic
-coordinates and no claim about full exon extents or complete transcript structure.
+Labeled splice boundaries with exact intronic coordinates and transcript direction,
+optionally accompanied by annotated exon extents, without claiming complete transcript structure.
 _Avoid_: Full transcript model, exon coverage
+
+**Annotated exon extent**:
+The full genomic interval of an exon explicitly established by the cited annotation,
+expressed as 1-based inclusive start and end coordinates. Read coverage and a known
+splice boundary alone do not establish this extent.
+_Avoid_: Read span, inferred exon length
 
 **Alignment evidence**:
 Individual selected-junction alignment records from optional indexed input.
@@ -88,15 +94,16 @@ flags and MAPQ do not establish uniqueness.
 _Avoid_: Primary means unique
 
 **Transcript-strand evidence**:
-Usable transcript-strand tags or validated per-junction STAR motifs. Agreeing and
-unverified records are displayed separately; opposite/conflicting evidence is
-excluded with counts. Forward/reverse alignment orientation is a different fact.
+Usable transcript-strand tags or validated per-junction STAR motifs. Accessible
+read labels distinguish agreeing and unverified records; opposite/conflicting
+evidence is excluded. Forward/reverse alignment orientation is a different fact.
 _Avoid_: Read orientation proves transcript strand
 
 **Shared alignment membership**:
 One physical alignment record supporting several selected junction groups. It
-has the same record ID in each and an Also matches indication. This is distinct
-from related mates sharing a read name, and does not imply independent molecules.
+appears once per variant figure; highlighted splice lines, support filtering,
+and accessible read labels retain its memberships. This is distinct from
+related mates sharing a read name, and does not imply independent molecules.
 _Avoid_: Deduplicated template, independent reference molecules
 
 **CRAM reference FASTA**:

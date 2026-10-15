@@ -1,5 +1,6 @@
 """Reference groups are independent observations, including shared physical records."""
 from dataclasses import replace
+from html.parser import HTMLParser
 import io
 
 from alignment_fixtures import ANNOTATION, CATALOG, bam, record
@@ -45,22 +46,25 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
         return stream.getvalue()
     html = render()
     assert html == render()
-    assert html.count("Eligible: 1 · Embedded: 1") == 2
-    assert "Also matches: skip · Defining junction" in html
-    assert "Also matches: skip · &lt;/script&gt;" in html
+    assert html.count('<li class="read-row') == 1
+    assert 'data-support="0 1"' in html
+    assert 'style="--read-color:#3159ad"' in html
+    assert 'repeating-linear-gradient' not in html
+    assert "Variant; &lt;/script&gt;" in html  # Accessible read label retains memberships.
+    assert "Supports:" not in html and "Also matches:" not in html
     assert hostile not in html and '<img' not in html
     assert "Alignment evidence not requested" not in html
 
 
-def test_rare_defining_evidence_is_independent_from_abundant_reference_samples(tmp_path):
+def test_rare_defining_and_abundant_reference_evidence_are_both_fully_retained(tmp_path):
     variant = replace(CATALOG.variants[0], reference_junctions=(reference(),))
     catalog = replace(CATALOG, variants=(variant,))
-    path = bam(tmp_path, [record("rare", tags={"NH": 1})] + [record(f"abundant-{i}", start=200, tags={"NH": 1}) for i in range(150)])
-    groups = extract_evidence(catalog, path, limit=3).groups
+    path = bam(tmp_path, [record("rare", tags={"NH": 1})] + [record(f"abundant-{i}", start=200, tags={"NH": 1}) for i in range(250)])
+    groups = extract_evidence(catalog, path).groups
     assert groups["v0-j0"].eligible["unique"] == 1
     assert [r.read_name for r in groups["v0-j0"].records] == ["rare"]
-    assert groups["v0-j1"].eligible["unique"] == 150
-    assert len(groups["v0-j1"].records) == 3
+    assert groups["v0-j1"].eligible["unique"] == 250
+    assert len(groups["v0-j1"].records) == 250
 
 
 def test_reference_on_other_contig_and_strand_uses_its_own_policy(tmp_path):
@@ -98,10 +102,129 @@ annotation_source = "Synthetic comparator"
     before = tmp_path / "before.context.tsv"
     after = tmp_path / "after.context.tsv"
     base = invoke(*args, "--context-output", before)
-    result = invoke(*args, "--alignments", path, "--context-output", after, "--html-output", tmp_path / "report.html")
+    result = invoke(*args, "--alignment", path, "--context-output", after, "--html-output", tmp_path / "report.html")
     assert result.returncode == 0, result.stderr
     assert base.stdout == result.stdout
     assert before.read_bytes() == after.read_bytes()
     html = (tmp_path / "report.html").read_text()
-    assert 'id="reads-v0-j1"' in html and "Also matches: skip · custom comparator" in html
-    assert "Eligible: 1 · Embedded: 1" in html
+    assert 'data-support="0 1"' in html
+
+
+class PileupRows(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.rows = []
+        self.bar_colors = []
+        self.arc_colors = {}
+        self._arc_color = None
+        self.label_colors = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "li" and "read-row" in attrs.get("class", "").split():
+            self.rows.append(attrs)
+        if attrs.get("class") == "bar":
+            self.bar_colors.append(attrs.get("style", "").removeprefix("--support-color:"))
+        if "junction-arc" in attrs.get("class", "").split():
+            self._arc_color = attrs["stroke"]
+        if tag == "th" and attrs.get("scope") == "row" and "style" in attrs:
+            self.label_colors.append(attrs["style"].removeprefix("color:"))
+
+    def handle_data(self, data):
+        if self._arc_color is not None:
+            self.arc_colors[data.split(" · exon ", 1)[0]] = self._arc_color
+
+    def handle_endtag(self, tag):
+        if tag == "path":
+            self._arc_color = None
+
+
+def combined_report(catalog, evidence):
+    stream = io.StringIO()
+    write_html("synthetic", tuple(
+        VariantSupport(variant, 8, 2, tuple(ReferenceJunctionSupport(ref, 20, 3)
+                                          for ref in variant.reference_junctions))
+        for variant in catalog.variants
+    ), stream, alignment_evidence=evidence)
+    return stream.getvalue()
+
+
+def test_support_colors_match_tables_arcs_and_reads_for_standard_and_custom_roles(tmp_path):
+    references = (reference("same_donor", 101, 200), reference("same_acceptor", 201, 300),
+                  reference("custom A", 401, 500), reference("custom B", 601, 700))
+    variant = replace(CATALOG.variants[0], intron_end=300, reference_junctions=references)
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M"), record("donor"),
+                          record("acceptor", start=180), record("custom A", start=380),
+                          record("custom B", start=580)])
+    previous = None
+    for refs in (references, references[::-1]):
+        catalog = replace(CATALOG, variants=(replace(variant, reference_junctions=refs),))
+        html = combined_report(catalog, extract_evidence(catalog, path))
+        parsed = PileupRows(html)
+        colors = parsed.bar_colors[:5]  # Overview row, in declared role order.
+        assert len(set(colors)) == 5
+        assert parsed.bar_colors[5:] == colors  # Detail table.
+        assert not parsed.label_colors
+        assert [row["style"].removeprefix("--read-color:") for row in parsed.rows] == colors
+        by_role = dict(zip((None, *(ref.role for ref in refs)), colors))
+        labels = {None: "Variant", "same_donor": "Same donor", "same_acceptor": "Same acceptor"}
+        assert parsed.arc_colors == {labels.get(role, role): color for role, color in by_role.items()}
+        assert by_role[None] == "#3159ad"
+        assert by_role["same_donor"] == "#168375"
+        assert by_role["same_acceptor"] == "#9950a5"
+        assert previous is None or by_role == previous
+        previous = by_role
+        assert "Reference unique" not in html
+        assert "Same donor unique" in html and "Same acceptor unique" in html
+
+
+def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_path):
+    donor = reference("same_donor", 101, 200)
+    acceptor = reference("same_acceptor", 201, 300)
+    variant = replace(CATALOG.variants[0], intron_end=300, reference_junctions=(donor, acceptor))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M", tags={"NH": 1})]
+               + [record(f"donor-{i}", tags={"NH": 2}) for i in range(60)]
+               + [record("acceptor", start=180)])
+    html = combined_report(catalog, extract_evidence(catalog, path))
+    rows = PileupRows(html).rows
+    assert html.count('class="alignment-group"') == 1
+    assert html.count('aria-label="Shared genomic coordinate ruler"') == 1
+    assert len(rows) == 62
+    assert len([row for row in rows if 'hidden' not in row]) == 12
+    variant_rows = [row for row in rows if row['data-support'] == '0']
+    donor_rows = [row for row in rows if row['data-support'] == '1']
+    acceptor_rows = [row for row in rows if row['data-support'] == '2']
+    assert len(variant_rows) == len(acceptor_rows) == 1 and len(donor_rows) == 60
+    assert '--read-color:#3159ad' in variant_rows[0]['style']
+    assert '--read-color:#168375' in donor_rows[0]['style']
+    assert '--read-color:#9950a5' in acceptor_rows[0]['style']
+    assert variant_rows[0]['data-mapping'] == 'unique'
+    assert donor_rows[0]['data-mapping'] == 'multimapping'
+    assert acceptor_rows[0]['data-mapping'] == 'unknown'
+    assert 'support-legend' not in html
+    assert '<h3>Read support</h3><div class="read-controls"' in html
+    assert 'Variant · exon 1 → 3' in html
+    assert 'Same donor · exon 1 → 3' in html
+    assert 'Same acceptor · exon 1 → 3' in html
+    assert '8 unique + 2 multi (STAR)' in html
+
+
+def test_combined_figure_keeps_other_contigs_separate_and_empty_guides_visible(tmp_path):
+    ref = reference(chromosome="chr2", strand="-")
+    variant = replace(CATALOG.variants[0], reference_junctions=(ref,))
+    catalog = replace(CATALOG, variants=(variant,))
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}, {"SN": "chr2", "LN": 2000}]}
+    path = bam(tmp_path, [record("minus", start=200, contig=1, tags={"NH": 1, "TS": "-"})], header=header)
+    html = combined_report(catalog, extract_evidence(catalog, path))
+    assert html.count('class="alignment-group"') == 1
+    assert html.count('class="pileup-track"') == 2
+    assert 'class="pileup-track" role="group" aria-label="chr1"' in html
+    assert 'class="pileup-track" role="group" aria-label="chr2"' in html
+    assert html.count('<li class="read-row') == 1
+    assert 'data-support="1"' in html
+    assert '>←</span>' not in html
+    assert 'genomic coordinates →' not in html
+    assert 'Arc width: total STAR support' not in html
+    assert 'Boxes: annotated exons' not in html

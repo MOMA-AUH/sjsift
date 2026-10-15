@@ -7,10 +7,10 @@ evidence; there are no remote resources or browser network requests.
 
 ## Creating and opening a report
 
-Run the current development version with a schema-3 catalog with a new destination path:
+Run sjsift v0.2.1 with a schema-3 catalog and a new destination path:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab \
+sjsift --sample-name sample --junctions sample.SJ.out.tab \
   --definitions definitions/grch38.toml \
   --output sample.tsv \
   --context-output sample.context.tsv \
@@ -46,6 +46,11 @@ Bars stack unique and multimapping counts without weighting. Overview bars use
 one linear scale across the entire catalog, including when filtered. Detail
 bars use one scale within the selected variant. Tiny bars can be visually hard
 to distinguish from zero; exact numeric counts are always displayed.
+Support types use one color throughout the overview and detail table, sashimi arcs,
+and alignment tracks: variant blue, same donor teal, and same acceptor purple.
+Each custom reference role gets a distinct color, assigned consistently throughout
+the report. Junction labels retain the standard text color.
+The neutral multimapping segment remains separate from the colored unique segment.
 
 ## Reading the evidence
 
@@ -75,21 +80,20 @@ compatibility warning as before and embeds a corresponding warning in the HTML.
 
 ## Provenance and file behavior
 
-The header records the input and catalog basenames, the catalog assembly label,
-and the sjsift version. Basenames identify the supplied files; no sample identity
-is inferred. The catalog's assembly cannot independently establish the assembly
+The report opens with **SJSIFT · JUNCTION REPORT** and the sample name as a subtitle;
+the browser title also includes the sample name. Supply `--sample-name NAME`, or
+let sjsift infer the single distinct `@RG SM` name from a BAM/CRAM input. Missing
+sample metadata requires an explicit name. Multiple names require an explicit
+selection matching the header; alignment evidence then includes only that sample's
+read groups. A supplied name must also match a single named alignment sample.
+
+**Inputs and configuration** appears at the bottom as two-column key-value rows:
+Alignment file, STAR junctions, Assembly, and sjsift version. The alignment file
+is labeled “Not supplied” when absent.
+Basenames identify the
+supplied files; neither a supplied name nor alignment metadata verifies the anonymous
+STAR file's sample identity. The catalog's assembly cannot independently establish the assembly
 used to create the STAR file.
-
-Each junction includes a local schematic with donor and acceptor exon labels,
-exact intronic boundary coordinates, transcript strand, and intron length.
-The schematic reads in transcript direction (decreasing coordinates on minus
-strand), is not to scale, and does not imply full exon extents or a complete
-transcript model. Dashed outer edges mark the partial exon views.
-
-Reference accessions identify the annotation or comparison basis, not necessarily
-a transcript containing the aberrant junction. Each group's annotation provenance
-is visible, including explicit ARv7 CE3 and FGFR2 alternative terminal-exon caveats.
-All labels come from required schema fields, never guesses from comments or IDs.
 
 The file embeds all styles and scripts. With JavaScript disabled, the complete
 static overview and all detail sections remain visible and linked. Search,
@@ -108,33 +112,67 @@ loss.
 
 ## Optional alignment previews
 
-Supply `--alignments sample.bam` to embed selected structural evidence. Read
+Supply `--alignment sample.bam` to embed selected structural evidence. Read
 [alignment evidence](ALIGNMENT_EVIDENCE.md) for exact inclusion rules, independent
-counts, sampling, input checks and the raw identifiers retained when sharing.
-For CRAM, use `--alignments sample.cram --reference genome.fa` with local existing
+counts, input checks and the raw identifiers retained when sharing.
+For CRAM, use `--alignment sample.cram --reference genome.fa` with local existing
 alignment and FASTA indexes. The explicit FASTA is always required and remote
-reference retrieval is disabled. FASTA provenance contains basenames and available
-compatibility assurance, never reference bases or absolute paths. The generated
-report opens independently of both source CRAM and FASTA.
+reference retrieval is disabled. The generated report contains no reference bases
+or absolute paths and opens independently of both source CRAM and FASTA.
 
-Every configured reference has an immediate read preview and retains its own
-annotation and counts. **Also matches** identifies shared physical records across
-qualifying junction groups; record IDs are stable within the report and identical
-input/settings. Empty reference arrays, zero eligible records and alignment
+Defining and configured reference junctions share one pileup per variant, with
+sashimi-style arcs whose tooltips identify each support type, exon connection,
+and STAR counts. Arcs meet a shared
+baseline aligned to the reads, with the genomic ruler just below. Arc thickness
+uses total STAR support on a logarithmic scale; dashed arcs mark zero support.
+Exact unique and multimapping counts remain visible in the preceding support table. Variant reads
+are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
+roles each have their own color. Reads use solid colors at full opacity regardless of mapping class
+or transcript-strand evidence. Shared reads appear once, colored by their first
+matching group in catalog order (variant first). Highlighted splice lines and the
+support filter retain all local memberships. Record IDs remain stable in the
+embedded report for identical input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
 
-Each junction initially shows up to ten alignment rows. **Expand reads** pages
-through the embedded evidence, 50 rows at a time; **Collapse reads** restores the
-preview. **All / Unique only** changes the displayed subset, leaving full counts
-and STAR support unchanged. Unique only means NH=1, regardless of primary,
+All eligible alignment records are embedded without downsampling. The initial
+figure shows up to ten alignment rows per support group. **Expand reads**
+pages through the embedded evidence, up to 50 rows per group at a time;
+**Collapse reads** restores the preview. Shared reads belong to the first matching
+group in catalog order for pagination. **All / Unique only** and **Support** change
+the displayed subset, leaving STAR support unchanged. Unique only means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
-filter-empty state. Limits apply independently to every junction and mapping
-class, and sampled evidence is labeled.
+filter-empty state. Paging affects visibility only; every eligible read remains
+available in the report.
 
-Geometry distinguishes aligned blocks, splice gaps, deletions, insertions and
-clipping. It uses a labeled nonuniform scale and `//` breaks on long gaps, with
-exact lengths and coordinate tooltips. **Read details** includes identity, flags,
-strand sources and the explicitly defined genomic left/right aligned anchors;
-these are not STAR maximum overhang. The alignment guide specifies the anchor
+Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
+ruler. Labeled exon boxes show the relevant portions of the catalog's annotated
+exons on the same base scale as the reads. The plot keeps 120 nt of exon context
+around aligned blocks, displayed soft clips, and selected splice boundaries.
+Uncovered outer tails longer than 80 nt beyond that context are trimmed; long
+uncovered internal sections are compressed. Zig-zag exon edges mark each cut,
+including both sides of an internal cut. Short remainders stay visible.
+Hover for the exon label, transcript, source, full inclusive coordinates and length,
+and the shown segment for a truncated exon. An unknown extent is shown
+as a vertical tick at the splice boundary, with its label above the intron line,
+never as a full exon box. Shared exon extents
+and shared unknown boundaries appear once. Blue bars are aligned read segments;
+they need not cover a whole exon. Matching positions align vertically; thin splice
+lines connect aligned read blocks. Gaps longer than 80 nt outside the retained exon
+context, aligned blocks, or displayed soft clips
+are compressed and drawn as straight lines, with exact intervals in tooltips.
+When neighboring displayed exons have nonconsecutive numbers in the same
+transcript, a zig-zag in the connecting intron line marks omitted exons.
+Its tooltip lists the omitted exon numbers; for example, exons 3–9 between 10 and 2.
+The scale remains fixed when filtering or paging.
+Deletions, insertions and clipping have distinct marks with exact lengths and
+coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
+at the same width per base as aligned blocks, with space for their full lengths.
+They have no assigned reference coordinates. Hard clips remain gold ticks.
+References on other chromosomes have separate axes
+within the figure. Click a read, or focus it and press Enter, to open
+read details: the read name; one genomic interval · CIGAR · MAPQ · NH line;
+a **Read** line with mate number (or unspecified), forward/reverse orientation;
+flags with their numeric value; and one compact line with both aligned-anchor lengths.
+These anchors are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
-all counts and provenance remain readable; filtering and paging require JavaScript.
+STAR support counts and junction arcs remain readable; filtering and paging require JavaScript.

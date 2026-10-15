@@ -1,12 +1,8 @@
-"""Current catalog annotation and local schematic behavior."""
-import io
-from pathlib import Path
+"""Current catalog annotation validation."""
 
 import pytest
 
 from sjsift.catalog import CatalogError, load_catalog
-from sjsift.html_report import write_html
-from sjsift.quantify import VariantSupport
 
 
 ANNOTATED = '''schema_version = 3
@@ -57,14 +53,37 @@ def test_annotations_are_required_nonempty_text(tmp_path, field, value, junction
         load_catalog(path)
 
 
-def test_minus_strand_schematic_labels_local_boundaries_and_comparison_basis(tmp_path):
+@pytest.mark.parametrize("strand", ["+", "-"])
+@pytest.mark.parametrize("reference", [False, True])
+def test_optional_exon_extents_use_inclusive_coordinates_and_transcript_sides(tmp_path, strand, reference):
+    text = ANNOTATED.replace('strand = "-"', f'strand = "{strand}"')
+    if reference:
+        text = text.replace("reference_junctions = []\n", "")
+        text += "\n[[variants.reference_junctions]]\n" + text.split("[[variants]]\n")[1].replace(
+            'id = "terminal"', 'role = "comparison"').replace("intron_end = 200", "intron_end = 300")
+    end = 300 if reference else 200
+    left, right = (1, 100), (end + 1, end + 50)
+    donor, acceptor = (left, right) if strand == "+" else (right, left)
+    text += f"donor_extent = {list(donor)}\nacceptor_extent = {list(acceptor)}\n"
     path = tmp_path / "catalog.toml"
-    path.write_text(ANNOTATED)
-    catalog = load_catalog(path)
-    stream = io.StringIO()
-    write_html(catalog.genome_assembly, (VariantSupport(catalog.variants[0], 2, 3),), stream)
-    html = stream.getvalue()
-    assert "Donor exon 17" in html and "Acceptor exon E18-C3" in html
-    assert "Donor boundary: 200" in html and "Acceptor boundary: 101" in html
-    assert "Annotation / comparison basis: NM_test.1" in html
-    assert "Local splice boundaries" in html and "not to scale" in html
+    path.write_text(text)
+    variant = load_catalog(path).variants[0]
+    annotation = variant.reference_junctions[0].annotation if reference else variant.annotation
+    assert annotation.donor_extent == donor
+    assert annotation.acceptor_extent == acceptor
+
+
+@pytest.mark.parametrize("extent", ['[]', '[201]', '[201, 220, 230]', '"201–220"',
+                                   '[true, 220]', '[201, 220.0]', '[0, 220]',
+                                   '[220, 201]', '[202, 220]', '[1, 100]'])
+@pytest.mark.parametrize("reference", [False, True])
+def test_exon_extents_reject_invalid_or_nonadjacent_coordinates(tmp_path, extent, reference):
+    text = ANNOTATED
+    if reference:
+        text = text.replace("reference_junctions = []\n", "")
+        text += "\n[[variants.reference_junctions]]\n" + text.split("[[variants]]\n")[1].replace(
+            'id = "terminal"', 'role = "comparison"').replace("intron_start = 101", "intron_start = 151")
+    path = tmp_path / "catalog.toml"
+    path.write_text(text + f"donor_extent = {extent}\n")
+    with pytest.raises(CatalogError, match="donor_extent"):
+        load_catalog(path)

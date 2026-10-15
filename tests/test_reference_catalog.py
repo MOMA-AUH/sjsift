@@ -106,6 +106,9 @@ def test_annotations_match_pinned_exon_boundaries_and_explicit_terminal_curation
             assert acceptor == "CE3"
             assert "not present in NM_000044.6" in annotation.annotation_source
             acceptor = None
+        assert annotation.donor_extent == (int(exons[donor]["exon_start"]), int(exons[donor]["exon_end"]))
+        assert annotation.acceptor_extent == (
+            (int(exons[acceptor]["exon_start"]), int(exons[acceptor]["exon_end"])) if acceptor else None)
         if junction.strand == "+":
             assert int(exons[donor]["exon_end"]) + 1 == junction.intron_start
             if acceptor:

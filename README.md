@@ -19,12 +19,10 @@ The recommended way to install **sjsift** is via
 conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift
 ```
 
-sjsift requires Python 3.11 or newer. The current development version also
-installs pysam (one normal runtime dependency) for alignment evidence. The
-currently published v0.2.0 package does not include these development features.
-Use `python -m pip install .` from this checkout to test before release.
-Pair published packages with the catalog from their matching Git tag; the master
-catalog uses schema 3.
+sjsift v0.2.1 requires Python 3.11 or newer and installs
+`pysam>=0.24.0,<0.25` as a normal runtime dependency for alignment evidence.
+Pair published packages with the catalog from their matching Git tag;
+v0.2.1 uses schema 3 and rejects schemas 1 and 2.
 
 ## Usage
 
@@ -33,26 +31,34 @@ use the reference GRCh38 catalog from this repository:
 
 ```bash
 curl -L \
-  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.0/definitions/grch38.toml \
+  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.1/definitions/grch38.toml \
   -o grch38.toml
 
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions grch38.toml \
   --output sample.sjsift.tsv
 ```
+
+`--sample-name NAME` is required, including for TSV-only runs, unless a single
+distinct sample name can be inferred from the BAM/CRAM read-group `SM` fields.
+It appears beneath the HTML report heading and in the browser title. With no
+sample metadata, supply a name explicitly. With multiple samples, supply a name
+present in the header; only that sample's read groups contribute alignment
+evidence. Explicit names must match when the alignment header contains sample
+names. STAR support counts remain unchanged.
 
 `--junctions` accepts plain text or gzip-compressed data, detected from the
 file contents regardless of filename extension. For example:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab.gz --definitions grch38.toml
+sjsift --sample-name sample --junctions sample.SJ.out.tab.gz --definitions grch38.toml
 ```
 
 Omit `--output` to write the report to standard output:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab --definitions grch38.toml
+sjsift --sample-name sample --junctions sample.SJ.out.tab --definitions grch38.toml
 ```
 
 To write local reference-junction context as a separate long-form TSV, pass
@@ -60,7 +66,7 @@ To write local reference-junction context as a separate long-form TSV, pass
 
 ```bash
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions definitions/grch38.toml \
   --output sample.sjsift.tsv \
   --context-output sample.sjsift.context.tsv
@@ -84,7 +90,7 @@ Add `--html-output` to create a single offline HTML file alongside the TSVs:
 
 ```bash
 sjsift \
-  --junctions sample.SJ.out.tab \
+  --sample-name sample --junctions sample.SJ.out.tab \
   --definitions grch38.toml \
   --output sample.sjsift.tsv \
   --context-output sample.sjsift.context.tsv \
@@ -94,7 +100,7 @@ sjsift \
 Open the HTML file in a browser. The overview shows defining-junction and
 reference support side by side, with separate unique and multimapping counts.
 Search by variant ID, sort by support or catalog order, and select a variant
-for detailed counts, coordinates, and local labeled splice-boundary schematics. Reference roles remain separate, including
+for detailed STAR support counts and junction coordinates. Reference roles remain separate, including
 custom roles from your own catalog.
 
 `--html-output` does not require `--context-output`. Without `--output`, the
@@ -105,17 +111,25 @@ The HTML file needs no server, internet connection, or external assets. See the
 [HTML report guide](docs/HTML_REPORT.md) for interpretation and output behavior.
 HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
-Add `--alignments sample.bam` for structural read previews. The BAM must be local,
+Add `--alignment sample.bam` for one combined read pileup per variant. Reads are
+blue for variant support, teal for same-donor support, and purple for same-acceptor
+support, with solid colors at full opacity. Sashimi-style arcs connect the selected junctions above a shared genomic
+ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
-index, and `--alignment-limit N` caps each junction/mapping-class sample (default
-200). See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion, strand,
-sampling, count provenance and the raw identifiers retained in shared reports.
+index. All eligible reads are embedded without downsampling; the viewer pages
+through them. See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion,
+strand, count provenance and the raw identifiers retained in shared reports.
+
+Alignment-record counts can differ from STAR support, including multimapping
+records beside zero STAR multimapping support. v0.2.1 does not reconstruct the
+reads contributing to STAR's counts; reconciliation remains tracked in
+[issue #40](https://github.com/MOMA-AUH/sjsift/issues/40). STAR values are unchanged.
 
 For CRAM, supply the matching **local indexed FASTA** explicitly:
 
 ```bash
-sjsift --junctions sample.SJ.out.tab --definitions definitions/grch38.toml \
-  --alignments sample.cram --reference genome.fa --html-output sample.html
+sjsift --sample-name sample --junctions sample.SJ.out.tab --definitions definitions/grch38.toml \
+  --alignment sample.cram --reference genome.fa --html-output sample.html
 ```
 
 CRAM requires an existing `.crai` (or `--alignment-index`) and the FASTA's `.fai`;
@@ -130,9 +144,11 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
-The current development catalog uses schema version 3 (target release v0.2.1).
-Schemas 1 and 2 are rejected by the current code. Pre-1.0 releases, including
+The v0.2.1 catalog uses schema version 3.
+Schemas 1 and 2 are rejected. Pre-1.0 releases, including
 patch releases, do not promise backward compatibility.
+sjsift v0.2.0 users should retain the catalog from the
+[`v0.2.0` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.2.0/definitions/grch38.toml).
 sjsift v0.1.3 supports only schema version 1; its compatible catalog remains
 available at the
 [`v0.1.3` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.1.3/definitions/grch38.toml).
