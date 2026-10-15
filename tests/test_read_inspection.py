@@ -36,7 +36,7 @@ class PileupParser(HTMLParser):
         classes = attrs.get("class", "").split()
         if tag == "path" and "junction-arc" in classes:
             self.arcs.append(attrs)
-        if tag == "rect" and "exon-edge" in classes:
+        if tag in {"rect", "path"} and "exon-edge" in classes:
             self.exon_edges.append(attrs)
         if tag == "path" and "exon-boundary" in classes:
             self.exon_boundaries.append(attrs)
@@ -107,6 +107,80 @@ def test_known_exon_shared_by_two_junctions_is_drawn_once(tmp_path):
     parsed = PileupParser(stream.getvalue())
     assert len(parsed.exon_edges) == 1
     assert len(parsed.exon_boundaries) == 2
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+@pytest.mark.parametrize("empty", [False, True])
+def test_long_outer_exons_are_trimmed_to_local_evidence(tmp_path, strand, empty):
+    left, right = (1, 1000), (1101, 2000)
+    donor, acceptor = (left, right) if strand == "+" else (right, left)
+    annotation = replace(CATALOG.variants[0].annotation, donor_extent=donor, acceptor_extent=acceptor)
+    variant = replace(CATALOG.variants[0], intron_start=1001, intron_end=1100,
+                      strand=strand, annotation=annotation)
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [] if empty else [record(start=980, tags={"TS": strand})])
+    html = render(catalog, extract_evidence(catalog, path))
+    parsed = PileupParser(html)
+    assert len(parsed.exon_edges) == 2
+    assert all("exon-truncated" in exon["class"] for exon in parsed.exon_edges)
+    ticks = [int(label.replace(",", "")) for label in re.findall(
+        r'<span class="pileup-tick[^>]*>([^<]+)</span>', html)]
+    assert ticks[0] > 700 and ticks[-1] < 1400
+    assert "1–1,000 (1,000 nt); annotated exon extent" in html
+    assert "1,101–2,000 (900 nt); annotated exon extent" in html
+    if not empty:
+        aligned_left, _, aligned_right = parsed.rows[0]
+        assert aligned_left[2] > 5  # Read anchors remain legible after trimming tails.
+        assert aligned_left[2] == pytest.approx(aligned_right[2], abs=0.00001)
+
+
+@pytest.mark.parametrize("covered_middle", [False, True])
+def test_long_internal_exon_cuts_only_uncovered_sequence(tmp_path, covered_middle):
+    annotation = CATALOG.variants[0].annotation
+    first = replace(CATALOG.variants[0], annotation=replace(annotation, acceptor_extent=(201, 1600)))
+    reference = ReferenceJunction("next", "chr1", 1601, 1700, "+",
+                                 annotation=replace(annotation, donor_exon="3", donor_extent=(201, 1600)))
+    variant = replace(first, reference_junctions=(reference,))
+    catalog = replace(CATALOG, variants=(variant,))
+    reads = ([record("continuous", cigar="20M100N1400M100N20M")] if covered_middle else
+             [record("left"), record("right", start=1580)])
+    path = bam(tmp_path, reads)
+    support = VariantSupport(variant, 8, 0, (ReferenceJunctionSupport(reference, 8, 0),))
+    stream = io.StringIO()
+    write_html("synthetic", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    html = stream.getvalue()
+    parsed = PileupParser(html)
+    assert len(parsed.exon_edges) == (1 if covered_middle else 2)
+    assert all(("exon-truncated" in exon["class"]) != covered_middle for exon in parsed.exon_edges)
+    assert ("Compressed gap: 341–1,460 (1,120 nt)" in html) != covered_middle
+    assert "201–1,600 (1,400 nt); annotated exon extent" in html
+    if not covered_middle:
+        assert parsed.rows[0][0][2] == pytest.approx(parsed.rows[1][0][2], abs=0.00001)
+
+
+def test_ar_exon_eight_tail_does_not_squeeze_reference_reads(tmp_path):
+    catalog = load_catalog(Path(__file__).parents[1] / "definitions/grch38.toml")
+    variant = next(variant for variant in catalog.variants if variant.identifier == "ARv567es")
+    catalog = replace(catalog, variants=(variant,))
+    reads = [record(ref.role, start=ref.intron_start - 21,
+                    cigar=f"20M{ref.intron_end - ref.intron_start + 1}N20M")
+             for ref in variant.reference_junctions]
+    path = bam(tmp_path, reads,
+               header={"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chrX", "LN": 100000000}]})
+    stream = io.StringIO()
+    support = VariantSupport(variant, 0, 0, tuple(
+        ReferenceJunctionSupport(ref, 20, 0) for ref in variant.reference_junctions))
+    write_html("GRCh38", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    html = stream.getvalue()
+    parsed = PileupParser(html)
+    assert any("exon-truncated" in exon["class"] for exon in parsed.exon_edges)
+    assert "67,723,686–67,730,619 (6,934 nt)" in html
+    ticks = [int(label.replace(",", "")) for label in re.findall(
+        r'<span class="pileup-tick[^>]*>([^<]+)</span>', html)]
+    assert ticks[-1] == 67723825  # 20 aligned bases + 120 nt of context into exon 8.
+    for row in parsed.rows:
+        anchors = [op for op in row if op[0].startswith("M:")]
+        assert all(anchor[2] > 2 for anchor in anchors)
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])

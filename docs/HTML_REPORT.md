@@ -116,11 +116,11 @@ reference retrieval is disabled. The generated report contains no reference base
 or absolute paths and opens independently of both source CRAM and FASTA.
 
 Defining and configured reference junctions share one pileup per variant, with
-sashimi-style arcs identified by a color legend above the plot. The legend lists
-each support type, exon connection, and STAR counts. Arcs meet a shared
+sashimi-style arcs whose tooltips identify each support type, exon connection,
+and STAR counts. Arcs meet a shared
 baseline aligned to the reads, with the genomic ruler just below. Arc thickness
 uses total STAR support on a logarithmic scale; dashed arcs mark zero support.
-Exact unique and multimapping counts remain visible in the legend. Variant reads
+Exact unique and multimapping counts remain visible in the preceding support table. Variant reads
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
 roles are gray. Reads use solid colors at full opacity regardless of mapping class
 or transcript-strand evidence. Shared reads appear once, colored by their first
@@ -142,14 +142,19 @@ filter-empty state. Paging affects visibility only; every eligible read remains
 available in the report.
 
 Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
-ruler. Labeled exon boxes span the catalog's annotated exon extents on the same
-base scale as the reads, including uncovered exon bases. Hover for the exon label,
-transcript, source, inclusive coordinates, and length. An unknown extent is shown
+ruler. Labeled exon boxes show the relevant portions of the catalog's annotated
+exons on the same base scale as the reads. The plot keeps 120 nt of exon context
+around aligned blocks, displayed soft clips, and selected splice boundaries.
+Uncovered outer tails longer than 80 nt beyond that context are trimmed; long
+uncovered internal sections are compressed. Zig-zag exon edges mark each cut,
+including both sides of an internal cut. Short remainders stay visible.
+Hover for the exon label, transcript, source, full inclusive coordinates and length,
+and the shown segment for a truncated exon. An unknown extent is shown
 as a bracket at the splice boundary, never as a full exon box. Shared exon extents
 and shared unknown boundaries appear once. Blue bars are aligned read segments;
 they need not cover a whole exon. Matching positions align vertically; thin splice
-lines connect aligned read blocks. Gaps longer than 80 nt without annotated exons,
-aligned blocks, or displayed soft clips
+lines connect aligned read blocks. Gaps longer than 80 nt outside the retained exon
+context, aligned blocks, or displayed soft clips
 are compressed and drawn as straight lines, with exact intervals in tooltips.
 The scale remains fixed when filtering or paging.
 Deletions, insertions and clipping have distinct marks with exact lengths and
@@ -162,4 +167,4 @@ within the figure. Click a read, or focus it and press Enter, to open
 strand sources and the explicitly defined genomic left/right aligned anchors;
 these are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
-STAR support counts, the legend, and junction arcs remain readable; filtering and paging require JavaScript.
+STAR support counts and junction arcs remain readable; filtering and paging require JavaScript.

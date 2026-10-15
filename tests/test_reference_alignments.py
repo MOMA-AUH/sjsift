@@ -156,6 +156,8 @@ def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_pa
     assert variant_rows[0]['data-mapping'] == 'unique'
     assert donor_rows[0]['data-mapping'] == 'multimapping'
     assert acceptor_rows[0]['data-mapping'] == 'unknown'
+    assert 'support-legend' not in html
+    assert '<h3>Read support</h3><div class="read-controls"' in html
     assert 'Variant · exon 1 → 3' in html
     assert 'Same donor · exon 1 → 3' in html
     assert 'Same acceptor · exon 1 → 3' in html

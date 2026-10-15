@@ -119,13 +119,13 @@ are visible. The last page is labeled and its Next button disabled.
 ## Structural geometry and anchors
 
 Reads form a compact pileup beneath a shared genomic coordinate ruler and colored
-sashimi-style junction arcs. A color legend above the plot lists support types,
-donor/acceptor exons, and STAR support, keeping text clear of the arcs.
+sashimi-style junction arcs. Arc tooltips identify support types,
+donor/acceptor exons, and STAR support.
 Arcs share a baseline and the same coordinate transform as the reads. Longer
 connections arch over shorter ones. Transcript strand remains in coordinate tooltips.
 Line thickness uses total STAR support on a logarithmic scale, shared across
 chromosomes within the variant. Zero-support junctions remain visible as dashed
-arcs. Exact unique and multimapping counts appear in the legend and do not change
+arcs. Exact unique and multimapping counts appear in the preceding support table and do not change
 with read filters. Arcs mark splice boundaries, not complete exon extents;
 no coverage track is inferred from the selected alignment records. Blue identifies variant support,
 teal same-donor support, purple same-acceptor support, and gray custom reference
@@ -147,15 +147,21 @@ Extra space at the figure edges accommodates the longest clips; the genomic rule
 labels only the reference span. Hard clips and insertions remain fixed-width
 boundary markers.
 
-The scale is nonuniform: gaps longer than 80 nt with no annotated exon extents,
-aligned blocks, or displayed soft clips in any embedded record are compressed,
-with straight sections in the connected axis and exact gap intervals in tooltips.
-Neutral exon boxes show the catalog's full annotated extents on the aligned-base
-scale, including bases without reads. Labels follow genomic orientation on either
-strand. Unknown extents use brackets at the known splice boundary. Shared exon
+The scale is nonuniform. For each annotated exon, the plot retains 120 nt of context
+around aligned blocks, displayed soft clips, and selected splice boundaries,
+clipped to the full annotated extent. Short outer remainders of at most 80 nt
+remain visible; longer uncovered tails are trimmed. Gaps longer than 80 nt outside
+that context, aligned blocks, and displayed soft clips are compressed, including
+uncovered sections within long exons. The axis stays straight, with exact gap
+intervals in tooltips. Neutral exon boxes show the retained segments on the
+aligned-base scale. Zig-zag edges mark trimmed ends and both sides of compressed
+exon sections. Aligned bases are never compressed or omitted.
+Labels follow genomic orientation on either strand. Unknown extents use brackets
+at the known splice boundary. Shared exon
 extents and shared unknown boundaries appear once, retaining all annotation labels,
 transcript accessions, and sources in tooltips. Known extents include inclusive
-coordinates and length. Read spans are never used to infer exon extents.
+coordinates and length, plus the displayed segment when truncated. Read spans
+determine the view, never the annotated exon extent.
 All other regions
 share one linear scale. Selected splice boundaries are preserved. The transform
 uses all embedded records across the variant's groups on that chromosome and stays

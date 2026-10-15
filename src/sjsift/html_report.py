@@ -112,6 +112,25 @@ def _display_interval(record: AlignmentRecord, operation) -> tuple[int, int]:
     return operation.start, operation.end
 
 
+def _exon_windows(exon_extents, evidence_intervals):
+    """Retain local exon context, without letting uncovered tails set the scale."""
+    windows = []
+    for start, end in exon_extents:
+        local = [(max(start, left - 120), min(end, right + 120))
+                 for left, right in evidence_intervals if left <= end and right >= start]
+        if not local:
+            continue
+        first = min(left for left, _ in local)
+        last = max(right for _, right in local)
+        # Keep short remainders intact, just as we keep short internal gaps.
+        if first - start <= 80:
+            local.append((start, first))
+        if end - last <= 80:
+            local.append((last, end))
+        windows.extend(local)
+    return windows
+
+
 @dataclass(frozen=True)
 class _PileupScale:
     """One coordinate transform for all embedded records on a figure's chromosome."""
@@ -125,14 +144,16 @@ class _PileupScale:
     @classmethod
     def for_records(cls, records: tuple[AlignmentRecord, ...], boundaries: tuple[int, ...] = (),
                     exon_extents: tuple[tuple[int, int], ...] = ()):
+        evidence_intervals = [_display_interval(record, op) for record in records
+                              for op in record.geometry if op.op not in "ND"]
+        evidence_intervals += [(boundary, boundary) for boundary in boundaries]
+        windows = _exon_windows(exon_extents, evidence_intervals)
         start = min([record.start for record in records] + list(boundaries)
-                    + [left for left, _ in exon_extents])
+                    + [left for left, _ in windows])
         end = max([record.end for record in records] + list(boundaries)
-                  + [right for _, right in exon_extents])
-        # Preserve the base scale across annotated exons, aligned blocks and soft clips.
-        intervals = sorted([_display_interval(record, op) for record in records
-                            for op in record.geometry if op.op not in "ND"]
-                           + [(boundary, boundary) for boundary in boundaries] + list(exon_extents))
+                  + [right for _, right in windows])
+        # Preserve the base scale across local exon context, aligned blocks and soft clips.
+        intervals = sorted(evidence_intervals + windows)
         left_padding = max(0, start - min(left for left, _ in intervals))
         right_padding = max(0, max(right for _, right in intervals) - end)
         cursor, breaks = start, []
@@ -198,7 +219,7 @@ def _exon_annotations(junctions):
 
 
 def _exon_edges(junctions, scale):
-    """Draw measured exon extents; brackets mark boundaries with unknown extents."""
+    """Draw visible exon segments, zig-zag cuts, and unknown-boundary brackets."""
     features = {}
     for boundary, side, exon, extent, transcript, source in _exon_annotations(junctions):
         # Merge a known exon even when different junctions touch its two ends.
@@ -211,12 +232,17 @@ def _exon_edges(junctions, scale):
             f"exon {exon} ({transcript}); {source}" for exon, transcript, source in annotations))
         if extent:
             start, end = extent
-            left = scale.percent(start - 1) * 10
-            width = scale.percent(end) * 10 - left
             description = f"{sources}; {start:,}–{end:,} ({end - start + 1:,} nt); annotated exon extent"
-            blocks.append(
-                f'<rect class="exon-edge" x="{left:.6f}" y="4" width="{width:.6f}" height="16" rx="2">'
-                f'<title>{escape(description)}</title></rect>')
+            for visible_start, visible_end in _visible_exon_segments(start - 1, end, scale):
+                left = scale.percent(visible_start) * 10
+                right = scale.percent(visible_end) * 10
+                cut_left, cut_right = visible_start > start - 1, visible_end < end
+                segment_description = description
+                if cut_left or cut_right:
+                    segment_description += (f"; shown segment: {visible_start + 1:,}–{visible_end:,}; "
+                                            "zig-zag edge marks omitted exon sequence")
+                blocks.append(_exon_segment(left, right, cut_left, cut_right, segment_description))
+                labels.append(_exon_label(left, right - left, names, segment_description))
         else:
             x = scale.percent(boundary) * 10
             tip = x + (-6 if side == "left" else 6)
@@ -227,10 +253,45 @@ def _exon_edges(junctions, scale):
                 f'<title>{escape(description)}</title></path>')
             width = 36
             left = max(0, x - width) if side == "left" else min(x, 1000 - width)
-        labels.append(
-            f'<span class="exon-edge-label" style="left:{left / 10:.6f}%;width:{width / 10:.6f}%" '
-            f'title="{escape(description, quote=True)}">{escape(names)}</span>')
+            labels.append(_exon_label(left, width, names, description))
     return "".join(blocks), "".join(labels)
+
+
+def _visible_exon_segments(start, end, scale):
+    cursor, stop = max(start, scale.start), min(end, scale.end)
+    for left, right in scale.breaks:
+        if right <= cursor or left >= stop:
+            continue
+        if cursor < left:
+            yield cursor, left
+        cursor = min(stop, right)
+    if cursor < stop:
+        yield cursor, stop
+
+
+def _exon_segment(left, right, cut_left, cut_right, description):
+    if not (cut_left or cut_right):
+        return (f'<rect class="exon-edge" x="{left:.6f}" y="4" width="{right - left:.6f}" '
+                f'height="16" rx="2"><title>{escape(description)}</title></rect>')
+    depth = min(4, (right - left) / 4)
+    outline = f'M {left:.6f} 4 H {right:.6f}'
+    if cut_right:
+        outline += (f' L {right - depth:.6f} 8 L {right:.6f} 12'
+                    f' L {right - depth:.6f} 16 L {right:.6f} 20')
+    else:
+        outline += ' V 20'
+    outline += f' H {left:.6f}'
+    if cut_left:
+        outline += (f' L {left + depth:.6f} 16 L {left:.6f} 12'
+                    f' L {left + depth:.6f} 8 L {left:.6f} 4')
+    outline += ' Z'
+    return (f'<path class="exon-edge exon-truncated" d="{outline}">'
+            f'<title>{escape(description)}</title></path>')
+
+
+def _exon_label(left, width, names, description):
+    return (f'<span class="exon-edge-label" style="left:{left / 10:.6f}%;width:{width / 10:.6f}%" '
+            f'title="{escape(description, quote=True)}">{escape(names)}</span>')
 
 
 def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -> str:
@@ -286,7 +347,7 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
 
 
 def _junction_arcs(junctions, scale, maximum):
-    """Sashimi-style connections on the read scale, labeled by the legend."""
+    """Sashimi-style connections on the read scale, with details in tooltips."""
     height = 48 + 44 * len(junctions)
     baseline = height - 12
     paths = []
@@ -370,18 +431,10 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                                     tuple((support, color) for _, _, support, color in members))
                           for record, members, owner, bucket, position in local_entries
                       ) + '</ol></div>')
-    legend = "".join(
-        f'<li style="--read-color:{color}"><i class="support-swatch" aria-hidden="true"></i>'
-        f'<div><strong>{escape(label)} · exon {escape(support.definition.annotation.donor_exon)}'
-        f' → {escape(support.definition.annotation.acceptor_exon)}</strong>'
-        f'<span>{support.unique} unique + {support.multimapping} multi (STAR)</span></div></li>'
-        for label, support, color in junctions
-    )
     options = "".join(f'<option value="{position}">{escape(label)}</option>'
                       for position, (label, _, _) in enumerate(junctions))
     return (
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
-        f'<ul class="support-legend" aria-label="Junction support legend">{legend}</ul>'
         '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
         '<label>Support <select class="support-filter" aria-label="Junction support">'
