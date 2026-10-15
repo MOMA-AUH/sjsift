@@ -87,25 +87,30 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .alignment-group { padding: 1rem 0; }
 .pileup-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; margin-top: 12px; }
 .pileup-track { min-width: 600px; padding: 12px; background: white; }
-.pileup-chromosome { font-size: 12px; color: #526174; }
+.pileup-chromosome { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; color: #526174; }
+.pileup-chromosome > span { color: #6b7785; font-size: 11px; }
 .pileup-track + .pileup-track { border-top: 2px solid var(--line); }
 .support-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; }
 .support-swatch { display: inline-block; width: 12px; height: 10px; margin-right: 6px; border-radius: 2px; }
-.junction-guide { margin: 8px 0 12px; color: var(--read-color); }
-.junction-guide-label { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
-.junction-guide-axis { height: 30px; position: relative; margin-top: 4px; }
-.junction-guide-line { position: absolute; top: 14px; height: 12px; border-top: 2px solid; border-inline: 2px solid; text-align: center; line-height: 0; }
-.junction-endpoint { position: absolute; top: 0; font: 10px ui-monospace, monospace; }
-.junction-endpoint.left { transform: translateX(-100%); padding-right: 4px; }
-.junction-endpoint.right { padding-left: 4px; }
-.pileup-ruler { height: 46px; position: relative; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
-.pileup-tick { position: absolute; top: 5px; transform: translateX(-50%); font: 11px ui-monospace, monospace; white-space: nowrap; }
-.pileup-tick::after { content: ""; display: block; height: 7px; border-left: 1px solid #bac5d3; margin: 4px 50% 0; }
+.junction-arcs { position: relative; margin-top: 18px; }
+.junction-arcs svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.junction-arc, .junction-foot, .junction-baseline { fill: none; vector-effect: non-scaling-stroke; }
+.junction-arc { stroke-linecap: round; }
+.junction-arc.zero-support { stroke-dasharray: 4 5; }
+.junction-foot { stroke-width: 2; }
+.junction-baseline { stroke: #dbe2e9; stroke-width: 1; }
+.junction-arc-label { position: absolute; transform: translateX(-50%); width: max-content; max-width: 36%; text-align: center; color: var(--read-color); background: white; padding: 0 6px; font-size: 11px; line-height: 16px; }
+.junction-arc-label strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.junction-arc-label > span { display: block; color: #526174; white-space: nowrap; }
+.arc-direction { position: absolute; transform: translateX(-50%); font-size: 17px; line-height: 12px; background: white; padding: 0 3px; }
+.pileup-ruler { height: 40px; position: relative; margin-bottom: 6px; }
+.pileup-tick { position: absolute; top: 0; transform: translateX(-50%); font: 10px ui-monospace, monospace; color: #6b7785; white-space: nowrap; }
+.pileup-tick::after { content: ""; display: block; height: 5px; border-left: 1px solid #cbd4df; margin: 4px 50% 0; }
 .tick-0 { transform: none; }
 .tick-4 { transform: translateX(-100%); }
 .tick-0::after { margin-left: 0; }
 .tick-4::after { margin-left: 100%; }
-.gap-break { position: absolute; top: 28px; transform: translateX(-50%); color: #586778; font: bold 12px ui-monospace, monospace; }
+.gap-break { position: absolute; top: 23px; transform: translateX(-50%); color: #586778; font: bold 12px ui-monospace, monospace; }
 .read-rows { list-style: none; padding: 0; margin: 0; }
 .read-row { margin: 0; padding: 0; }
 .read-hit { display: block; cursor: pointer; list-style: none; }

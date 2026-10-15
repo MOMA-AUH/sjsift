@@ -116,7 +116,10 @@ reference retrieval is disabled. The generated report contains no reference base
 or absolute paths and opens independently of both source CRAM and FASTA.
 
 Defining and configured reference junctions share one pileup per variant, with
-colored junction guides labeled by exon connection and STAR support. Variant reads
+sashimi-style arcs labeled by exon connection and STAR support. Arcs meet a shared
+baseline aligned to the reads, with the genomic ruler just below. Arc thickness
+uses total STAR support on a logarithmic scale; dashed arcs mark zero support.
+Exact unique and multimapping counts remain visible on each arc. Variant reads
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
 roles are gray. Reads use solid colors at full opacity regardless of mapping class
 or transcript-strand evidence. Shared reads appear once, colored by their first
@@ -151,4 +154,4 @@ within the figure. Click a read, or focus it and press Enter, to open
 strand sources and the explicitly defined genomic left/right aligned anchors;
 these are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
-STAR support counts and labeled junction guides remain readable; filtering and paging require JavaScript.
+STAR support counts and labeled junction arcs remain readable; filtering and paging require JavaScript.

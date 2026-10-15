@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from html import escape
 from importlib.resources import files
+from math import log1p
 from string import Template
 from typing import TextIO
 
@@ -148,7 +149,7 @@ class _PileupScale:
         # Leave room at both edges for fixed-width markers.
         return 1 + 98 * self.project(coordinate) / max(1, self.project(self.end) + self.right_padding)
 
-    def ruler(self, chromosome: str) -> str:
+    def ruler(self) -> str:
         ticks = []
         # Label only the reference span; outer soft-clip space has no coordinates.
         width = self.project(self.end) - self.left_padding
@@ -165,8 +166,7 @@ class _PileupScale:
             f'title="Compressed gap: {left + 1:,}–{right:,} ({right - left:,} nt)">//</span>'
             for left, right in self.breaks
         )
-        return (f'<div class="pileup-chromosome">{escape(chromosome)} · genomic coordinates →</div>'
-                '<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
+        return ('<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
                 + "".join(ticks) + breaks + '</div>')
 
 
@@ -222,25 +222,50 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
     )
 
 
-def _junction_guide(label, support, color, scale):
-    junction = support.definition
-    annotation = junction.annotation
-    left, right = scale.percent(junction.intron_start - 1), scale.percent(junction.intron_end)
-    exons = (annotation.donor_exon, annotation.acceptor_exon)
-    if junction.strand == "-":
-        exons = exons[::-1]
+def _junction_arcs(junctions, scale, maximum):
+    """Sashimi-style connections on the read scale, with separate label lanes."""
+    height = 72 + 44 * len(junctions)
+    baseline = height - 12
+    paths, labels = [], []
+    # Longer connections arch over shorter ones. Separate lanes also distinguish
+    # coincident junctions and keep labels readable when their midpoints overlap.
+    ordered = sorted(junctions, key=lambda item: -(
+        scale.project(item[1].definition.intron_end)
+        - scale.project(item[1].definition.intron_start - 1)))
+    for lane, (label, support, color) in enumerate(ordered):
+        junction = support.definition
+        annotation = junction.annotation
+        left = scale.percent(junction.intron_start - 1) * 10
+        right = scale.percent(junction.intron_end) * 10
+        apex = 40 + lane * 44
+        control = baseline - (baseline - apex) * 4 / 3
+        width = 1.5 + 4.5 * log1p(support.total) / log1p(maximum)
+        description = (f"{label} · exon {annotation.donor_exon} → {annotation.acceptor_exon}; "
+                       f"{junction.chromosome}:{junction.intron_start:,}–{junction.intron_end:,} "
+                       f"({junction.strand}); {support.unique} unique + {support.multimapping} multi (STAR)")
+        paths.append(
+            f'<path class="junction-arc{" zero-support" if not support.total else ""}" '
+            f'd="M {left:.6f} {baseline} C {left:.6f} {control:.6f}, '
+            f'{right:.6f} {control:.6f}, {right:.6f} {baseline}" '
+            f'stroke="{color}" stroke-width="{width:.3f}"><title>{escape(description)}</title></path>'
+            f'<path class="junction-foot" d="M {left:.6f} {baseline - 4} v 8 '
+            f'M {right:.6f} {baseline - 4} v 8" stroke="{color}"/>'
+        )
+        midpoint = (left + right) / 20
+        labels.append(
+            f'<div class="junction-arc-label" style="left:{max(18, min(82, midpoint)):.6f}%;'
+            f'top:{apex - 34}px;--read-color:{color}" title="{escape(description, quote=True)}">'
+            f'<strong>{escape(label)} · exon {escape(annotation.donor_exon)} → {escape(annotation.acceptor_exon)}</strong>'
+            f'<span>{support.unique} unique + {support.multimapping} multi (STAR)</span>'
+            '</div>'
+            f'<span class="arc-direction" style="left:{midpoint:.6f}%;top:{apex - 5}px;color:{color}" '
+            f'aria-label="Transcript direction">{"→" if junction.strand == "+" else "←"}</span>'
+        )
     return (
-        f'<div class="junction-guide" style="--read-color:{color}">'
-        f'<div class="junction-guide-label"><span class="support-swatch" style="background:{color}"></span>'
-        f'{escape(label)} · exon {escape(annotation.donor_exon)} → {escape(annotation.acceptor_exon)}'
-        f' · {support.unique} unique + {support.multimapping} multi (STAR)</div>'
-        '<div class="junction-guide-axis">'
-        f'<span class="junction-guide-line" style="left:{left:.6f}%;width:{right - left:.6f}%" '
-        f'title="{escape(junction.chromosome, quote=True)}:{junction.intron_start}–{junction.intron_end} ({junction.strand})">'
-        f'{"→" if junction.strand == "+" else "←"}</span>'
-        f'<span class="junction-endpoint left" style="left:{left:.6f}%">{escape(exons[0])}</span>'
-        f'<span class="junction-endpoint right" style="left:{right:.6f}%">{escape(exons[1])}</span>'
-        '</div></div>'
+        f'<div class="junction-arcs" style="height:{height}px">'
+        f'<svg viewBox="0 0 1000 {height}" preserveAspectRatio="none" aria-hidden="true">'
+        f'<path class="junction-baseline" d="M 10 {baseline} H 990"/>'
+        + "".join(paths) + '</svg>' + "".join(labels) + '</div>'
     )
 
 
@@ -280,9 +305,11 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         boundaries = tuple(coordinate for _, support, _ in local_junctions
                            for coordinate in (support.definition.intron_start - 1, support.definition.intron_end))
         scale = _PileupScale.for_records(tuple(entry[0] for entry in local_entries), boundaries)
-        tracks.append('<div class="pileup-track">' + scale.ruler(chromosome)
-                      + "".join(_junction_guide(label, support, color, scale)
-                                for label, support, color in local_junctions)
+        tracks.append('<div class="pileup-track">'
+                      + f'<div class="pileup-chromosome">{escape(chromosome)} · genomic coordinates →'
+                      '<span>Arc width: total STAR support (log scale) · dashed: zero</span></div>'
+                      + _junction_arcs(local_junctions, scale, max(1, *(support.total for _, support, _ in junctions)))
+                      + scale.ruler()
                       + '<ol class="read-rows">' + "".join(
                           _read_row(record, position,
                                     tuple(evidence.groups[match].label for match in record.matches if match != keys[owner]),

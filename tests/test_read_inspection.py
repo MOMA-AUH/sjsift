@@ -8,8 +8,9 @@ import pytest
 
 from alignment_fixtures import CATALOG, bam, record
 from sjsift.alignment_evidence import extract_evidence
+from sjsift.catalog import ReferenceJunction
 from sjsift.html_report import write_html
-from sjsift.quantify import VariantSupport
+from sjsift.quantify import ReferenceJunctionSupport, VariantSupport
 
 
 def render(catalog, evidence):
@@ -23,17 +24,53 @@ class PileupParser(HTMLParser):
     def __init__(self, html):
         super().__init__()
         self.rows = []
+        self.arcs = []
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         classes = attrs.get("class", "").split()
+        if tag == "path" and "junction-arc" in classes:
+            self.arcs.append(attrs)
         if tag == "li" and "read-row" in classes:
             self.rows.append([])
         if "cigar-op" in classes:
             style = dict(item.split(":") for item in attrs["style"].split(";"))
             self.rows[-1].append((attrs["title"], float(style["left"].strip("%")),
                                  float(style["width"].strip("%"))))
+
+
+@pytest.mark.parametrize("strand", ["+", "-"])
+def test_sashimi_arcs_align_with_reads_and_keep_zero_star_support_visible(tmp_path, strand):
+    annotation = CATALOG.variants[0].annotation
+    donor = ReferenceJunction("same_donor", "chr1", 101, 200, strand, annotation=annotation)
+    acceptor = ReferenceJunction("same_acceptor", "chr1", 201, 300, strand, annotation=annotation)
+    variant = replace(CATALOG.variants[0], intron_end=300, strand=strand,
+                      reference_junctions=(donor, acceptor))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M"),
+                          record("donor"), record("acceptor", start=180)])
+    support = VariantSupport(variant, 8, 2, (ReferenceJunctionSupport(donor, 20, 3),
+                                           ReferenceJunctionSupport(acceptor, 0, 0)))
+    stream = io.StringIO()
+    write_html("synthetic", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    html = stream.getvalue()
+    parsed = PileupParser(html)
+    arcs = {arc["stroke"]: arc for arc in parsed.arcs}
+    assert len(arcs) == 3
+    baselines = set()
+    for color, row in zip(("#3159ad", "#168375", "#9950a5"), parsed.rows):
+        coordinates = [float(value) for value in re.findall(r"-?\d+(?:\.\d+)?", arcs[color]["d"])]
+        _, left, width = next(op for op in row if op[0].startswith("N:"))
+        assert coordinates[0] / 10 == pytest.approx(left, abs=0.00001)
+        assert coordinates[-2] / 10 == pytest.approx(left + width, abs=0.00001)
+        baselines.add(coordinates[-1])
+    assert len(baselines) == 1
+    assert float(arcs["#168375"]["stroke-width"]) > float(arcs["#3159ad"]["stroke-width"])
+    assert 'zero-support' in arcs["#9950a5"]["class"]
+    assert '0 unique + 0 multi (STAR)' in html
+    assert html.count('aria-label="Transcript direction">' + ('→' if strand == '+' else '←')) == 3
+    assert html.index('class="junction-arcs"') < html.index('class="pileup-ruler"') < html.index('<ol class="read-rows">')
 
 
 def test_pileup_aligns_shared_coordinates_and_preserves_relative_anchor_lengths(tmp_path):

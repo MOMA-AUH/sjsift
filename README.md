@@ -115,7 +115,7 @@ HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
 Add `--alignment sample.bam` for one combined read pileup per variant. Reads are
 blue for variant support, teal for same-donor support, and purple for same-acceptor
-support, with solid colors at full opacity. Labeled junction guides share the genomic
+support, with solid colors at full opacity. Sashimi-style arcs connect the selected junctions above a shared genomic
 ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
 index. All eligible reads are embedded without downsampling; the viewer pages
