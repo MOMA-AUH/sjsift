@@ -209,7 +209,52 @@ class _PileupScale:
         blocks, labels = _exon_edges(junctions, self)
         return ('<div class="pileup-ruler" aria-label="Shared genomic coordinate ruler">'
                 '<svg class="exon-axis" viewBox="0 0 1000 24" preserveAspectRatio="none" aria-hidden="true">'
-                + "".join(backbone) + blocks + '</svg>' + labels + "".join(ticks) + '</div>')
+                + "".join(backbone) + _omitted_exon_marks(junctions, self) + blocks
+                + '</svg>' + labels + "".join(ticks) + '</div>')
+
+
+def _omitted_exon_marks(junctions, scale):
+    """Mark missing exon numbers between neighbors from the same transcript."""
+    transcripts = {}
+    extents = set()
+    for _, support, _ in junctions:
+        junction = support.definition
+        annotation = junction.annotation
+        exons = transcripts.setdefault((annotation.reference_transcript, junction.strand), set())
+        for exon, extent in ((annotation.donor_exon, annotation.donor_extent),
+                             (annotation.acceptor_exon, annotation.acceptor_extent)):
+            if extent:
+                exons.add((extent, exon))
+                extents.add(extent)
+    marks = []
+    seen = set()
+    for (transcript, strand), exons in transcripts.items():
+        ordered = sorted(exons)
+        for (left_extent, left_exon), (right_extent, right_exon) in zip(ordered, ordered[1:]):
+            if not all(exon.isascii() and exon.isdecimal() for exon in (left_exon, right_exon)):
+                continue
+            left_number, right_number = int(left_exon), int(right_exon)
+            if (right_number - left_number) * (1 if strand == "+" else -1) <= 1:
+                continue
+            left, right = left_extent[1], right_extent[0] - 1
+            # Do not mark across another displayed exon or overlapping annotations.
+            if left >= right or any(start - 1 < right and end > left for start, end in extents):
+                continue
+            if (left, right) in seen or left < scale.start or right > scale.end:
+                continue
+            seen.add((left, right))
+            start, end = scale.percent(left) * 10, scale.percent(right) * 10
+            center, half = (start + end) / 2, min(9, (end - start) / 4)
+            first, last = min(left_number, right_number) + 1, max(left_number, right_number) - 1
+            omitted = str(first) if first == last else f"{first}–{last}"
+            description = escape(f"Exons omitted from illustration: {omitted} ({transcript})")
+            marks.append(
+                f'<path class="omitted-exons-mask" d="M {center - half:.6f} 12 H {center + half:.6f}"/>'
+                f'<path class="omitted-exons" d="M {center - half:.6f} 12 '
+                f'L {center - half / 2:.6f} 8 L {center:.6f} 16 '
+                f'L {center + half / 2:.6f} 8 L {center + half:.6f} 12">'
+                f'<title>{description}</title></path>')
+    return "".join(marks)
 
 
 def _exon_annotations(junctions):

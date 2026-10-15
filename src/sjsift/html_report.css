@@ -94,7 +94,8 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .junction-foot { stroke-width: 2; }
 .pileup-ruler { height: 56px; position: relative; margin-top: -24px; margin-bottom: 6px; }
 .exon-axis { display: block; width: 100%; height: 24px; }
-.axis-line, .gap-break { fill: none; stroke: #9cabbc; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.axis-line, .gap-break, .omitted-exons { fill: none; stroke: #9cabbc; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.omitted-exons-mask { fill: none; stroke: white; stroke-width: 4; vector-effect: non-scaling-stroke; }
 .exon-edge { fill: #e1e8f0; stroke: #aebccd; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .exon-boundary { fill: none; stroke: #73869c; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .exon-edge-label { position: absolute; top: 4px; height: 16px; text-align: center; font: 10px/16px system-ui, sans-serif; color: #344c66; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

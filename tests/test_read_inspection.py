@@ -29,6 +29,7 @@ class PileupParser(HTMLParser):
         self.exon_edges = []
         self.exon_boundaries = []
         self.axis_paths = []
+        self.omitted_exons = []
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
@@ -42,6 +43,8 @@ class PileupParser(HTMLParser):
             self.exon_boundaries.append(attrs)
         if tag == "path" and set(classes) & {"axis-line", "gap-break"}:
             self.axis_paths.append(attrs)
+        if tag == "path" and "omitted-exons" in classes:
+            self.omitted_exons.append(attrs)
         if tag == "li" and "read-row" in classes:
             self.rows.append([])
         if "cigar-op" in classes:
@@ -181,6 +184,44 @@ def test_ar_exon_eight_tail_does_not_squeeze_reference_reads(tmp_path):
     for row in parsed.rows:
         anchors = [op for op in row if op[0].startswith("M:")]
         assert all(anchor[2] > 2 for anchor in anchors)
+
+
+@pytest.mark.parametrize("identifier,omitted", [("BRAFdel2-10", "3–9"), ("ARv567es", "6")])
+def test_intron_marks_numbered_exons_omitted_between_displayed_neighbors(tmp_path, identifier, omitted):
+    catalog = load_catalog(Path(__file__).parents[1] / "definitions/grch38.toml")
+    variant = next(v for v in catalog.variants if v.identifier == identifier)
+    catalog = replace(catalog, variants=(variant,))
+    path = bam(tmp_path, [], header={"HD": {"SO": "coordinate"},
+                                   "SQ": [{"SN": variant.chromosome, "LN": 250000000}]})
+    support = VariantSupport(variant, 0, 0, tuple(
+        ReferenceJunctionSupport(ref, 0, 0) for ref in variant.reference_junctions))
+    stream = io.StringIO()
+    write_html("GRCh38", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    html = stream.getvalue()
+    markers = PileupParser(html).omitted_exons
+    assert len(markers) == 1  # The adjacent reference connections stay straight.
+    assert f"Exons omitted from illustration: {omitted}" in html
+    transcript = "NM_004333.6" if identifier.startswith("BRAF") else "NM_000044.6"
+    assert f"Exons omitted from illustration: {omitted} ({transcript})" in html
+    assert re.findall(r"[A-Za-z]", markers[0]["d"]) == ["M", "L", "L", "L", "L"]
+
+
+@pytest.mark.parametrize("different_transcript", [False, True])
+def test_omission_marks_require_numbered_exons_from_the_same_transcript(tmp_path, different_transcript):
+    annotation = replace(CATALOG.variants[0].annotation, donor_exon="1", acceptor_exon="CE3",
+                         donor_extent=(1, 100), acceptor_extent=None)
+    variant = replace(CATALOG.variants[0], annotation=annotation)
+    if different_transcript:
+        other = replace(annotation, reference_transcript="other", donor_exon="3", donor_extent=(201, 300))
+        variant = replace(variant, reference_junctions=(
+            ReferenceJunction("next", "chr1", 301, 400, "+", annotation=other),))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [])
+    support = VariantSupport(variant, 0, 0, tuple(
+        ReferenceJunctionSupport(ref, 0, 0) for ref in variant.reference_junctions))
+    stream = io.StringIO()
+    write_html("synthetic", (support,), stream, alignment_evidence=extract_evidence(catalog, path))
+    assert not PileupParser(stream.getvalue()).omitted_exons
 
 
 @pytest.mark.parametrize("strand", ["+", "-"])

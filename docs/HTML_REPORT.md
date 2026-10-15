@@ -160,6 +160,9 @@ they need not cover a whole exon. Matching positions align vertically; thin spli
 lines connect aligned read blocks. Gaps longer than 80 nt outside the retained exon
 context, aligned blocks, or displayed soft clips
 are compressed and drawn as straight lines, with exact intervals in tooltips.
+When neighboring displayed exons have nonconsecutive numbers in the same
+transcript, a zig-zag in the connecting intron line marks omitted exons.
+Its tooltip lists the omitted exon numbers; for example, exons 3–9 between 10 and 2.
 The scale remains fixed when filtering or paging.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends

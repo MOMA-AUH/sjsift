@@ -153,8 +153,12 @@ around aligned blocks, displayed soft clips, and selected splice boundaries,
 clipped to the full annotated extent. Short outer remainders of at most 80 nt
 remain visible; longer uncovered tails are trimmed. Gaps longer than 80 nt outside
 that context, aligned blocks, and displayed soft clips are compressed, including
-uncovered sections within long exons. The axis stays straight, with exact gap
-intervals in tooltips. Neutral exon boxes show the retained segments on the
+uncovered sections within long exons. Compressed gaps have straight connections
+with exact intervals in tooltips. A zig-zag in an intron connection indicates
+omitted numbered exons between displayed neighbors from the same transcript and
+strand, using known extents to place the mark. Its tooltip lists the omitted exon
+numbers. Nonnumeric labels such as CE3 do not establish omitted exon numbers.
+Neutral exon boxes show the retained segments on the
 aligned-base scale. Zig-zag edges mark trimmed ends and both sides of compressed
 exon sections. Aligned bases are never compressed or omitted.
 Labels follow genomic orientation on either strand. Unknown extents use vertical
