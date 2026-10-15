@@ -79,7 +79,7 @@ Transcript strand and forward/reverse alignment orientation are distinct:
 - All usable sources must agree with the catalog strand. Opposite and mutually
   conflicting evidence have separate exclusion counts; excluded records are
   not embedded. Missing or unusable sources produce **strand unverified** rows,
-  visibly distinguished from agreeing evidence. Details describe the sources.
+  identified in accessible read labels. The compact read details omit strand-source diagnostics.
 
 NH alone determines mapping class: an integer 1 is **unique**, an integer above
 1 is **multimapping**, and absent, nonpositive, or mistyped values are **unknown**.
@@ -89,14 +89,14 @@ supplementary, duplicate-marked and QC-failure records are included and labeled.
 ## Counts, identity, and read retention
 
 One row is one physical alignment record. Both mates may appear separately;
-read name, read group and read-1/read-2 labels help recognize related records.
+the read name and numeric flags help recognize related records.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
 performed. A record matching several selected junctions retains membership in each
 qualifying group but appears only once per variant figure, identified by its stable
-record ID. Highlighted splice lines and a **Supports** list show its local memberships;
-**Also matches** lists the other qualifying groups, including other variants.
+record ID in the embedded HTML. Highlighted splice lines, the support filter,
+and accessible read labels retain its local memberships.
 Membership indicates exact supporting groups. Excluded opposite/conflicting groups
 are not listed as supporting membership. Every eligible defining and reference
 record is retained, so abundant references cannot displace rare defining reads.
@@ -157,8 +157,8 @@ uncovered sections within long exons. The axis stays straight, with exact gap
 intervals in tooltips. Neutral exon boxes show the retained segments on the
 aligned-base scale. Zig-zag edges mark trimmed ends and both sides of compressed
 exon sections. Aligned bases are never compressed or omitted.
-Labels follow genomic orientation on either strand. Unknown extents use brackets
-at the known splice boundary. Shared exon
+Labels follow genomic orientation on either strand. Unknown extents use vertical
+ticks at the known splice boundary, with labels above the intron line. Shared exon
 extents and shared unknown boundaries appear once, retaining all annotation labels,
 transcript accessions, and sources in tooltips. Known extents include inclusive
 coordinates and length, plus the displayed segment when truncated. Read spans
@@ -171,9 +171,11 @@ shown. Click a read (or focus it and press Enter) to disclose its name and
 metadata. With JavaScript, opening a read closes the previous inspection in
 that figure. Native read inspection also works without JavaScript.
 
-Read details give **genomic left/right aligned anchors** at the explicitly named
-extraction junction. For a shared read, this is the first group in catalog order
-that the record supports; strand sources refer to that same group.
+Read details show the read name; one genomic interval · CIGAR · MAPQ · NH line;
+a **Read** line with mate number (or unspecified), forward/reverse orientation;
+flags with their numeric value; and separate **genomic left/right aligned anchors**.
+Anchors refer to the extraction junction: for a shared read, this is the first
+group in catalog order that the record supports.
 Each anchor is the sum of consecutive M, = and X operations immediately abutting
 that N. Any I, D, N, S, H or P terminates the sum; a nonaligned immediate neighbor
 gives zero. Left/right do not swap on the minus strand. For example,

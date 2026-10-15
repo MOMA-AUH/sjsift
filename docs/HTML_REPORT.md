@@ -129,11 +129,9 @@ Exact unique and multimapping counts remain visible in the preceding support tab
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
 roles each have their own color. Reads use solid colors at full opacity regardless of mapping class
 or transcript-strand evidence. Shared reads appear once, colored by their first
-matching group in catalog order (variant first), with a **Supports** list.
-Mapping class and strand evidence remain available in read details.
-**Also matches** identifies shared physical records across
-qualifying junction groups; record IDs are stable within the report and identical
-input/settings. Empty reference arrays, zero eligible records and alignment
+matching group in catalog order (variant first). Highlighted splice lines and the
+support filter retain all local memberships. Record IDs remain stable in the
+embedded report for identical input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
 
 All eligible alignment records are embedded without downsampling. The initial
@@ -155,7 +153,8 @@ uncovered internal sections are compressed. Zig-zag exon edges mark each cut,
 including both sides of an internal cut. Short remainders stay visible.
 Hover for the exon label, transcript, source, full inclusive coordinates and length,
 and the shown segment for a truncated exon. An unknown extent is shown
-as a bracket at the splice boundary, never as a full exon box. Shared exon extents
+as a vertical tick at the splice boundary, with its label above the intron line,
+never as a full exon box. Shared exon extents
 and shared unknown boundaries appear once. Blue bars are aligned read segments;
 they need not cover a whole exon. Matching positions align vertically; thin splice
 lines connect aligned read blocks. Gaps longer than 80 nt outside the retained exon
@@ -168,8 +167,9 @@ at the same width per base as aligned blocks, with space for their full lengths.
 They have no assigned reference coordinates. Hard clips remain gold ticks.
 References on other chromosomes have separate axes
 within the figure. Click a read, or focus it and press Enter, to open
-**Read details**, which includes identity, flags,
-strand sources and the explicitly defined genomic left/right aligned anchors;
-these are not STAR maximum overhang. The alignment guide specifies the anchor
+read details: the read name; one genomic interval · CIGAR · MAPQ · NH line;
+a **Read** line with mate number (or unspecified), forward/reverse orientation;
+flags with their numeric value; and separate left/right aligned-anchor lines.
+These anchors are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
 STAR support counts and junction arcs remain readable; filtering and paging require JavaScript.

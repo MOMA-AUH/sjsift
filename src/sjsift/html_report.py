@@ -229,7 +229,7 @@ def _exon_annotations(junctions):
 
 
 def _exon_edges(junctions, scale):
-    """Draw visible exon segments, zig-zag cuts, and unknown-boundary brackets."""
+    """Draw visible exon segments, zig-zag cuts, and unknown-boundary ticks."""
     features = {}
     for boundary, side, exon, extent, transcript, source in _exon_annotations(junctions):
         # Merge a known exon even when different junctions touch its two ends.
@@ -255,15 +255,14 @@ def _exon_edges(junctions, scale):
                 labels.append(_exon_label(left, right - left, names, segment_description))
         else:
             x = scale.percent(boundary) * 10
-            tip = x + (-6 if side == "left" else 6)
             description = (f"{sources}; exon edge at interbase coordinate {boundary:,}; "
                            "full exon extent unknown")
             blocks.append(
-                f'<path class="exon-boundary" d="M {tip:.6f} 4 H {x:.6f} V 20 H {tip:.6f}">'
+                f'<path class="exon-boundary" d="M {x:.6f} 4 V 20">'
                 f'<title>{escape(description)}</title></path>')
             width = 36
             left = max(0, x - width) if side == "left" else min(x, 1000 - width)
-            labels.append(_exon_label(left, width, names, description))
+            labels.append(_exon_label(left, width, names, description, boundary=True))
     return "".join(blocks), "".join(labels)
 
 
@@ -299,8 +298,9 @@ def _exon_segment(left, right, cut_left, cut_right, description):
             f'<title>{escape(description)}</title></path>')
 
 
-def _exon_label(left, width, names, description):
-    return (f'<span class="exon-edge-label" style="left:{left / 10:.6f}%;width:{width / 10:.6f}%" '
+def _exon_label(left, width, names, description, boundary=False):
+    kind = "exon-edge-label exon-boundary-label" if boundary else "exon-edge-label"
+    return (f'<span class="{kind}" style="left:{left / 10:.6f}%;width:{width / 10:.6f}%" '
             f'title="{escape(description, quote=True)}">{escape(names)}</span>')
 
 
@@ -325,9 +325,9 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -
     return '<span class="read-geometry" aria-hidden="true">' + "".join(operations) + '</span>'
 
 
-def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, ...], scale: _PileupScale,
+def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
               memberships, bucket: int, junctions) -> str:
-    flags = ", ".join(record.flags) or "primary; no additional flags"
+    flags = ", ".join(record.flags) or "none"
     strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
     color = next(color for index, _, _, color in memberships if index == bucket)
     support_labels = "; ".join(label for _, label, _, _ in memberships)
@@ -340,18 +340,12 @@ def _read_row(record: AlignmentRecord, position: int, also_matches: tuple[str, .
         f'aria-label="Inspect {escape(record.read_name, quote=True)}; {escape(support_labels, quote=True)}; {record.mapping_class}; {strand}">'
         + _read_geometry(record, scale, junctions) + '</summary>'
         '<div class="read-metadata">'
-        f'<div class="read-label"><strong>{escape(record.read_name)}</strong> · {record.mate} · '
-        f'{record.mapping_class} · {strand}</div>'
-        f'<p>Supports: {escape(support_labels)}</p>'
-        + (f'<p class="shared-membership">Also matches: {escape("; ".join(also_matches))}</p>' if also_matches else "")
-        + '<strong>Read details</strong>'
-        f'<p>Record ID: {record.record_id} · Read group: {escape(record.read_group or "not supplied")} · '
-        f'{escape(record.chromosome)}:{record.start + 1}–{record.end}</p>'
-        f'<p>CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"} · Alignment orientation: {record.orientation}</p>'
-        f'<p>Flags: {escape(flags)} ({record.flag}) · Transcript {strand}</p>'
-        f'<p>Aligned anchors: genomic left {record.anchors[0]} nt; genomic right {record.anchors[1]} nt</p>'
-        f'<p>Anchor and transcript-strand details refer to {escape(memberships[0][1])}.</p>'
-        f'<p>Strand sources: {escape("; ".join(record.strand_evidence) or "No usable transcript-strand evidence")}</p>'
+        f'<div class="read-label"><strong>{escape(record.read_name)}</strong></div>'
+        f'<p>{escape(record.chromosome)}:{record.start + 1}–{record.end} · '
+        f'CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"}</p>'
+        f'<p>Read: {escape(record.mate.removeprefix("read "))}, {record.orientation}'
+        f'<br>Flags: {escape(flags)} ({record.flag})</p>'
+        f'<p>Aligned anchors left: {record.anchors[0]} nt<br>Aligned anchors right: {record.anchors[1]} nt</p>'
         '</div></details></li>'
     )
 
@@ -434,9 +428,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                       + _junction_arcs(local_junctions, scale, max(1, *(support.total for _, support, _ in junctions)))
                       + scale.ruler(local_junctions)
                       + '<ol class="read-rows">' + "".join(
-                          _read_row(record, position,
-                                    tuple(evidence.groups[match].label for match in record.matches if match != keys[owner]),
-                                    scale, members, bucket,
+                          _read_row(record, position, scale, members, bucket,
                                     tuple((support, color) for _, _, support, color in members))
                           for record, members, owner, bucket, position in local_entries
                       ) + '</ol></div>')

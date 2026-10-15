@@ -261,11 +261,12 @@ def test_exon_edges_follow_genomic_sides_and_gaps_form_a_straight_connected_axis
                    for marker in parsed.exon_boundaries)
     arc = [float(value) for value in re.findall(r"-?\d+(?:\.\d+)?", parsed.arcs[0]["d"])]
     # The exon-facing sides end/start exactly where the junction arc lands.
-    assert left[2] == pytest.approx(arc[0], abs=0.00001)
-    assert right[2] == pytest.approx(arc[-2], abs=0.00001)
-    assert 0 <= left[0] < left[2] < right[2] < right[0] <= 1000
+    assert left[0] == pytest.approx(arc[0], abs=0.00001)
+    assert right[0] == pytest.approx(arc[-2], abs=0.00001)
+    assert 0 <= left[0] < right[0] <= 1000
+    assert all(re.findall(r"[A-Za-z]", marker["d"]) == ["M", "V"] for marker in parsed.exon_boundaries)
     assert not parsed.exon_edges
-    labels = re.findall(r'<span class="exon-edge-label"[^>]*>([^<]+)</span>', html)
+    labels = re.findall(r'<span class="exon-edge-label exon-boundary-label"[^>]*>([^<]+)</span>', html)
     assert labels == (["1", "3"] if strand == "+" else ["3", "1"])
     assert "full exon extent unknown" in html
     assert len(parsed.axis_paths) == 3
@@ -349,7 +350,7 @@ def test_anchors_are_only_contiguous_aligned_bases_abutting_selected_skip(tmp_pa
     row = evidence.groups["v0-j0"].records[0]
     assert row.anchors == anchors
     html = render(CATALOG, evidence)
-    assert f"Aligned anchors: genomic left {anchors[0]} nt; genomic right {anchors[1]} nt" in html
+    assert f"Aligned anchors left: {anchors[0]} nt<br>Aligned anchors right: {anchors[1]} nt" in html
 
 
 def test_long_gap_geometry_coordinates_flags_and_safe_offline_report(tmp_path):

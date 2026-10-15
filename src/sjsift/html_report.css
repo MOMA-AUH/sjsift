@@ -98,6 +98,7 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .exon-edge { fill: #e1e8f0; stroke: #aebccd; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .exon-boundary { fill: none; stroke: #73869c; stroke-width: 2; vector-effect: non-scaling-stroke; }
 .exon-edge-label { position: absolute; top: 4px; height: 16px; text-align: center; font: 10px/16px system-ui, sans-serif; color: #344c66; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.exon-boundary-label { top: -14px; }
 .pileup-tick { position: absolute; top: 32px; transform: translateX(-50%); font: 10px ui-monospace, monospace; color: #6b7785; white-space: nowrap; }
 .pileup-tick::before { content: ""; display: block; height: 5px; border-left: 1px solid #cbd4df; margin: -7px 50% 4px; }
 .tick-0 { transform: none; }

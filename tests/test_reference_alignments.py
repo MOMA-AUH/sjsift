@@ -50,8 +50,8 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
     assert 'data-support="0 1"' in html
     assert 'style="--read-color:#3159ad"' in html
     assert 'repeating-linear-gradient' not in html
-    assert "Supports: Variant; &lt;/script&gt;" in html
-    assert "Also matches: skip · &lt;/script&gt;" in html
+    assert "Variant; &lt;/script&gt;" in html  # Accessible read label retains memberships.
+    assert "Supports:" not in html and "Also matches:" not in html
     assert hostile not in html and '<img' not in html
     assert "Alignment evidence not requested" not in html
 
@@ -107,7 +107,7 @@ annotation_source = "Synthetic comparator"
     assert base.stdout == result.stdout
     assert before.read_bytes() == after.read_bytes()
     html = (tmp_path / "report.html").read_text()
-    assert "Also matches: skip · custom comparator" in html
+    assert 'data-support="0 1"' in html
 
 
 class PileupRows(HTMLParser):
