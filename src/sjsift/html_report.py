@@ -541,6 +541,9 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         '<button class="read-previous" type="button">Previous reads</button>'
         '<button class="read-next" type="button">Next reads</button>'
         '<span class="read-page" role="status" aria-live="polite"></span></div>'
+        '<p class="read-pair-help" hidden>Each labeled band and bracket groups two mates. '
+        'Hover or focus either read to highlight the pair. Records without a visible, '
+        'unambiguous mate remain separate.</p>'
         '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'
         + ('<p>No eligible alignment records (0).</p>' if not retained else '')
         + '<div class="pileup-scroll">' + "".join(tracks) + '</div>'

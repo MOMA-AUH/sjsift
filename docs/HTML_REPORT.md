@@ -151,6 +151,9 @@ available in the report.
 
 **View as pairs** groups safely associated mates, keeping overlapping mates on
 closely stacked tracks and connecting separated mates with a faint dotted line.
+Each pair is enclosed by a shaded band and bracket with a numbered label.
+Hovering or focusing either mate highlights the pair; the labels remain stable
+within the figure across filters and pages.
 Association uses read identity and reciprocal mate/placement metadata; ambiguous
 or unavailable mates remain individual. Filters still select individual records.
 In paired view the paging limit applies to rows, and the status separately lists
