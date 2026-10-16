@@ -19,10 +19,10 @@ The recommended way to install **sjsift** is via
 conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift
 ```
 
-sjsift v0.2.1 requires Python 3.11 or newer and installs
+sjsift v0.2.2 requires Python 3.11 or newer and installs
 `pysam>=0.24.0,<0.25` as a normal runtime dependency for alignment evidence.
 Pair published packages with the catalog from their matching Git tag;
-v0.2.1 uses schema 3 and rejects schemas 1 and 2.
+v0.2.2 uses schema 3 and rejects schemas 1 and 2.
 
 ## Usage
 
@@ -31,7 +31,7 @@ use the reference GRCh38 catalog from this repository:
 
 ```bash
 curl -L \
-  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.1/definitions/grch38.toml \
+  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.2/definitions/grch38.toml \
   -o grch38.toml
 
 sjsift \
@@ -147,7 +147,7 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
-The v0.2.1 catalog uses schema version 3.
+The v0.2.2 catalog uses schema version 3.
 Schemas 1 and 2 are rejected. Pre-1.0 releases, including
 patch releases, do not promise backward compatibility.
 sjsift v0.2.0 users should retain the catalog from the

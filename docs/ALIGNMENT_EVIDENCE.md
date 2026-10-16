@@ -1,6 +1,6 @@
 # Alignment evidence in offline reports
 
-sjsift v0.2.1 accepts a local coordinate-sorted indexed BAM or CRAM
+sjsift v0.2.2 accepts a local coordinate-sorted indexed BAM or CRAM
 alongside the required STAR file and schema-3 catalog:
 
 ```bash

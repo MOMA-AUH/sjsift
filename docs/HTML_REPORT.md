@@ -7,7 +7,7 @@ evidence; there are no remote resources or browser network requests.
 
 ## Creating and opening a report
 
-Run sjsift v0.2.1 with a schema-3 catalog and a new destination path:
+Run sjsift v0.2.2 with a schema-3 catalog and a new destination path:
 
 ```bash
 sjsift --sample-name sample --junctions sample.SJ.out.tab \

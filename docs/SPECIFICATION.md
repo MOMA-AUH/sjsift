@@ -6,7 +6,7 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes sjsift v0.2.1,
+This document describes sjsift v0.2.2,
 with annotated catalog schema 3. Schemas 1 and 2 are rejected explicitly.
 Before stable v1.0.0, backward compatibility is not guaranteed, including in
 patch releases. Use a catalog matching the installed version. The historical
