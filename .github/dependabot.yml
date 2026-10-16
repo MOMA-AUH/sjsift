@@ -2,7 +2,14 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
-    assignees:
-      - micknudsen
     schedule:
       interval: weekly
+    assignees:
+      - micknudsen
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    assignees:
+      - micknudsen

@@ -154,7 +154,7 @@ GitHub requires a candidate status check to have completed successfully in the r
 
 1. Activate the ruleset's pull-request, linear-history, force-push, deletion, and no-bypass rules, and configure squash-only merging.
 2. Add `.github/workflows/ci.yml` on a branch and merge that bootstrap pull request only after all of its checks pass, even though their names cannot yet be selected as required.
-3. Immediately add `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, and `package` to the ruleset's required checks.
+3. Immediately add `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, `package`, and `conda` to the ruleset's required checks.
 4. Do not merge any later pull request while any required check is failing or pending.
 
 Step 2 is the sole required-check bootstrap exception; it is not an exception to branch, pull-request, or passing-CI requirements.
@@ -163,7 +163,7 @@ Step 2 is the sole required-check bootstrap exception; it is not an exception to
 
 - `.github/workflows/ci.yml` defines the checks.
 - `.github/workflows/publish.yml` defines build and publication mechanics.
-- `.github/dependabot.yml` schedules Actions updates.
+- `.github/dependabot.yml` schedules weekly Actions and Python updates assigned to `micknudsen`.
 - `pyproject.toml`, tests, and the conda recipe define build and validation behavior.
 - This guide documents the intended policy.
 
@@ -174,14 +174,15 @@ Committed files create check runs, but they cannot make those checks mandatory o
 Create an active branch ruleset targeting the default branch `master`. GitHub documents that multiple applicable rulesets accumulate and provides visibility into which rules apply ([ruleset documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)). Configure it to:
 
 - require a pull request before merging;
-- require `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, and `package` to pass;
+- require `tests (3.11)`, `tests (3.12)`, `tests (3.13)`, `tests (3.14)`, `package`, and `conda` to pass;
+- require the branch to be up to date with `master`;
 - require linear history;
 - block force pushes;
 - block deletion of `master`;
 - require zero approving reviews;
 - define no bypass actors, so administrators do not become an undocumented direct-push path.
 
-Do not require conversation resolution, signed commits, merge queue, deployments, code-owner review, or an up-to-date branch unless a later concrete need justifies the added friction.
+Conversation resolution, signed commits, merge queue, deployments, and code-owner review are optional. The shared repository policy requires an up-to-date branch before merging.
 
 ### GitHub merge settings
 
