@@ -124,5 +124,20 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .op-I { background: #8b62b1; }
 .op-S, .op-H { background: #b88630; }
 .op-P { background: #aaa; }
+.read-hatched :is(.op-M, .op-equal, .op-X), .legend-hatched {
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, #ffffffa6 3px 5px);
+}
+.read-muted .cigar-op { background: #92989e !important; }
+.read-legend { font-size: .8rem; color: var(--muted); }
+.read-legend > span { display: inline-block; margin-right: .8rem; }
+.read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; background-color: #3159ad; }
+.read-legend .legend-muted { background: #92989e; }
+.read-pair { position: relative; margin: 2px 0; }
+.read-pair::before { content: ""; position: absolute; left: -3px; top: 0; bottom: 0; border-left: 2px solid #d8dce1; }
+.read-pair-members { list-style: none; padding: 0; margin: 0; }
+.read-pair:not(.pair-overlap) .read-pair-members { display: grid; }
+.read-pair:not(.pair-overlap) .read-row { grid-area: 1 / 1; pointer-events: none; }
+.read-pair .cigar-op, .read-pair .read-metadata { pointer-events: auto; }
+.mate-connector { position: absolute; top: 8px; border-top: 1px dotted #aeb5bc; pointer-events: none; }
 .read-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; font-size: .85rem; }
 .read-page { flex-basis: 100%; }

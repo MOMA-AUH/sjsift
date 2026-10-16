@@ -89,8 +89,11 @@ supplementary, duplicate-marked and QC-failure records are included and labeled.
 
 ## Counts, identity, and read retention
 
-One row is one physical alignment record. Both mates may appear separately;
-the read name and numeric flags help recognize related records.
+In individual-record view, one row is one physical alignment record. The
+**View as pairs** toggle groups safely associated mates for inspection; it does
+not identify or count STAR contributions. Overlapping mates occupy two closely
+stacked tracks, while separated mates share a lane with a faint dotted connector.
+Both retain their geometry and individual inspection details.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
 only in the first requested region it overlaps; no name-based deduplication is
@@ -116,6 +119,42 @@ It excludes unknown multiplicity. The **Support** filter selects any matching
 membership, including shared reads. Changing either filter resets to the first page;
 collapsing restores the preview. Paging and filtering change only which records
 are visible. The last page is labeled and its Next button disabled.
+
+In paired view, the preview/paging limits apply to display rows (pairs or
+individual records). Both members of a displayed pair stay on the same page.
+A pair's paging bucket is the first matching group across its visible members.
+Filters still act on individual records: if only one mate matches, it appears
+alone. The page status distinguishes displayed pairs/individual rows from
+alignment-record counts. No STAR support or underlying record count changes.
+
+Mate association requires the same read name and read group, complementary
+read-1/read-2 flags, reciprocal mate chromosome/start and orientation fields,
+and matching primary/secondary status. Valid HI values must agree when present;
+missing HI on both records is allowed only when the reciprocal match is unique.
+A missing HI on just one mate, invalid HI, ambiguous duplicates, unavailable
+mates, unspecified mate identity, and supplementary alignments remain individual.
+Pairs spanning different chromosomes remain on their separate coordinate axes.
+Association uses only retained records; it never fetches additional mates or
+merges multiple placements into a STAR contribution. It cannot establish
+original input identity if distinct inputs reused indistinguishable metadata.
+
+## Mapping and flag styling
+
+- Valid NH=1 records use solid blocks in their support-group color.
+- Valid NH>1 records use hatched blocks in their support-group color.
+- Unknown multiplicity and secondary, supplementary, duplicate-marked or
+  QC-failure records share one muted-gray style, which takes precedence over
+  both solid support colors and hatching.
+
+Hover details identify mapping class, NH, mate orientation, and flags. The same
+information is accessible through the keyboard-focusable read disclosure.
+The shared gray style describes record properties, not uniform biological
+unreliability or exclusion from STAR support. Unique-only filtering still
+includes gray records with valid NH=1.
+
+Available `ch` tags are shown in hover and expanded inspection details. A tag
+alone does not trigger gray styling or establish STAR counting eligibility;
+absence does not establish nonchimeric status. No chimeric sidecar is required.
 
 ## Structural geometry and anchors
 
@@ -195,13 +234,14 @@ difference alone is not an input error. Do not add reference opportunities or
 interpret these records as independent molecules or full-length transcripts.
 Evidence not requested is distinct from an observed zero eligible count.
 
-In v0.2.1, alignment records are not reconciled to the reads contributing to
-STAR's reported support. Both mates can appear separately, and alignment output
+Alignment records are not reconciled to the reads contributing to STAR's
+reported support. Both mates can appear separately, and alignment output
 can include records that did not contribute to STAR's junction counts. A report
 can therefore contain multimapping alignments beside zero STAR multimapping
 support, or more unique alignment records than STAR unique support. The TSV and
-support tables retain STAR's original values. Reconciliation is tracked separately
-in [issue #40](https://github.com/MOMA-AUH/sjsift/issues/40).
+support tables retain STAR's original values. [Issue #40](https://github.com/MOMA-AUH/sjsift/issues/40)
+addresses interpretation with paired viewing and styling; exact contribution
+reconstruction and reconciliation are deferred.
 
 ## Validation and portability
 

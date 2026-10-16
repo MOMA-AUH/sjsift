@@ -120,6 +120,21 @@ Unit tests cover catalog validation, STAR parsing/matching, arithmetic, and repo
 
 Every normative rule in [`SPECIFICATION.md`](SPECIFICATION.md) must have a named test or a direct build/install check. Test fixtures are synthetic evidence, not clinical validation samples.
 
+The optional paired-view browser check generates a synthetic BAM/report and
+exercises the real controls, geometry, styling, pagination, keyboard inspection,
+and offline loading. With Playwright and its Chromium browser installed in a
+separate tools environment, run:
+
+```bash
+PYTHONPATH=src:tests NODE_PATH=/path/to/tools/node_modules \
+  python tests/paired_view_browser.py /tmp/sjsift-paired-view
+```
+
+The check saves the report and a screenshot in the output directory. Playwright
+is not a runtime or normal pytest dependency. `tests/test_paired_view.py` covers
+association and serialization through the existing extraction/report interfaces,
+including BAM/CRAM equivalence and ambiguous metadata.
+
 ## Continuous integration
 
 GitHub Actions supports Python version matrices and standard build/test steps ([GitHub's Python Actions guide](https://docs.github.com/en/actions/tutorials/build-and-test-code/python)). Keep the initial workflow modest:

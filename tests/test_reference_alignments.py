@@ -48,8 +48,7 @@ def test_reference_previews_show_shared_membership_and_escape_custom_text(tmp_pa
     assert html == render()
     assert html.count('<li class="read-row') == 1
     assert 'data-support="0 1"' in html
-    assert 'style="--read-color:#3159ad"' in html
-    assert 'repeating-linear-gradient' not in html
+    assert 'style="--read-color:#3159ad"' in html  # Shared membership keeps one base color.
     assert "Variant; &lt;/script&gt;" in html  # Accessible read label retains memberships.
     assert "Supports:" not in html and "Also matches:" not in html
     assert hostile not in html and '<img' not in html
@@ -154,9 +153,9 @@ def test_support_colors_match_tables_arcs_and_reads_for_standard_and_custom_role
     references = (reference("same_donor", 101, 200), reference("same_acceptor", 201, 300),
                   reference("custom A", 401, 500), reference("custom B", 601, 700))
     variant = replace(CATALOG.variants[0], intron_end=300, reference_junctions=references)
-    path = bam(tmp_path, [record("variant", cigar="20M200N20M"), record("donor"),
-                          record("acceptor", start=180), record("custom A", start=380),
-                          record("custom B", start=580)])
+    path = bam(tmp_path, [record("variant", cigar="20M200N20M", tags={"NH": 1}), record("donor", tags={"NH": 1}),
+                          record("acceptor", start=180, tags={"NH": 1}), record("custom A", start=380, tags={"NH": 1}),
+                          record("custom B", start=580, tags={"NH": 1})])
     previous = None
     for refs in (references, references[::-1]):
         catalog = replace(CATALOG, variants=(replace(variant, reference_junctions=refs),))
@@ -204,7 +203,7 @@ def test_single_figure_colors_three_roles_and_previews_each_independently(tmp_pa
     assert donor_rows[0]['data-mapping'] == 'multimapping'
     assert acceptor_rows[0]['data-mapping'] == 'unknown'
     assert 'support-legend' not in html
-    assert '<h3>Read support</h3><div class="read-controls"' in html
+    assert '<h3>Read support</h3>' in html and '<div class="read-controls"' in html
     assert 'Variant · exon 1 → 3' in html
     assert 'Same donor · exon 1 → 3' in html
     assert 'Same acceptor · exon 1 → 3' in html
