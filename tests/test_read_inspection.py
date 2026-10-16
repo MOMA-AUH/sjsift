@@ -419,7 +419,7 @@ def test_all_reads_are_embedded_with_preview_controls_and_without_sampling_text(
                     "Sampled evidence:", "embedded samples are deterministic", "shown-count"):
         assert removed not in html
     assert '<option value="all" selected>All</option>' in html
-    assert '<option value="unique">Unique only</option>' in html
+    assert '<option value="unique">Unique</option>' in html
     assert "Expand reads" in html and "Previous reads" in html and "Next reads" in html
     assert html.count('<li class="read-row') == 271
     # Static HTML itself provides only ten immediate previews without JavaScript.

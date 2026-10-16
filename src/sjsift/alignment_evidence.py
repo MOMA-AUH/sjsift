@@ -55,6 +55,11 @@ class AlignmentRecord:
     geometry: tuple[CigarOperation, ...]
     matches: tuple[str, ...]
     anchors: tuple[int, int]
+    mate_chromosome: str | None = None
+    mate_start: int = -1
+    hit_index: int | None = None
+    hit_index_usable: bool = True
+    chimeric_tag: str | None = None
 
 
 @dataclass
@@ -191,12 +196,18 @@ def _serialize(read, record_id, geometry, mapping_class, status, evidence, match
     rg, kind = _tag(read, "RG")
     nh, nh_kind = _tag(read, "NH")
     nh = nh if mapping_class != "unknown" else None
+    hi, hi_kind = _tag(read, "HI")
+    hi_usable = hi is None or (hi_kind in ("c", "C", "s", "S", "i", "I") and type(hi) is int and hi >= 0)
+    ch, ch_kind = _tag(read, "ch")
     return AlignmentRecord(
         record_id, read.query_name or "*", rg if kind == "Z" else "", mate,
         read.reference_name, read.reference_start, read.reference_end,
         read.cigarstring, read.mapping_quality, "reverse" if read.is_reverse else "forward",
         read.flag, flags, mapping_class, nh, status, evidence, geometry, matches,
         _anchors(geometry, intron_index),
+        read.next_reference_name, read.next_reference_start,
+        hi if hi_usable and isinstance(hi, int) else None, hi_usable,
+        f"ch:{ch_kind}:{ch}" if ch is not None else None,
     )
 
 
