@@ -24,6 +24,9 @@ def report(destination):
     catalog = replace(CATALOG, variants=(variant,))
     # Enough pairs for two expanded pages, plus styling and filter examples.
     reads = [read for i in range(62) for read in mates(f"pair-{i:02}")]
+    # One-base terminal blocks must still have legible direction arrows.
+    reads[-2].cigarstring = "30M100N19M1X"
+    reads[-1].cigarstring = "1=19M100N30M"
     reads += [record("multi", tags={"NH": 2}), record("unknown"),
               record("secondary", flag=256, tags={"NH": 2})]
     # One pair belongs to different support groups and has separated geometry.

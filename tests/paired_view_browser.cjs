@@ -46,9 +46,31 @@ const {chromium} = require("playwright");
     assert.ok(overlapY[1] > overlapY[0]);
     assert.ok(await group.locator(".read-row").evaluateAll(rows => rows.every(row =>
       row.querySelectorAll(".read-end-forward, .read-end-reverse").length === 1)));
+    // At a narrow viewport, a one-base block is smaller than its arrowhead.
+    await page.setViewportSize({width: 800, height: 1000});
     for (const direction of ["forward", "reverse"]) {
-      assert.match(await overlapping.locator(`.read-end-${direction}`).evaluate(node => getComputedStyle(node).clipPath), /^polygon\(/);
+      const terminal = group.locator(`.read-hit[title*="pair-61"] .read-end-${direction}`);
+      const arrow = await terminal.evaluate(node => {
+        const head = getComputedStyle(node, "::after");
+        return {blockWidth: node.getBoundingClientRect().width, width: parseFloat(head.width),
+          height: parseFloat(head.height), left: parseFloat(head.left), shape: head.clipPath};
+      });
+      assert.ok(arrow.blockWidth < 5);
+      assert.ok(arrow.width >= 6 && arrow.height >= 10, "Short blocks need a full-size arrowhead");
+      assert.match(arrow.shape, /^polygon\(/);
+      if (direction === "forward") assert.ok(arrow.left >= arrow.blockWidth - 0.1);
+      else assert.ok(arrow.left <= -arrow.width);
+      // The protruding arrow itself still opens the read's inspection panel.
+      await terminal.scrollIntoViewIfNeeded();
+      const block = await terminal.boundingBox();
+      await page.mouse.click(direction === "forward" ? block.x + block.width + 2 : block.x - 2,
+        block.y + block.height / 2);
+      assert.equal(await group.locator('.read-inspection[open] .read-label').innerText(), "pair-61");
+      await group.locator('.read-inspection[open] > summary').click();
     }
+    await group.locator('.read-pair').filter({has: page.locator('.read-hit[title*="pair-61"]')})
+      .screenshot({path: process.argv[2] + ".short-arrows.png"});
+    await page.setViewportSize({width: 1400, height: 1000});
     const band = await overlapping.evaluate(node => getComputedStyle(node).backgroundColor);
     assert.notEqual(band, "rgba(0, 0, 0, 0)");
     assert.ok(await overlapping.evaluate(node => parseFloat(getComputedStyle(node, "::before").borderTopWidth) > 0));
@@ -110,8 +132,9 @@ const {chromium} = require("playwright");
       return {left, gap: readLeft - left - parseFloat(style.width), rightGap: right - readRight,
         rightBorder: parseFloat(rightStyle.borderRightWidth)};
     }));
-    assert.ok(brackets.every(bracket => bracket.gap >= 2 && bracket.gap <= 6));
-    assert.ok(brackets.every(bracket => bracket.rightGap >= 2 && bracket.rightGap <= 6 && bracket.rightBorder > 0));
+    // Leave clearance for six-pixel arrows protruding beyond either endpoint.
+    assert.ok(brackets.every(bracket => bracket.gap >= 8 && bracket.gap <= 12));
+    assert.ok(brackets.every(bracket => bracket.rightGap >= 8 && bracket.rightGap <= 12 && bracket.rightBorder > 0));
     assert.ok(new Set(brackets.map(bracket => Math.round(bracket.left))).size > 1);
     await page.screenshot({path: process.argv[2] + ".png", fullPage: true});
     assert.ok(requests.every(url => url.startsWith("file:")));

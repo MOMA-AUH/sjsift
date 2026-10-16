@@ -184,8 +184,10 @@ Its tooltip lists the omitted exon numbers; for example, exons 3–9 between 10 
 The scale remains fixed when filtering or paging.
 Pointed ends on the terminal aligned blocks show alignment direction: forward
 points right and reverse points left. These indicate alignment orientation,
-not transcript strand. The points stay within the existing block coordinates;
-soft and hard clips retain their own shapes.
+not transcript strand. Fixed-size arrowheads extend six pixels beyond the blocks
+so they remain visible even on very short pieces. This visual extension does not
+represent extra bases; block coordinates and soft/hard clip shapes are unchanged.
+Pair brackets leave room for the arrowheads.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.

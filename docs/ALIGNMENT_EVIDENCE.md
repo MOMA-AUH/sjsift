@@ -185,8 +185,10 @@ marks are insertions; gold S blocks show soft clipping at actual length, gold H
 ticks mark hard clipping, and gray P is padding. Muted records override all of
 these operation colors with gray; their distinct geometry remains inspectable.
 The terminal aligned block has a pointed end showing alignment direction:
-right for forward, left for reverse. The point stays within the block's existing
-coordinates, including for short blocks; clips retain their own shapes. This
+right for forward, left for reverse. A fixed-size arrowhead extends six pixels
+beyond the block so it remains visible even for one-base pieces. This decorative
+extension does not represent additional bases; block coordinates and clip shapes
+are unchanged. Pair brackets leave room for the arrowheads. This
 indicates alignment orientation, not transcript strand, and applies to all
 mapping styles in both individual and paired view.
 Mapping class and transcript-strand status are included in accessible read labels;
