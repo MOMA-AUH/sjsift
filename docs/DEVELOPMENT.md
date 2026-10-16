@@ -126,10 +126,11 @@ GitHub Actions supports Python version matrices and standard build/test steps ([
 
 1. `tests (3.11)` through `tests (3.14)` each install the package with development dependencies and run pytest.
 2. `package` runs `git diff --check`, builds the sdist and wheel, runs `twine check`, installs the wheel into a clean environment, imports `sjsift`, and smoke-tests `sjsift --help`, `sjsift --version`, and TSV/HTML report generation.
+3. `conda` builds and tests the installed Conda package.
 
-Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks and `package` become required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing without a demonstrated need.
+Run CI for pull requests targeting `master` and for pushes to `master`. The four test checks, `package`, and `conda` are required checks. Do not add operating-system matrices, coverage gates, formatting gates, linting, or static typing without a demonstrated need.
 
-Dependabot may check GitHub Actions weekly, matching the lightweight convention used by skua.
+Dependabot checks GitHub Actions and Python dependencies weekly and assigns its pull requests to `micknudsen`.
 
 ## Pull-request workflow
 
