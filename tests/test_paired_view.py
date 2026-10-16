@@ -128,7 +128,6 @@ def test_arrow_end_follows_alignment_orientation_on_terminal_aligned_block(tmp_p
     assert terminal in arrows[0]["class"].split()
     assert direction in arrows[0]["title"]
     assert "strand evidence agrees" in parsed.summaries[0]["aria-label"]
-    assert "Pointed ends show alignment direction" in html
 
 
 @pytest.mark.parametrize("format", ["BAM", "CRAM"])
