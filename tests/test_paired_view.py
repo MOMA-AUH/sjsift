@@ -13,6 +13,7 @@ class Reads(HTMLParser):
         super().__init__()
         self.rows = []
         self.summaries = []
+        self.operations = []
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
@@ -22,6 +23,8 @@ class Reads(HTMLParser):
             self.rows.append(attrs)
         if "read-hit" in classes:
             self.summaries.append(attrs)
+        if "cigar-op" in classes:
+            self.operations.append(attrs)
 
 
 @pytest.mark.parametrize("nh,flag,style,reason", [
@@ -43,6 +46,8 @@ def test_record_style_and_hover_explain_mapping_and_flags(tmp_path, nh, flag, st
     assert f"read-{style}" in parsed.rows[0]["class"].split()
     assert reason in parsed.summaries[0]["title"]
     assert reason in parsed.summaries[0]["aria-label"]
+    assert all(reason in operation["title"] for operation in parsed.operations)
+    assert parsed.operations[0]["title"].startswith("M: 20 nt; 81–100")
     assert "NH: " + (str(nh) if nh else "unavailable/unusable") in parsed.summaries[0]["title"]
     assert sum(evidence.groups["v0-j0"].eligible.values()) == 1
     assert "Displayed alignments may include records not counted in STAR junction support" in html

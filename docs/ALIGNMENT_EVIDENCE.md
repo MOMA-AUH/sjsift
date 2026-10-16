@@ -170,17 +170,20 @@ with read filters. Arcs mark splice boundaries, not complete exon extents;
 no coverage track is inferred from the selected alignment records. Blue identifies variant support,
 teal same-donor support, and purple same-acceptor support. Custom reference roles
 receive distinct colors, consistently shared by the tables, arcs, and alignment
-tracks throughout the report. All records use solid block colors at full opacity. Shared records use the
-color of their first matching group in catalog order (variant first).
+tracks throughout the report. The mapping/flag styles described above apply to
+alignment records. Shared records use their first matching group in catalog
+order (variant first) as the base color unless overridden by muted-gray styling.
 Each row displays the complete alignment CIGAR in
 increasing genomic coordinates, independent of alignment orientation and
 transcript strand. Matching coordinates line up across all rows. M, = and X are
 aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
 marks are insertions; gold S blocks show soft clipping at actual length, gold H
-ticks mark hard clipping, and gray P is padding.
+ticks mark hard clipping, and gray P is padding. Muted records override all of
+these operation colors with gray; their distinct geometry remains inspectable.
 Mapping class and transcript-strand status are included in accessible read labels;
 the compact read details show NH without strand-source diagnostics.
-Colored splice lines highlight selected junctions. Hover over an
+Splice lines highlight selected junctions, retaining their support colors unless
+the record is muted. Hover over an
 operation for its exact length and 1-based inclusive coordinates or interbase
 position. Soft clips extend left from the alignment start or right from its end,
 using the same width per base as aligned blocks. These visual extensions do not

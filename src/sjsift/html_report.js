@@ -102,7 +102,11 @@
     let page = 0;
     function arrangeReads(matching) {
       // Move the existing records; never duplicate geometry or inspection controls.
-      for (const track of tracks) track.list.append(...track.rows);
+      for (const track of tracks) {
+        const fragment = document.createDocumentFragment();
+        for (const row of track.rows) fragment.append(row);
+        track.list.append(fragment);
+      }
       for (const pair of group.querySelectorAll(".read-pair")) pair.remove();
       const mates = new Map();
       if (pairs.checked) {

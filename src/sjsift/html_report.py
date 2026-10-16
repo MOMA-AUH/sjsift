@@ -349,13 +349,14 @@ def _exon_label(left, width, names, description, boundary=False):
             f'title="{escape(description, quote=True)}">{escape(names)}</span>')
 
 
-def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -> str:
+def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions, read_description: str) -> str:
     operations = []
     for operation in record.geometry:
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
         if operation.op == "S":
             description += "; unaligned soft clip"
+        description += f"; {read_description}"
         start, end = _display_interval(record, operation)
         left = scale.percent(start)
         width = scale.percent(end) - left
@@ -365,7 +366,7 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -
         operations.append(
             f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}" '
             f'style="left:{left:.6f}%;width:{width:.6f}%'
-            + (f';background:{selected}' if selected else '') + f'" title="{description}"></span>'
+            + (f';background:{selected}' if selected else '') + f'" title="{escape(description, quote=True)}"></span>'
         )
     return '<span class="read-geometry" aria-hidden="true">' + "".join(operations) + '</span>'
 
@@ -396,7 +397,7 @@ def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
         f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
         '<details class="read-inspection"><summary class="read-hit" '
         f'aria-label="Inspect {escape(description, quote=True)}" title="{escape(description, quote=True)}">'
-        + _read_geometry(record, scale, junctions) + '</summary>'
+        + _read_geometry(record, scale, junctions, description) + '</summary>'
         '<div class="read-metadata">'
         f'<div class="read-label"><strong>{escape(record.read_name)}</strong></div>'
         f'<p>{escape(record.chromosome)}:{record.start + 1}–{record.end} · '
