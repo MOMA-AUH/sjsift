@@ -93,8 +93,8 @@ In individual-record view, one row is one physical alignment record. The
 **View as pairs** toggle groups safely associated mates for inspection; it does
 not identify or count STAR contributions. Overlapping mates occupy two closely
 stacked tracks, while separated mates share a lane with a faint dotted connector.
-Each pair has a shaded band, bracket, and numbered label, stable within the
-figure across filters and pages. Hovering or focusing either mate highlights
+Each pair has a shaded band and a bracket just before its leftmost displayed
+read geometry, without a numbered label. Hovering or focusing either mate highlights
 the whole pair. Both retain their geometry and individual inspection details.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed

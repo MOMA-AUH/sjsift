@@ -82,12 +82,6 @@
     const tracks = Array.from(group.querySelectorAll(".read-rows"), list => ({
       list, rows: Array.from(list.children)
     }));
-    const pairLabels = new Map();
-    for (const row of reads) {
-      if (row.dataset.pair && !pairLabels.has(row.dataset.pair)) {
-        pairLabels.set(row.dataset.pair, `Pair ${pairLabels.size + 1}`);
-      }
-    }
     // Keep inspection compact while retaining native, keyboard-accessible details.
     for (const row of reads) {
       const inspection = row.querySelector(".read-inspection");
@@ -133,14 +127,10 @@
         }
         const wrapper = document.createElement("li");
         wrapper.className = "read-pair";
-        const label = document.createElement("span");
-        label.className = "pair-label";
-        label.textContent = pairLabels.get(row.dataset.pair);
-        label.setAttribute("aria-hidden", "true");
-        wrapper.append(label);
+        wrapper.style.setProperty("--pair-left", `${Math.min(...members.map(member => Number(member.dataset.left)))}%`);
         const list = document.createElement("ol");
         list.className = "read-pair-members";
-        list.setAttribute("aria-label", `${label.textContent}: associated mates`);
+        list.setAttribute("aria-label", "Associated mates");
         const left = Math.min(...members.map(member => Number(member.dataset.right)));
         const right = Math.max(...members.map(member => Number(member.dataset.left)));
         if (left < right) {
