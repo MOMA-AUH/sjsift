@@ -93,8 +93,10 @@ In individual-record view, one row is one physical alignment record. The
 **View as pairs** toggle groups safely associated mates for inspection; it does
 not identify or count STAR contributions. Overlapping mates occupy two closely
 stacked tracks, while separated mates share a lane with a faint dotted connector.
-Each pair has a shaded band and a bracket just before its leftmost displayed
-read geometry, without a numbered label. Hovering or focusing either mate highlights
+Each pair has a shaded band and brackets just outside its leftmost and rightmost
+displayed read geometry, without a numbered label. The brackets are hidden while
+either mate's details are expanded so they do not cross the details panel.
+Hovering or focusing either mate highlights
 the whole pair. Both retain their geometry and individual inspection details.
 No unrelated mate is fetched. Separate records with identical fields remain
 separate. A physical record retrieved at several regional queries is processed
@@ -182,6 +184,11 @@ aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple 
 marks are insertions; gold S blocks show soft clipping at actual length, gold H
 ticks mark hard clipping, and gray P is padding. Muted records override all of
 these operation colors with gray; their distinct geometry remains inspectable.
+The terminal aligned block has a pointed end showing alignment direction:
+right for forward, left for reverse. The point stays within the block's existing
+coordinates, including for short blocks; clips retain their own shapes. This
+indicates alignment orientation, not transcript strand, and applies to all
+mapping styles in both individual and paired view.
 Mapping class and transcript-strand status are included in accessible read labels;
 the compact read details show NH without strand-source diagnostics.
 Splice lines highlight selected junctions, retaining their support colors unless

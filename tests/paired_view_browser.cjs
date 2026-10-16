@@ -44,6 +44,11 @@ const {chromium} = require("playwright");
     const overlapping = group.locator(".pair-overlap:visible").first();
     const overlapY = await overlapping.locator(".read-geometry").evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top));
     assert.ok(overlapY[1] > overlapY[0]);
+    assert.ok(await group.locator(".read-row").evaluateAll(rows => rows.every(row =>
+      row.querySelectorAll(".read-end-forward, .read-end-reverse").length === 1)));
+    for (const direction of ["forward", "reverse"]) {
+      assert.match(await overlapping.locator(`.read-end-${direction}`).evaluate(node => getComputedStyle(node).clipPath), /^polygon\(/);
+    }
     const band = await overlapping.evaluate(node => getComputedStyle(node).backgroundColor);
     assert.notEqual(band, "rgba(0, 0, 0, 0)");
     assert.ok(await overlapping.evaluate(node => parseFloat(getComputedStyle(node, "::before").borderTopWidth) > 0));
@@ -67,6 +72,13 @@ const {chromium} = require("playwright");
     // A separated mate remains clickable despite sharing a display lane.
     await separated.locator(".read-row").first().locator(".op-M").first().click();
     assert.equal(await separated.locator(".read-inspection[open]").count(), 1);
+    assert.ok(await separated.evaluate(pair => ["::before", "::after"].every(side =>
+      getComputedStyle(pair, side).display === "none")));
+    await overlapping.locator(".op-M").first().click();
+    assert.equal(await overlapping.locator(".read-inspection[open]").count(), 1);
+    assert.ok(await overlapping.evaluate(pair => ["::before", "::after"].every(side =>
+      getComputedStyle(pair, side).display === "none")));
+    await overlapping.screenshot({path: process.argv[2] + ".details.png"});
 
     await group.locator(".support-filter").selectOption("1");
     assert.equal(await group.locator(".read-row:visible").count(), 1);
@@ -92,9 +104,14 @@ const {chromium} = require("playwright");
       const style = getComputedStyle(pair, "::before");
       const left = pair.getBoundingClientRect().left + parseFloat(style.left);
       const readLeft = Math.min(...Array.from(pair.querySelectorAll(".cigar-op"), op => op.getBoundingClientRect().left));
-      return {left, gap: readLeft - left - parseFloat(style.width)};
+      const rightStyle = getComputedStyle(pair, "::after");
+      const right = pair.getBoundingClientRect().left + parseFloat(rightStyle.left);
+      const readRight = Math.max(...Array.from(pair.querySelectorAll(".cigar-op"), op => op.getBoundingClientRect().right));
+      return {left, gap: readLeft - left - parseFloat(style.width), rightGap: right - readRight,
+        rightBorder: parseFloat(rightStyle.borderRightWidth)};
     }));
     assert.ok(brackets.every(bracket => bracket.gap >= 2 && bracket.gap <= 6));
+    assert.ok(brackets.every(bracket => bracket.rightGap >= 2 && bracket.rightGap <= 6 && bracket.rightBorder > 0));
     assert.ok(new Set(brackets.map(bracket => Math.round(bracket.left))).size > 1);
     await page.screenshot({path: process.argv[2] + ".png", fullPage: true});
     assert.ok(requests.every(url => url.startsWith("file:")));

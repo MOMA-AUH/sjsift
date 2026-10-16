@@ -128,6 +128,7 @@
         const wrapper = document.createElement("li");
         wrapper.className = "read-pair";
         wrapper.style.setProperty("--pair-left", `${Math.min(...members.map(member => Number(member.dataset.left)))}%`);
+        wrapper.style.setProperty("--pair-right", `${Math.max(...members.map(member => Number(member.dataset.right)))}%`);
         const list = document.createElement("ol");
         list.className = "read-pair-members";
         list.setAttribute("aria-label", "Associated mates");

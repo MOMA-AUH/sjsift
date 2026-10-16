@@ -351,7 +351,9 @@ def _exon_label(left, width, names, description, boundary=False):
 
 def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions, read_description: str) -> str:
     operations = []
-    for operation in record.geometry:
+    aligned = [index for index, operation in enumerate(record.geometry) if operation.op in "M=X"]
+    terminal = (aligned[-1] if record.orientation == "forward" else aligned[0]) if aligned else None
+    for index, operation in enumerate(record.geometry):
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
         if operation.op == "S":
@@ -364,7 +366,8 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions, read
                          if operation.op == "N" and operation.start == support.definition.intron_start - 1
                          and operation.end == support.definition.intron_end), None)
         operations.append(
-            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}" '
+            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}'
+            + (f' read-end-{record.orientation}' if index == terminal else '') + '" '
             f'style="left:{left:.6f}%;width:{width:.6f}%'
             + (f';background:{selected}' if selected else '') + f'" title="{escape(description, quote=True)}"></span>'
         )
@@ -531,7 +534,8 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         '<p class="read-legend"><span><i class="legend-solid" aria-hidden="true"></i>Unique</span> '
         '<span><i class="legend-hatched" aria-hidden="true"></i>Multimapping</span> '
         '<span><i class="legend-muted" aria-hidden="true"></i>Unknown multiplicity or flagged '
-        '(secondary, supplementary, duplicate, QC failure)</span>. Hover or select a read for details.</p>'
+        '(secondary, supplementary, duplicate, QC failure)</span>. Pointed ends show alignment direction. '
+        'Hover or select a read for details.</p>'
         '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
         '<label><input class="read-pairs" type="checkbox"> View as pairs</label>'
@@ -541,7 +545,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         '<button class="read-previous" type="button">Previous reads</button>'
         '<button class="read-next" type="button">Next reads</button>'
         '<span class="read-page" role="status" aria-live="polite"></span></div>'
-        '<p class="read-pair-help" hidden>Each shaded band groups two mates, with a bracket just before the reads. '
+        '<p class="read-pair-help" hidden>Each shaded band groups two mates, with brackets on both sides. '
         'Hover or focus either read to highlight the pair. Records without a visible, '
         'unambiguous mate remain separate.</p>'
         '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'

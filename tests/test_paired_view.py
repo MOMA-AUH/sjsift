@@ -114,6 +114,23 @@ def test_chimeric_tag_is_inspectable_without_inferring_star_exclusion_or_muting(
     assert 'chimeric <"read">' not in html
 
 
+@pytest.mark.parametrize("flag,direction,terminal", [(0, "forward", "op-X"), (16, "reverse", "op-equal")])
+@pytest.mark.parametrize("nh", [1, 2, None])
+def test_arrow_end_follows_alignment_orientation_on_terminal_aligned_block(tmp_path, flag, direction, terminal, nh):
+    # Clips and insertions keep their own geometry; transcript strand agrees
+    # with the catalog even when the alignment points in reverse.
+    read = record(cigar="2H4S1=19M100N19M1X3S2H", flag=flag,
+                  tags={"XS": "+", **({"NH": nh} if nh else {})})
+    html = render(CATALOG, extract_evidence(CATALOG, bam(tmp_path, [read])))
+    parsed = Reads(html)
+    arrows = [operation for operation in parsed.operations if f"read-end-{direction}" in operation["class"].split()]
+    assert len(arrows) == 1
+    assert terminal in arrows[0]["class"].split()
+    assert direction in arrows[0]["title"]
+    assert "strand evidence agrees" in parsed.summaries[0]["aria-label"]
+    assert "Pointed ends show alignment direction" in html
+
+
 @pytest.mark.parametrize("format", ["BAM", "CRAM"])
 def test_placements_and_read_groups_keep_distinct_pairs_and_shared_memberships(tmp_path, format):
     from dataclasses import replace

@@ -151,9 +151,10 @@ available in the report.
 
 **View as pairs** groups safely associated mates, keeping overlapping mates on
 closely stacked tracks and connecting separated mates with a faint dotted line.
-Each pair has a shaded band and a bracket positioned just before its leftmost
-displayed read geometry, without a numbered label. Hovering or focusing either
-mate highlights the pair.
+Each pair has a shaded band and brackets just outside its displayed read geometry
+on both sides, without a numbered label. Hovering or focusing either mate highlights
+the pair. Brackets disappear while read details are expanded, so they cannot
+cross the details panel.
 Association uses read identity and reciprocal mate/placement metadata; ambiguous
 or unavailable mates remain individual. Filters still select individual records.
 In paired view the paging limit applies to rows, and the status separately lists
@@ -181,6 +182,10 @@ When neighboring displayed exons have nonconsecutive numbers in the same
 transcript, a zig-zag in the connecting intron line marks omitted exons.
 Its tooltip lists the omitted exon numbers; for example, exons 3–9 between 10 and 2.
 The scale remains fixed when filtering or paging.
+Pointed ends on the terminal aligned blocks show alignment direction: forward
+points right and reverse points left. These indicate alignment orientation,
+not transcript strand. The points stay within the existing block coordinates;
+soft and hard clips retain their own shapes.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.

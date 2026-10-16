@@ -128,15 +128,21 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
   background-image: repeating-linear-gradient(135deg, transparent 0 3px, #ffffffa6 3px 5px);
 }
 .read-muted .cigar-op { background: #92989e !important; }
+.read-end-forward { clip-path: polygon(0 0, calc(100% - min(5px, 50%)) 0, 100% 50%, calc(100% - min(5px, 50%)) 100%, 0 100%); }
+.read-end-reverse { clip-path: polygon(0 50%, min(5px, 50%) 0, 100% 0, 100% 100%, min(5px, 50%) 100%); }
 .read-legend { font-size: .8rem; color: var(--muted); }
 .read-legend > span { display: inline-block; margin-right: .8rem; }
 .read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; background-color: #3159ad; }
 .read-legend .legend-muted { background: #92989e; }
 .read-pair { position: relative; margin: 6px 0; padding: 3px 0; border-radius: 3px; background: #f0f2f5; }
-.read-pair::before { content: ""; position: absolute; left: calc(var(--pair-left) - 9px); top: 0; bottom: 0; width: 5px;
-  border: 2px solid #778698; border-right: 0; border-radius: 3px 0 0 3px; pointer-events: none; }
+.read-pair::before, .read-pair::after { content: ""; position: absolute; top: 0; bottom: 0; width: 5px;
+  border: 2px solid #778698; pointer-events: none; }
+.read-pair::before { left: calc(var(--pair-left) - 9px); border-right: 0; border-radius: 3px 0 0 3px; }
+.read-pair::after { left: calc(var(--pair-right) + 4px); border-left: 0; border-radius: 0 3px 3px 0; }
+.read-pair:has(.read-inspection[open])::before, .read-pair:has(.read-inspection[open])::after { display: none; }
 .read-pair:hover, .read-pair:focus-within { background: #dfe8f4; }
-.read-pair:hover::before, .read-pair:focus-within::before { border-color: #3159ad; }
+.read-pair:hover::before, .read-pair:focus-within::before,
+.read-pair:hover::after, .read-pair:focus-within::after { border-color: #3159ad; }
 .read-pair .read-hit:hover, .read-pair .read-inspection[open] > .read-hit { background: transparent; }
 .read-pair-help { font-size: .85rem; color: #526377; }
 .read-pair-members { list-style: none; padding: 0; margin: 0; }
