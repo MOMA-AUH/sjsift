@@ -13,12 +13,16 @@ const {chromium} = require("playwright");
     page.on("request", request => requests.push(request.url()));
     await page.goto(pathToFileURL(process.argv[2]).href + "#variant-0");
     const group = page.locator(".alignment-group");
+    assert.equal(await group.locator(".read-controls select").count(), 3);
+    assert.deepEqual(await group.getByRole("combobox", {name: "Mapping class"}).locator("option").allTextContents(), ["All", "Unique"]);
+    assert.deepEqual(await group.getByRole("combobox", {name: "Read layout"}).locator("option").allTextContents(), ["Single", "Pairs"]);
+    assert.deepEqual(await group.getByRole("combobox", {name: "Junction support"}).locator("option").allTextContents(), ["All", "Variant", "next"]);
     const support = await page.locator(".variant-detail table").innerText();
     await group.locator(".read-expand").click();
     assert.equal(await group.locator(".read-row:visible").count(), 51);
     const geometryBefore = await group.locator(".read-row").first().locator(".cigar-op").evaluateAll(nodes =>
       nodes.map(node => ({left: node.getBoundingClientRect().left, width: node.getBoundingClientRect().width})));
-    await group.locator(".read-pairs").check();
+    await group.getByRole("combobox", {name: "Read layout"}).selectOption("pairs");
     const geometryAfter = await group.locator(".read-row").first().locator(".cigar-op").evaluateAll(nodes =>
       nodes.map(node => ({left: node.getBoundingClientRect().left, width: node.getBoundingClientRect().width})));
     assert.deepEqual(geometryAfter, geometryBefore);
@@ -122,14 +126,14 @@ const {chromium} = require("playwright");
     await group.locator(".read-expand").click();
     assert.equal(await group.locator(".read-pair:visible").count(), 10);
     assert.equal(await group.locator(".read-row:visible").count(), 20);
-    await group.locator(".read-pairs").uncheck();
+    await group.getByRole("combobox", {name: "Read layout"}).selectOption("single");
     assert.equal(await group.locator(".read-pair").count(), 0);
     assert.equal(await group.locator(".read-pair-help").isVisible(), false);
     assert.equal(await group.locator(".read-row:visible").count(), 11);
     assert.equal(await group.locator(".read-row").count(), 129);
     assert.equal(await page.locator(".variant-detail table").innerText(), support);
     await group.locator(".read-filter").selectOption("all");
-    await group.locator(".read-pairs").check();
+    await group.getByRole("combobox", {name: "Read layout"}).selectOption("pairs");
     await group.locator(".read-expand").click();
     await group.locator(".read-next").click();
     const brackets = await group.locator(".read-pair:visible").evaluateAll(pairs => pairs.map(pair => {

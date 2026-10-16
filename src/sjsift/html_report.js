@@ -109,7 +109,7 @@
       }
       for (const pair of group.querySelectorAll(".read-pair")) pair.remove();
       const mates = new Map();
-      if (pairs.checked) {
+      if (pairs.value === "pairs") {
         for (const row of matching) {
           if (!row.dataset.pair) continue;
           if (!mates.has(row.dataset.pair)) mates.set(row.dataset.pair, []);
@@ -166,7 +166,7 @@
       }
     }
     function updateReads() {
-      find(".read-pair-help").hidden = !pairs.checked;
+      find(".read-pair-help").hidden = pairs.value !== "pairs";
       const matching = reads.filter(row =>
         (filter.value === "all" || row.dataset.mapping === "unique") &&
         (supportFilter.value === "all" || row.dataset.support.split(" ").includes(supportFilter.value))
@@ -199,8 +199,8 @@
       previous.disabled = page === 0;
       next.disabled = page === pages - 1;
       const pairedRows = shownUnits.filter(unit => unit.rows.length === 2).length;
-      const layout = pairs.checked ? ` · ${pairedRows} pairs and ${shownUnits.length - pairedRows} individual rows` : "";
-      const unitLabel = pairs.checked ? "rows" : "records";
+      const layout = pairs.value === "pairs" ? ` · ${pairedRows} pairs and ${shownUnits.length - pairedRows} individual rows` : "";
+      const unitLabel = pairs.value === "pairs" ? "rows" : "records";
       find(".read-page").textContent = !matching.length ? "No matching reads." : expanded
         ? `Page ${page + 1} of ${pages} · showing ${shown.size} of ${matching.length} matching records${layout} · up to 50 ${unitLabel} per support group${page === pages - 1 ? " · End of embedded reads" : ""}`
         : `Preview: ${shown.size} of ${matching.length} embedded records${layout} · up to 10 ${unitLabel} per support group. Expand for more.`;

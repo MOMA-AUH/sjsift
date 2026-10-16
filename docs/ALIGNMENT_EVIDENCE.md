@@ -90,7 +90,7 @@ supplementary, duplicate-marked and QC-failure records are included and labeled.
 ## Counts, identity, and read retention
 
 In individual-record view, one row is one physical alignment record. The
-**View as pairs** toggle groups safely associated mates for inspection; it does
+**Single / Pairs** dropdown groups safely associated mates for inspection in **Pairs** mode; it does
 not identify or count STAR contributions. Overlapping mates occupy two closely
 stacked tracks, while separated mates share a lane with a faint dotted connector.
 Nearby mates also stack when their arrowheads would touch; this updates when
@@ -119,9 +119,9 @@ memberships. Its preview displays up to ten records per support
 group, sorted by support group, genomic start and end. A shared record is assigned
 to its first matching group in catalog order (variant first) for paging and block
 color; its highlighted splice lines and support filter still reflect all local memberships.
-**All** is the initial filter. **Unique only** shows exactly NH=1 records,
+Under **Show reads**, **All** is the initial mapping-class filter. **Unique** shows exactly NH=1 records,
 including eligible secondary, supplementary, duplicate and QC-flagged records.
-It excludes unknown multiplicity. The **Support** filter selects any matching
+It excludes unknown multiplicity. The third dropdown (**All / Variant / reference roles**) selects any matching
 membership, including shared reads. Changing either filter resets to the first page;
 collapsing restores the preview. Paging and filtering change only which records
 are visible. The last page is labeled and its Next button disabled.

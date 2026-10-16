@@ -143,13 +143,15 @@ All eligible alignment records are embedded without downsampling. The initial
 figure shows up to ten alignment rows per support group. **Expand reads**
 pages through the embedded evidence, up to 50 rows per group at a time;
 **Collapse reads** restores the preview. Shared reads belong to the first matching
-group in catalog order for pagination. **All / Unique only** and **Support** change
-the displayed subset, leaving STAR support unchanged. Unique only means NH=1, regardless of primary,
+group in catalog order for pagination. **Show reads** has three dropdowns:
+mapping class (**All / Unique**), layout (**Single / Pairs**), and junction support
+(**All / Variant / reference roles**). Mapping class and junction support change
+the displayed subset, leaving STAR support unchanged. Unique means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
 filter-empty state. Paging affects visibility only; every eligible read remains
 available in the report.
 
-**View as pairs** groups safely associated mates, keeping overlapping mates on
+**Pairs** groups safely associated mates, keeping overlapping mates on
 closely stacked tracks and connecting separated mates with a faint dotted line.
 Nearby mates also stack when their arrowheads would touch, including after resizing.
 Each pair has a shaded band and brackets just outside its displayed read geometry
@@ -159,7 +161,7 @@ cross the details panel.
 Association uses read identity and reciprocal mate/placement metadata; ambiguous
 or unavailable mates remain individual. Filters still select individual records.
 In paired view the paging limit applies to rows, and the status separately lists
-record counts, paired rows, and individual rows. The toggle changes presentation
+record counts, paired rows, and individual rows. The layout dropdown changes presentation
 only; a displayed pair is not a verified STAR contribution. See the
 [pairing and styling rules](ALIGNMENT_EVIDENCE.md#counts-identity-and-read-retention).
 

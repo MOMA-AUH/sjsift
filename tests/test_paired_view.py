@@ -72,7 +72,8 @@ def test_reciprocal_mates_are_associated_without_collapsing_records_or_support(t
     assert rows[0]["data-pair"] == rows[1]["data-pair"] != ""
     assert rows[0]["data-record-id"] != rows[1]["data-record-id"]
     assert evidence.groups["v0-j0"].eligible == {"unique": 2, "multimapping": 0, "unknown": 0}
-    assert 'class="read-pairs"' in html and "View as pairs" in html
+    assert '<select class="read-pairs" aria-label="Read layout">' in html
+    assert '<option value="single" selected>Single</option><option value="pairs">Pairs</option>' in html
     assert "8 unique + 2 multi (STAR)" in html
 
 
