@@ -115,7 +115,7 @@ Add `--alignment sample.bam` for one combined read pileup per variant. Reads are
 blue for variant support, teal for same-donor support, and purple for same-acceptor
 support. Unique records use solid blocks, multimapping records use hatching,
 and unknown multiplicity or flagged records share a muted-gray style with details
-on hover or click. **View as pairs** groups safely associated mates for inspection.
+on hover or click. Selecting **Pairs** under **Show reads** groups safely associated mates for inspection.
 Sashimi-style arcs connect the selected junctions above a shared genomic
 ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
