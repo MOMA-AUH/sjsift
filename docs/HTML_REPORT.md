@@ -127,10 +127,15 @@ baseline aligned to the reads, with the genomic ruler just below. Arc thickness
 uses total STAR support on a logarithmic scale; dashed arcs mark zero support.
 Exact unique and multimapping counts remain visible in the preceding support table. Variant reads
 are blue, same-donor reads teal, and same-acceptor reads purple. Custom reference
-roles each have their own color. Reads use solid colors at full opacity regardless of mapping class
-or transcript-strand evidence. Shared reads appear once, colored by their first
-matching group in catalog order (variant first). Highlighted splice lines and the
-support filter retain all local memberships. Record IDs remain stable in the
+roles each have their own color. Unique records use solid blocks and multimapping
+records use hatching. Unknown multiplicity, secondary, supplementary,
+duplicate-marked, and QC-failure records share a muted-gray style that overrides
+the support color and hatching. Hover or keyboard/click inspection explains the
+specific properties. Transcript-strand evidence does not change this styling.
+Shared records appear once, using their first matching group in catalog order
+(variant first) as the base color unless muted. The support filter and accessible
+labels retain all local memberships; splice lines retain support colors unless
+muted. Record IDs remain stable in the
 embedded report for identical input/settings. Empty reference arrays, zero eligible records and alignment
 input not requested remain distinct states.
 
@@ -138,11 +143,27 @@ All eligible alignment records are embedded without downsampling. The initial
 figure shows up to ten alignment rows per support group. **Expand reads**
 pages through the embedded evidence, up to 50 rows per group at a time;
 **Collapse reads** restores the preview. Shared reads belong to the first matching
-group in catalog order for pagination. **All / Unique only** and **Support** change
-the displayed subset, leaving STAR support unchanged. Unique only means NH=1, regardless of primary,
+group in catalog order for pagination. **Show reads** has three dropdowns:
+mapping class (**All / Unique**), layout (**Single / Pairs**), and junction support
+(**All / Variant / reference roles**). Mapping class and junction support change
+the displayed subset, leaving STAR support unchanged. Unique means NH=1, regardless of primary,
 duplicate, supplementary or QC flags. The page status labels the last page and
 filter-empty state. Paging affects visibility only; every eligible read remains
 available in the report.
+
+**Pairs** groups safely associated mates, keeping overlapping mates on
+closely stacked tracks and connecting separated mates with a faint dotted line.
+Nearby mates also stack when their arrowheads would touch, including after resizing.
+Each pair has a shaded band and brackets just outside its displayed read geometry
+on both sides, without a numbered label. Hovering or focusing either mate highlights
+the pair. Brackets disappear while read details are expanded, so they cannot
+cross the details panel.
+Association uses read identity and reciprocal mate/placement metadata; ambiguous
+or unavailable mates remain individual. Filters still select individual records.
+In paired view the paging limit applies to rows, and the status separately lists
+record counts, paired rows, and individual rows. The layout dropdown changes presentation
+only; a displayed pair is not a verified STAR contribution. See the
+[pairing and styling rules](ALIGNMENT_EVIDENCE.md#counts-identity-and-read-retention).
 
 Reads form a compact pileup sorted by support group, then genomic start, beneath a shared coordinate
 ruler. Labeled exon boxes show the relevant portions of the catalog's annotated
@@ -155,7 +176,7 @@ Hover for the exon label, transcript, source, full inclusive coordinates and len
 and the shown segment for a truncated exon. An unknown extent is shown
 as a vertical tick at the splice boundary, with its label above the intron line,
 never as a full exon box. Shared exon extents
-and shared unknown boundaries appear once. Blue bars are aligned read segments;
+and shared unknown boundaries appear once. Read blocks are aligned segments;
 they need not cover a whole exon. Matching positions align vertically; thin splice
 lines connect aligned read blocks. Gaps longer than 80 nt outside the retained exon
 context, aligned blocks, or displayed soft clips
@@ -164,10 +185,17 @@ When neighboring displayed exons have nonconsecutive numbers in the same
 transcript, a zig-zag in the connecting intron line marks omitted exons.
 Its tooltip lists the omitted exon numbers; for example, exons 3–9 between 10 and 2.
 The scale remains fixed when filtering or paging.
+Pointed ends on the terminal aligned blocks show alignment direction: forward
+points right and reverse points left. These indicate alignment orientation,
+not transcript strand. Fixed-size arrowheads extend six pixels beyond the blocks
+so they remain visible even on very short pieces. This visual extension does not
+represent extra bases; block coordinates and soft/hard clip shapes are unchanged.
+Pair brackets leave room for the arrowheads.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.
 They have no assigned reference coordinates. Hard clips remain gold ticks.
+Muted records use gray for every operation while retaining these distinct shapes.
 References on other chromosomes have separate axes
 within the figure. Click a read, or focus it and press Enter, to open
 read details: the read name; one genomic interval · CIGAR · MAPQ · NH line;

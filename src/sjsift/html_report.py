@@ -349,13 +349,16 @@ def _exon_label(left, width, names, description, boundary=False):
             f'title="{escape(description, quote=True)}">{escape(names)}</span>')
 
 
-def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -> str:
+def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions, read_description: str) -> str:
     operations = []
-    for operation in record.geometry:
+    aligned = [index for index, operation in enumerate(record.geometry) if operation.op in "M=X"]
+    terminal = (aligned[-1] if record.orientation == "forward" else aligned[0]) if aligned else None
+    for index, operation in enumerate(record.geometry):
         coordinates = f"{operation.start + 1}–{operation.end}" if operation.end > operation.start else f"boundary {operation.start}"
         description = f"{operation.op}: {operation.length} nt; {coordinates}"
         if operation.op == "S":
             description += "; unaligned soft clip"
+        description += f"; {read_description}"
         start, end = _display_interval(record, operation)
         left = scale.percent(start)
         width = scale.percent(end) - left
@@ -363,36 +366,79 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions=()) -
                          if operation.op == "N" and operation.start == support.definition.intron_start - 1
                          and operation.end == support.definition.intron_end), None)
         operations.append(
-            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}" '
+            f'<span class="cigar-op op-{operation.op.replace("=", "equal")}{" selected-junction" if selected else ""}'
+            + (f' read-end-{record.orientation}' if index == terminal else '') + '" '
             f'style="left:{left:.6f}%;width:{width:.6f}%'
-            + (f';background:{selected}' if selected else '') + f'" title="{description}"></span>'
+            + (f';background:{selected}' if selected else '') + f'" title="{escape(description, quote=True)}"></span>'
         )
     return '<span class="read-geometry" aria-hidden="true">' + "".join(operations) + '</span>'
 
 
 def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
-              memberships, bucket: int, junctions) -> str:
+              memberships, bucket: int, junctions, pair_id="") -> str:
     flags = ", ".join(record.flags) or "none"
     strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
     color = next(color for index, _, _, color in memberships if index == bucket)
     support_labels = "; ".join(label for _, label, _, _ in memberships)
+    style = "muted" if record.mapping_class == "unknown" or record.flag & (256 | 512 | 1024 | 2048) else (
+        "hatched" if record.mapping_class == "multimapping" else "solid"
+    )
+    description = (f"{record.read_name}; {support_labels}; {record.mapping_class}; {strand}; "
+                   f"{record.mate}, {record.orientation}; Flags: {flags}; "
+                   f"NH: {record.nh if record.nh is not None else 'unavailable/unusable'}")
+    if record.chimeric_tag is not None:
+        description += f"; Chimeric tag: {record.chimeric_tag} (tag only; STAR counting eligibility not inferred)"
+    intervals = [_display_interval(record, operation) for operation in record.geometry]
+    left = scale.percent(min(start for start, _ in intervals))
+    right = scale.percent(max(end for _, end in intervals))
     return (
-        f'<li class="read-row {record.strand_status}" data-mapping="{record.mapping_class}"'
+        f'<li class="read-row {record.strand_status} read-{style}" data-mapping="{record.mapping_class}"'
         f' data-bucket="{bucket}" data-support="{" ".join(str(index) for index, _, _, _ in memberships)}"'
+        f' data-pair="{pair_id}"'
+        f' data-left="{left:.6f}" data-right="{right:.6f}"'
         f' style="--read-color:{color}"'
         f' data-record-id="{record.record_id}"' + (' hidden' if position >= 10 else '') + '>'
         '<details class="read-inspection"><summary class="read-hit" '
-        f'aria-label="Inspect {escape(record.read_name, quote=True)}; {escape(support_labels, quote=True)}; {record.mapping_class}; {strand}">'
-        + _read_geometry(record, scale, junctions) + '</summary>'
+        f'aria-label="Inspect {escape(description, quote=True)}" title="{escape(description, quote=True)}">'
+        + _read_geometry(record, scale, junctions, description) + '</summary>'
         '<div class="read-metadata">'
         f'<div class="read-label"><strong>{escape(record.read_name)}</strong></div>'
         f'<p>{escape(record.chromosome)}:{record.start + 1}–{record.end} · '
         f'CIGAR: {escape(record.cigar)} · MAPQ: {record.mapq} · NH: {record.nh if record.nh is not None else "unavailable/unusable"}</p>'
         f'<p>Read: {escape(record.mate.removeprefix("read "))}, {record.orientation}'
         f'<br>Flags: {escape(flags)} ({record.flag})</p>'
+        + (f'<p>Chimeric tag: {escape(record.chimeric_tag)} '
+           '(tag only; STAR counting eligibility not inferred)</p>' if record.chimeric_tag is not None else '')
+        + f'<p>Read group: {escape(record.read_group) if record.read_group else "unassigned"} · '
+        f'HI: {record.hit_index if record.hit_index is not None else "unavailable/unusable"}</p>'
         f'<p>Aligned anchors: left {record.anchors[0]} nt, right {record.anchors[1]} nt</p>'
         '</div></details></li>'
     )
+
+
+def _paired_records(records):
+    """Associate reciprocal, unambiguous mates within this figure."""
+    candidates = {}
+    for record in records:
+        if (not record.flag & 1 or record.flag & (8 | 2048) or record.mate == "unspecified"
+                or record.read_name == "*" or not record.hit_index_usable):
+            continue
+        key = (record.read_name, record.read_group, record.hit_index, record.chromosome, record.start)
+        candidates.setdefault(key, []).append(record)
+    partners = {}
+    for records_at_start in candidates.values():
+        for record in records_at_start:
+            key = (record.read_name, record.read_group, record.hit_index, record.mate_chromosome, record.mate_start)
+            matches = [mate for mate in candidates.get(key, ())
+                       if mate.mate != record.mate and mate.mate_chromosome == record.chromosome
+                       and mate.mate_start == record.start and mate.chromosome == record.chromosome
+                       and bool(mate.flag & 16) == bool(record.flag & 32)
+                       and bool(record.flag & 16) == bool(mate.flag & 32)
+                       and bool(record.flag & 256) == bool(mate.flag & 256)]
+            if len(matches) == 1:
+                partners[record.record_id] = matches[0].record_id
+    return {record_id: min(record_id, mate_id) for record_id, mate_id in partners.items()
+            if partners.get(mate_id) == record_id}
 
 
 def _junction_arcs(junctions, scale, maximum):
@@ -458,6 +504,7 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         entries.extend((record, members, owner, bucket, position)
                        for position, (record, members, owner) in enumerate(rows))
     tracks = []
+    pairs = _paired_records([record for record, _ in retained.values()])
     chromosomes = list(dict.fromkeys(support.definition.chromosome for _, support, _ in junctions))
     for chromosome in chromosomes:
         local_junctions = [(label, support, color) for label, support, color in junctions
@@ -474,21 +521,33 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                       + scale.ruler(local_junctions)
                       + '<ol class="read-rows">' + "".join(
                           _read_row(record, position, scale, members, bucket,
-                                    tuple((support, color) for _, _, support, color in members))
+                                    tuple((support, color) for _, _, support, color in members),
+                                    pairs.get(record.record_id, ""))
                           for record, members, owner, bucket, position in local_entries
                       ) + '</ol></div>')
     options = "".join(f'<option value="{position}">{escape(label)}</option>'
                       for position, (label, _, _) in enumerate(junctions))
     return (
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
-        '<div class="read-controls" hidden><label>Show reads <select class="read-filter" aria-label="Mapping class">'
-        '<option value="all" selected>All</option><option value="unique">Unique only</option></select></label>'
-        '<label>Support <select class="support-filter" aria-label="Junction support">'
-        f'<option value="all">All support</option>{options}</select></label>'
+        '<p>Displayed alignments may include records not counted in STAR junction support. '
+        'Both mates may be shown separately in record view.</p>'
+        '<p class="read-legend"><span><i class="legend-solid" aria-hidden="true"></i>Unique</span> '
+        '<span><i class="legend-hatched" aria-hidden="true"></i>Multimapping</span> '
+        '<span><i class="legend-muted" aria-hidden="true"></i>Unknown multiplicity or flagged '
+        '(secondary, supplementary, duplicate, QC failure)</span></p>'
+        '<div class="read-controls" hidden><span>Show reads</span><select class="read-filter" aria-label="Mapping class">'
+        '<option value="all" selected>All</option><option value="unique">Unique</option></select>'
+        '<select class="read-pairs" aria-label="Read layout">'
+        '<option value="single" selected>Single</option><option value="pairs">Pairs</option></select>'
+        '<select class="support-filter" aria-label="Junction support">'
+        f'<option value="all">All</option>{options}</select>'
         '<button class="read-expand" type="button" aria-expanded="false">Expand reads</button>'
         '<button class="read-previous" type="button">Previous reads</button>'
         '<button class="read-next" type="button">Next reads</button>'
         '<span class="read-page" role="status" aria-live="polite"></span></div>'
+        '<p class="read-pair-help" hidden>Each shaded band groups two mates, with brackets on both sides. '
+        'Hover or focus either read to highlight the pair. Records without a visible, '
+        'unambiguous mate remain separate.</p>'
         '<p class="read-filter-empty" hidden>No embedded records match this filter.</p>'
         + ('<p>No eligible alignment records (0).</p>' if not retained else '')
         + '<div class="pileup-scroll">' + "".join(tracks) + '</div>'

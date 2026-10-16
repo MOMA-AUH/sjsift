@@ -113,7 +113,10 @@ HTML reporting and reference-junction context are available from sjsift v0.2.0.
 
 Add `--alignment sample.bam` for one combined read pileup per variant. Reads are
 blue for variant support, teal for same-donor support, and purple for same-acceptor
-support, with solid colors at full opacity. Sashimi-style arcs connect the selected junctions above a shared genomic
+support. Unique records use solid blocks, multimapping records use hatching,
+and unknown multiplicity or flagged records share a muted-gray style with details
+on hover or click. Selecting **Pairs** under **Show reads** groups safely associated mates for inspection.
+Sashimi-style arcs connect the selected junctions above a shared genomic
 ruler, with compressed introns and read details available on click. The BAM must be local,
 coordinate sorted and indexed. `--alignment-index PATH` selects a nonstandard
 index. All eligible reads are embedded without downsampling; the viewer pages
@@ -121,9 +124,9 @@ through them. See [alignment evidence](docs/ALIGNMENT_EVIDENCE.md) for inclusion
 strand, count provenance and the raw identifiers retained in shared reports.
 
 Alignment-record counts can differ from STAR support, including multimapping
-records beside zero STAR multimapping support. v0.2.1 does not reconstruct the
-reads contributing to STAR's counts; reconciliation remains tracked in
-[issue #40](https://github.com/MOMA-AUH/sjsift/issues/40). STAR values are unchanged.
+records beside zero STAR multimapping support. Paired viewing and styling help
+interpret the evidence; they do not reconstruct STAR contributions or reconcile
+the counts. STAR values are unchanged.
 
 For CRAM, supply the matching **local indexed FASTA** explicitly:
 
