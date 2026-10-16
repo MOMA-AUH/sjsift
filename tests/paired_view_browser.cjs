@@ -36,7 +36,7 @@ const {chromium} = require("playwright");
     assert.equal(await group.locator(".read-next").isDisabled(), true);
     assert.match(await group.locator(".read-page").innerText(), /End of embedded reads/);
 
-    const separated = group.locator(".read-pair:visible:not(.pair-overlap)");
+    const separated = group.locator(".read-pair:visible").filter({has: page.locator('.read-hit[title*="separated"]')});
     assert.equal(await separated.count(), 1);
     const positions = await separated.locator(".read-geometry").evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top));
     assert.equal(positions[0], positions[1]);
@@ -48,6 +48,11 @@ const {chromium} = require("playwright");
       row.querySelectorAll(".read-end-forward, .read-end-reverse").length === 1)));
     // At a narrow viewport, a one-base block is smaller than its arrowhead.
     await page.setViewportSize({width: 800, height: 1000});
+    await page.waitForFunction(() => {
+      const pair = document.querySelector('.read-hit[title*="separated"]').closest('.read-pair');
+      const rows = pair.querySelectorAll('.read-geometry');
+      return rows[1].getBoundingClientRect().top > rows[0].getBoundingClientRect().top;
+    }, null, {timeout: 2000});
     for (const direction of ["forward", "reverse"]) {
       const terminal = group.locator(`.read-hit[title*="pair-61"] .read-end-${direction}`);
       const arrow = await terminal.evaluate(node => {
@@ -71,6 +76,11 @@ const {chromium} = require("playwright");
     await group.locator('.read-pair').filter({has: page.locator('.read-hit[title*="pair-61"]')})
       .screenshot({path: process.argv[2] + ".short-arrows.png"});
     await page.setViewportSize({width: 1400, height: 1000});
+    await page.waitForFunction(() => {
+      const pair = document.querySelector('.read-hit[title*="separated"]').closest('.read-pair');
+      const rows = pair.querySelectorAll('.read-geometry');
+      return rows[1].getBoundingClientRect().top === rows[0].getBoundingClientRect().top;
+    }, null, {timeout: 2000});
     const band = await overlapping.evaluate(node => getComputedStyle(node).backgroundColor);
     assert.notEqual(band, "rgba(0, 0, 0, 0)");
     assert.ok(await overlapping.evaluate(node => parseFloat(getComputedStyle(node, "::before").borderTopWidth) > 0));

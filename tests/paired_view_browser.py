@@ -31,9 +31,9 @@ def report(destination):
               record("secondary", flag=256, tags={"NH": 2})]
     # One pair belongs to different support groups and has separated geometry.
     first = record("separated", flag=99, tags={"NH": 1})
-    second = record("separated", start=280, flag=147, tags={"NH": 1})
+    second = record("separated", start=223, cigar="77M100N20M", flag=147, tags={"NH": 1})
     first.next_reference_id = second.next_reference_id = 0
-    first.next_reference_start, second.next_reference_start = 280, 80
+    first.next_reference_start, second.next_reference_start = 223, 80
     reads += [first, second]
     evidence = extract_evidence(catalog, bam(destination, reads))
     output = io.StringIO()

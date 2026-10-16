@@ -153,6 +153,18 @@
       }
       return units;
     }
+    function updatePairLanes() {
+      for (const connector of group.querySelectorAll(".mate-connector")) {
+        const pair = connector.parentElement;
+        if (!pair.clientWidth) continue;
+        const gap = pair.clientWidth * parseFloat(connector.style.width) / 100;
+        const arrowSize = parseFloat(getComputedStyle(pair).getPropertyValue("--read-arrow-size"));
+        // Even nonoverlapping alignments need separate lanes if their arrows touch.
+        const stacked = gap <= 2 * arrowSize + 2;
+        pair.classList.toggle("pair-overlap", stacked);
+        connector.hidden = stacked;
+      }
+    }
     function updateReads() {
       find(".read-pair-help").hidden = !pairs.checked;
       const matching = reads.filter(row =>
@@ -179,6 +191,7 @@
         row.hidden = !shown.has(row);
         if (row.hidden) row.querySelector(".read-inspection").open = false;
       }
+      updatePairLanes();
       find(".read-filter-empty").hidden = matching.length !== 0;
       expand.textContent = expanded ? "Collapse reads" : "Expand reads";
       expand.setAttribute("aria-expanded", String(expanded));
@@ -198,6 +211,8 @@
     expand.addEventListener("click", () => { expanded = !expanded; page = 0; updateReads(); });
     previous.addEventListener("click", () => { page -= 1; updateReads(); });
     next.addEventListener("click", () => { page += 1; updateReads(); });
+    const resizeObserver = new ResizeObserver(updatePairLanes);
+    for (const track of tracks) resizeObserver.observe(track.list);
     find(".read-controls").hidden = false;
     updateReads();
   }

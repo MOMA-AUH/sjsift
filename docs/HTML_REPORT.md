@@ -151,6 +151,7 @@ available in the report.
 
 **View as pairs** groups safely associated mates, keeping overlapping mates on
 closely stacked tracks and connecting separated mates with a faint dotted line.
+Nearby mates also stack when their arrowheads would touch, including after resizing.
 Each pair has a shaded band and brackets just outside its displayed read geometry
 on both sides, without a numbered label. Hovering or focusing either mate highlights
 the pair. Brackets disappear while read details are expanded, so they cannot
