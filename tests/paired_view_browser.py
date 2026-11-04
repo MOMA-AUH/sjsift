@@ -44,6 +44,29 @@ def report(destination):
     return path
 
 
+def shared_strand_report(destination):
+    references = (ReferenceJunction("same_donor", "chr1", 101, 200, "+", annotation=ANNOTATION),
+                  ReferenceJunction("same_acceptor", "chr1", 221, 320, "+", annotation=ANNOTATION))
+    variant = replace(CATALOG.variants[0], intron_end=320, reference_junctions=references)
+    reordered = replace(variant, identifier="reordered", intron_start=401, intron_end=500,
+                        reference_junctions=references[::-1])
+    catalog = replace(CATALOG, variants=(variant, reordered))
+    reads = mates("mixed-pair", tags={"NH": 2, "jM": [21, 20]})
+    for read in reads:
+        read.cigarstring = f"{100 - read.reference_start}M100N20M100N20M"
+        read.query_sequence = "A" * (140 - read.reference_start)
+    evidence = extract_evidence(catalog, bam(destination, reads, name="shared.bam"))
+    output = io.StringIO()
+    write_html("synthetic", tuple(VariantSupport(definition, 8, 2, tuple(
+        ReferenceJunctionSupport(reference, 20, 3) for reference in definition.reference_junctions
+    )) for definition in catalog.variants), output, alignment_evidence=evidence)
+    path = destination / "shared-strand.html"
+    path.write_text(output.getvalue())
+    return path
+
+
 if __name__ == "__main__":
-    path = report(Path(sys.argv[1]))
-    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path)], check=True)
+    destination = Path(sys.argv[1])
+    path = report(destination)
+    shared = shared_strand_report(destination)
+    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path), str(shared)], check=True)
