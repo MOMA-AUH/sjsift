@@ -342,3 +342,12 @@ BAM and explicit-reference CRAM generation, retained HTML evidence, and local
 Chromium interactions at declared time/memory limits. It remains outside the
 fast suite and required CI. [Recorded capacity](CAPACITY.md) distinguishes fully
 tested workloads from failures and larger unvalidated workloads.
+
+### Candidate workflow readiness
+
+Before a stable release, repeat the [candidate workflow audit](RELEASE_READINESS.md)
+against the proposed commit and artifact. Its [reproduction scripts](../benchmarks/readiness/README.md)
+separate public RNA-seq observations from artificial controls and measure complete
+human-reference CRAM validation. Re-run affected stages after candidate changes.
+A passing synthetic fixture suite alone does not establish representative workflow readiness.
+The audit records a release decision but does not publish a release.
