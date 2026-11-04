@@ -718,6 +718,73 @@ def test_output_creation_failure_is_a_concise_cli_error(tmp_path: Path) -> None:
     assert not output.exists()
 
 
+@pytest.mark.parametrize("unbuffered", [False, True], ids=["buffered-flush", "write"])
+def test_closed_stdout_pipe_is_a_clean_output_error(
+    tmp_path: Path, unbuffered: bool,
+) -> None:
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    context = tmp_path / "context.tsv"
+    html = tmp_path / "report.html"
+    read_fd, write_fd = os.pipe()
+    os.close(read_fd)
+    environment = os.environ.copy()
+    environment.pop("PYTHONUNBUFFERED", None)
+    with os.fdopen(write_fd, "wb") as pipe_output:
+        result = subprocess.run(
+            [sys.executable, *(["-u"] if unbuffered else []),
+             "-m", "sjsift", "--sample-name", "sample",
+             "--junctions", str(junctions), "--definitions", str(definitions),
+             "--context-output", str(context), "--html-output", str(html)],
+            stdout=pipe_output, stderr=subprocess.PIPE, text=True,
+            env=environment, timeout=30, check=False,
+        )
+
+    assert result.returncode == 2, result.stderr
+    assert "standard output: cannot write report: Broken pipe" in result.stderr
+    assert "Traceback" not in result.stderr
+    assert "Exception ignored" not in result.stderr
+    assert "Exception while" not in result.stderr
+    assert not context.exists()
+    assert not html.exists()
+
+
+def test_stdout_consumer_closing_during_report_is_a_clean_output_error(
+    tmp_path: Path,
+) -> None:
+    junctions, definitions = write_single_variant_inputs(tmp_path)
+    # Exceed pipe capacity so the producer cannot finish before the reader closes.
+    template = definitions.read_text(encoding="utf-8").split("[[variants]]", 1)[1]
+    definitions.write_text(
+        'schema_version = 3\ngenome_assembly = "GRCh38"\n' + "".join(
+            "[[variants]]" + template.replace("EGFRvIII", f"variant_{index}")
+            .replace("55019366", str(100 + index * 2))
+            .replace("55155829", str(101 + index * 2))
+            for index in range(20000)
+        ),
+        encoding="utf-8",
+    )
+    context = tmp_path / "context.tsv"
+    suffix = ".exe" if os.name == "nt" else ""
+    executable = Path(sysconfig.get_path("scripts")) / f"sjsift{suffix}"
+    with subprocess.Popen(
+        [str(executable), "--sample-name", "sample",
+         "--junctions", str(junctions), "--definitions", str(definitions),
+         "--context-output", str(context)],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    ) as process:
+        assert process.stdout is not None
+        assert process.stdout.readline().startswith("variant_id\tgenome_assembly\t")
+        process.stdout.close()
+        _, errors = process.communicate(timeout=30)
+
+    assert process.returncode == 2, errors
+    assert "standard output: cannot write report: Broken pipe" in errors
+    assert "Traceback" not in errors
+    assert "Exception ignored" not in errors
+    assert "Exception while" not in errors
+    assert not context.exists()
+
+
 def test_input_failure_does_not_create_a_partial_output(tmp_path: Path) -> None:
     junctions, definitions = write_single_variant_inputs(tmp_path)
     junctions.write_text("malformed\n", encoding="utf-8")

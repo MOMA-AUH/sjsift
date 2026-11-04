@@ -1,6 +1,7 @@
 """Serialize TSV reports and manage report destinations."""
 
 import csv
+import os
 from collections.abc import Iterable
 from contextlib import ExitStack
 from functools import partial
@@ -145,8 +146,15 @@ def write_reports(
                 stream.flush()
         if output_path is None:
             destination = "standard output"
-            write_tsv(genome_assembly, result_rows, stdout)
-            stdout.flush()
+            try:
+                write_tsv(genome_assembly, result_rows, stdout)
+                stdout.flush()
+            except BrokenPipeError:
+                # Python flushes stdout again at shutdown. Redirect its file
+                # descriptor so buffered data cannot cause a second failure.
+                with open(os.devnull, "w") as discard:
+                    os.dup2(discard.fileno(), stdout.fileno())
+                raise
         completed = True
     except ReportError:
         raise
