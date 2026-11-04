@@ -151,6 +151,33 @@ const {chromium} = require("playwright");
     assert.ok(brackets.every(bracket => bracket.rightGap >= 8 && bracket.rightGap <= 12 && bracket.rightBorder > 0));
     assert.ok(new Set(brackets.map(bracket => Math.round(bracket.left))).size > 1);
     await page.screenshot({path: process.argv[2] + ".png", fullPage: true});
+    // Shared physical records retain role-specific strand labels after either
+    // support filter, in both catalog orders and both layout modes.
+    if (process.argv[3]) {
+      await page.goto(pathToFileURL(process.argv[3]).href + "#variant-0");
+      for (const index of [0, 1]) {
+        await page.goto(pathToFileURL(process.argv[3]).href + `#variant-${index}`);
+        const shared = page.locator(`#pileup-v${index}`);
+        const counts = await page.locator(`#variant-${index} table`).innerText();
+        for (const layout of ["single", "pairs"]) {
+          await shared.locator(".read-pairs").selectOption(layout);
+          for (const label of ["Same donor", "Same acceptor"]) {
+            await shared.locator(".support-filter").selectOption({label});
+            assert.equal(await shared.locator(".read-row:visible").count(), 2);
+            assert.equal(await shared.locator(".read-pair:visible").count(), layout === "pairs" ? 1 : 0);
+            for (const read of await shared.locator(".read-row:visible .read-hit").all()) {
+              for (const attribute of ["title", "aria-label"]) {
+                const text = await read.getAttribute(attribute);
+                assert.match(text, /Same donor: strand evidence agrees/);
+                assert.match(text, /Same acceptor: strand unverified/);
+                assert.match(text, /multimapping/);
+              }
+            }
+          }
+        }
+        assert.equal(await page.locator(`#variant-${index} table`).innerText(), counts);
+      }
+    }
     assert.ok(requests.every(url => url.startsWith("file:")));
     assert.deepEqual(errors, []);
     console.log("Paired-view browser checks passed.");

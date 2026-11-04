@@ -377,13 +377,20 @@ def _read_geometry(record: AlignmentRecord, scale: _PileupScale, junctions, read
 def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
               memberships, bucket: int, junctions, pair_id="") -> str:
     flags = ", ".join(record.flags) or "none"
-    strand = "strand unverified" if record.strand_status == "unverified" else "strand evidence agrees"
-    color = next(color for index, _, _, color in memberships if index == bucket)
-    support_labels = "; ".join(label for _, label, _, _ in memberships)
+    statuses = {status for _, _, _, _, status in memberships}
+    strand_status = next(iter(statuses)) if len(statuses) == 1 else "mixed"
+    strand_labels = {"unverified": "strand unverified", "agreeing": "strand evidence agrees"}
+    color = next(color for index, _, _, color, _ in memberships if index == bucket)
+    support_labels = "; ".join(
+        f"{label}: {strand_labels[status]}" if strand_status == "mixed" else label
+        for _, label, _, _, status in memberships
+    )
+    if strand_status != "mixed":
+        support_labels += f"; {strand_labels[strand_status]}"
     style = "muted" if record.mapping_class == "unknown" or record.flag & (256 | 512 | 1024 | 2048) else (
         "hatched" if record.mapping_class == "multimapping" else "solid"
     )
-    description = (f"{record.read_name}; {support_labels}; {record.mapping_class}; {strand}; "
+    description = (f"{record.read_name}; {support_labels}; {record.mapping_class}; "
                    f"{record.mate}, {record.orientation}; Flags: {flags}; "
                    f"NH: {record.nh if record.nh is not None else 'unavailable/unusable'}")
     if record.chimeric_tag is not None:
@@ -392,8 +399,8 @@ def _read_row(record: AlignmentRecord, position: int, scale: _PileupScale,
     left = scale.percent(min(start for start, _ in intervals))
     right = scale.percent(max(end for _, end in intervals))
     return (
-        f'<li class="read-row {record.strand_status} read-{style}" data-mapping="{record.mapping_class}"'
-        f' data-bucket="{bucket}" data-support="{" ".join(str(index) for index, _, _, _ in memberships)}"'
+        f'<li class="read-row {strand_status} read-{style}" data-mapping="{record.mapping_class}"'
+        f' data-bucket="{bucket}" data-support="{" ".join(str(index) for index, _, _, _, _ in memberships)}"'
         f' data-pair="{pair_id}"'
         f' data-left="{left:.6f}" data-right="{right:.6f}"'
         f' style="--read-color:{color}"'
@@ -489,20 +496,18 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
     retained = {}
     for position, key in enumerate(keys):
         for record in evidence.groups[key].records:
-            retained.setdefault(record.record_id, (record, position))
+            retained.setdefault(record.record_id, (record, {}))[1][position] = record.strand_status
     buckets = {}
-    for record, owner in retained.values():
-        members = [(position, label, support, color) for position, (label, support, color) in enumerate(junctions)
-                   if keys[position] in record.matches]
-        bucket = min(position for position, _, _, _ in members)
-        # Keep the metadata's extraction junction explicit for shared records.
-        members.sort(key=lambda member: (member[0] != owner, member[0]))
-        buckets.setdefault(bucket, []).append((record, members, owner))
+    for record, statuses in retained.values():
+        members = [(position, label, support, color, statuses[position])
+                   for position, (label, support, color) in enumerate(junctions) if position in statuses]
+        bucket = min(statuses)
+        buckets.setdefault(bucket, []).append((record, members))
     entries = []
     for bucket, rows in sorted(buckets.items()):
         rows.sort(key=lambda item: (item[0].chromosome, item[0].start, item[0].end, item[0].record_id))
-        entries.extend((record, members, owner, bucket, position)
-                       for position, (record, members, owner) in enumerate(rows))
+        entries.extend((record, members, bucket, position)
+                       for position, (record, members) in enumerate(rows))
     tracks = []
     pairs = _paired_records([record for record, _ in retained.values()])
     chromosomes = list(dict.fromkeys(support.definition.chromosome for _, support, _ in junctions))
@@ -521,9 +526,9 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
                       + scale.ruler(local_junctions)
                       + '<ol class="read-rows">' + "".join(
                           _read_row(record, position, scale, members, bucket,
-                                    tuple((support, color) for _, _, support, color in members),
+                                    tuple((support, color) for _, _, support, color, _ in members),
                                     pairs.get(record.record_id, ""))
-                          for record, members, owner, bucket, position in local_entries
+                          for record, members, bucket, position in local_entries
                       ) + '</ol></div>')
     options = "".join(f'<option value="{position}">{escape(label)}</option>'
                       for position, (label, _, _) in enumerate(junctions))

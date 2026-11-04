@@ -3,6 +3,8 @@ from dataclasses import replace
 from html.parser import HTMLParser
 import io
 
+import pytest
+
 from alignment_fixtures import ANNOTATION, CATALOG, bam, record
 from sjsift.alignment_evidence import extract_evidence
 from sjsift.catalog import ReferenceJunction
@@ -147,6 +149,64 @@ def combined_report(catalog, evidence):
         for variant in catalog.variants
     ), stream, alignment_evidence=evidence)
     return stream.getvalue()
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+@pytest.mark.parametrize("motifs,expected", [
+    ([21, 20], ("strand evidence agrees", "strand unverified")),
+    ([20, 21], ("strand unverified", "strand evidence agrees")),
+    ([21, 21], ("strand evidence agrees", "strand evidence agrees")),
+    ([20, 20], ("strand unverified", "strand unverified")),
+])
+def test_shared_reference_memberships_keep_their_own_strand_labels(tmp_path, reverse, motifs, expected):
+    from test_paired_view import Reads
+
+    references = (reference("same_donor", 101, 200), reference("same_acceptor", 221, 320))
+    if reverse:
+        references = references[::-1]
+    variant = replace(CATALOG.variants[0], intron_end=320, reference_junctions=references)
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [record("shared", cigar="20M100N20M100N20M", tags={"NH": 2, "jM": motifs})])
+    evidence = extract_evidence(catalog, path)
+    html = combined_report(catalog, evidence)
+    parsed = Reads(html)
+    assert len(parsed.rows) == 1
+    assert parsed.rows[0]["data-support"] == "1 2"
+    assert "read-hatched" in parsed.rows[0]["class"].split()
+    if expected[0] != expected[1]:
+        for label, status in zip(("Same donor", "Same acceptor"), expected):
+            assert f"{label}: {status}" in parsed.summaries[0]["aria-label"]
+            assert f"{label}: {status}" in parsed.summaries[0]["title"]
+            assert all(f"{label}: {status}" in operation["title"] for operation in parsed.operations)
+        assert "mixed" in parsed.rows[0]["class"].split()
+    else:
+        for label in ("Same donor", "Same acceptor", expected[0]):
+            assert label in parsed.summaries[0]["aria-label"]
+            assert label in parsed.summaries[0]["title"]
+        other_status = "strand unverified" if expected[0] == "strand evidence agrees" else "strand evidence agrees"
+        assert other_status not in parsed.summaries[0]["title"]
+    assert "8 unique + 2 multi (STAR)" in html
+    assert "20 unique + 3 multi (STAR)" in html
+
+
+@pytest.mark.parametrize("tags,exclusion", [
+    ({"jM": [21, 22]}, "opposite"),
+    ({"jM": [21, 22], "XS": "+"}, "conflicting"),
+])
+def test_shared_records_omit_ineligible_memberships_from_read_labels(tmp_path, tags, exclusion):
+    from test_paired_view import Reads
+
+    variant = replace(CATALOG.variants[0], reference_junctions=(reference(),))
+    catalog = replace(CATALOG, variants=(variant,))
+    path = bam(tmp_path, [record("shared", cigar="20M100N20M100N20M", tags=tags)])
+    evidence = extract_evidence(catalog, path)
+    assert evidence.groups["v0-j1"].exclusions[exclusion] == 1
+    assert not evidence.groups["v0-j1"].records
+    parsed = Reads(combined_report(catalog, evidence))
+    assert len(parsed.rows) == 1
+    assert parsed.rows[0]["data-support"] == "0"
+    assert "Variant; strand evidence agrees" in parsed.summaries[0]["title"]
+    assert "Same acceptor" not in parsed.summaries[0]["title"]
 
 
 def test_support_colors_match_tables_arcs_and_reads_for_standard_and_custom_roles(tmp_path):
