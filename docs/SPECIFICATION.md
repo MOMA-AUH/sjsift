@@ -12,6 +12,10 @@ Before stable v1.0.0, backward compatibility is not guaranteed, including in
 patch releases. Use a catalog matching the installed version. The historical
 original implementation plan records the original MVP rather than current scope.
 
+The [stable v1 compatibility contract](COMPATIBILITY.md) takes effect with v1.0.0.
+It defines upgrade guarantees and breaking changes without changing the policy
+for existing pre-v1 releases.
+
 The [reference-context guide](REFERENCE_JUNCTION_CONTEXT.md) explains comparator
 selection, the [curation record](REFERENCE_JUNCTION_CURATION.md) documents the
 GRCh38 evidence, and the [HTML guide](HTML_REPORT.md) explains report navigation
