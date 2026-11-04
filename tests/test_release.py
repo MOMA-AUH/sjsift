@@ -37,3 +37,13 @@ def test_manual_release_build_cannot_publish() -> None:
     assert "actions/upload-artifact@v7" in workflow
     assert "ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}" in workflow
     assert "anaconda upload --skip-existing --user MOMA-AUH" in workflow
+
+
+def test_ci_and_release_gate_on_installed_wheel_browser_checks() -> None:
+    for name in ("ci.yml", "publish.yml"):
+        workflow = (REPOSITORY_ROOT / ".github" / "workflows" / name).read_text()
+        assert '"$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/paired_view_browser.py' in workflow
+        assert "npm ci --prefix tests" in workflow
+        assert "playwright install --with-deps chromium" in workflow
+        assert "name: browser-diagnostics" in workflow
+        assert "if: always()" in workflow
