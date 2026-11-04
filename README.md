@@ -159,6 +159,8 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 The v0.2.2 catalog uses schema version 3.
 Schemas 1 and 2 are rejected. Pre-1.0 releases, including
 patch releases, do not promise backward compatibility.
+The [stable v1 compatibility contract](docs/COMPATIBILITY.md) takes effect with
+v1.0.0. It does not add guarantees to existing pre-v1 releases.
 sjsift v0.2.0 users should retain the catalog from the
 [`v0.2.0` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.2.0/definitions/grch38.toml).
 sjsift v0.1.3 supports only schema version 1; its compatible catalog remains

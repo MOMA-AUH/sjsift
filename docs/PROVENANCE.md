@@ -128,3 +128,9 @@ new fields and warning codes can be added. Consumers must tolerate unknown field
 and preserve unknown warnings. Removing fields or changing their types or meanings
 requires a new schema version. Readable messages can change without a schema
 change. Use warning codes and structured fields for machine decisions.
+
+From sjsift v1.0.0, schema 1 also falls under the
+[stable compatibility contract](COMPATIBILITY.md#versioned-json-and-html-boundaries).
+A new schema number alone does not permit an incompatible change to an existing
+invocation within application v1. Existing pre-v1 releases acquire no
+retrospective application compatibility guarantee.

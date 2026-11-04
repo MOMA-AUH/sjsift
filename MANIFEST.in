@@ -4,6 +4,7 @@ prune tests/node_modules
 recursive-include definitions *.toml
 include docs/curation/gencode-v49-exons.tsv
 include docs/DEVELOPMENT.md
+include docs/COMPATIBILITY.md
 include docs/PROVENANCE.md
 include conda-recipe/meta.yaml
 include conda-recipe/build.sh

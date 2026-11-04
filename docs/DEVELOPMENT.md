@@ -254,6 +254,10 @@ These ruleset and merge settings cannot be enforced solely by files committed to
 
 Use semantic versions and `vMAJOR.MINOR.PATCH` Git tags, following skua's release convention.
 
+Complete the [compatibility review](#compatibility-review) in every release PR
+before tagging. The stable contract takes effect with v1.0.0. Pre-v1 releases
+retain their existing policy until then.
+
 1. On a release branch, update the version in `pyproject.toml`, `src/sjsift/__init__.py`, and the Jinja `version` value in `conda-recipe/meta.yaml`, and update user-facing documentation. Run the existing version-agreement checks in `tests/test_release.py` and `tests/test_cli.py`; add or update release tests when release behavior changes.
 2. Open and squash-merge the release pull request after all required checks pass. Do not tag a release-branch commit: the tag must identify the resulting protected-`master` commit.
 3. Fast-forward local `master`, create an annotated tag whose value is exactly `v` followed by the synchronized package version, and push that tag:
@@ -279,6 +283,25 @@ conda run --name sjsift-check sjsift --version
 ```
 
 The shorter installation command for users with appropriate default channels is `conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift`.
+
+### Compatibility review
+
+Record this review in each release PR using the
+[stable v1 contract](COMPATIBILITY.md). Compare with the last stable release
+and earlier supported interfaces in the same major series. For the first stable
+release, review the full contract and its named checks as the v1 baseline.
+
+1. List changes to CLI inputs, defaults, statuses, streams, warnings, output creation, catalog validation, TSV schemas, JSON schemas, and HTML behavior.
+2. Classify each change as a patch, minor, or major change under the contract. A schema-number increase alone does not permit an incompatible application change.
+3. Review the reference catalog diff separately. Record affected variant IDs, before-and-after values, evidence, and expected changes in counts or display. Keep release-tagged copies available.
+4. Include deprecation announcements and migration examples when applicable. Make sure that existing invocations and pinned schema-3 catalogs retain their documented meaning within v1.
+5. Review Python, platform, and dependency support. Dropping a supported runtime environment requires a major release. Keep package metadata, CI, and the Conda recipe consistent.
+6. Run the contract's named tests and the existing CI and publication validation against candidate artifacts. Record the results and any new checks for added interfaces. Do not weaken expected TSV bytes or JSON field assertions to hide an incompatible change.
+7. Include the compatibility decision and catalog changes in user-facing release notes. For v1.0.0, replace current-version pre-1.0 notices while retaining the historical policy for v0.x.
+
+No release is ready while a promised interface lacks evidence or an incompatible
+change lacks the required major version and migration documentation. The existing
+tag, dry-run, publication, and protected-branch gates still apply.
 
 ## MOMA-AUH Anaconda publishing outline
 
