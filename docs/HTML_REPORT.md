@@ -213,3 +213,8 @@ flags with their numeric value; and one compact line with both aligned-anchor le
 These anchors are not STAR maximum overhang. The alignment guide specifies the anchor
 calculation. Without JavaScript, ten previews per group, native read details,
 STAR support counts and junction arcs remain readable; filtering and paging require JavaScript.
+
+For large reports, read the [tested capacity and resource measurements](CAPACITY.md).
+Pagination hides already-loaded rows; it does not reduce embedded alignment
+evidence, HTML size, or initial browser memory. The measured envelope depends on
+the number of memberships and figures as well as the number of eligible records.

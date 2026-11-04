@@ -1,0 +1,1602 @@
+{
+  "settings": {
+    "output": "/tmp/sjsift-53-recorded",
+    "sizes": [
+      1000,
+      10000,
+      50000,
+      100000
+    ],
+    "stage_seconds": 120,
+    "browser_seconds": 90,
+    "navigation_seconds": 30,
+    "interaction_seconds": 10,
+    "python_memory_mib": 2048,
+    "browser_memory_mib": 4096,
+    "reference_bases": 1000000,
+    "skip_browser": false
+  },
+  "environment": {
+    "timestamp_utc": "2026-11-04T15:12:23.047223+00:00",
+    "python": "3.14.7 | packaged by conda-forge | (main, Sep  2 2026, 21:08:32) [GCC 15.3.0]",
+    "python_executable": "/home/michaelk/miniconda3/envs/sjsift-dev/bin/python",
+    "sjsift": "0.2.2",
+    "sjsift_path": "/faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/src/sjsift/__init__.py",
+    "pysam": "0.24.1",
+    "htslib": "1.24",
+    "os": "Linux-5.14.0-687.57.2.el9_8.x86_64-x86_64-with-glibc2.34",
+    "cpu_count": 2,
+    "cpu_model": "AMD EPYC-Rome Processor",
+    "meminfo": "MemTotal:       452757060 kB\nMemFree:        44494280 kB\nMemAvailable:   232469784 kB\nBuffers:               0 kB\nCached:         40011840 kB\nSwapCached:       902468 kB\nActive:         151389512 kB\nInactive:       63852004 kB\nActive(anon):   120166532 kB\nInactive(anon): 56559192 kB\nActive(file):   31222980 kB\nInactive(file):  7292812 kB\nUnevictable:         192 kB\nMlocked:             192 kB\nSwapTotal:      25599996 kB\nSwapFree:            152 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:              8340 kB\nWriteback:             0 kB\nAnonPages:      173479560 kB\nMapped:          8640008 kB\nShmem:           1497256 kB\nKReclaimable:   153074116 kB\nSlab:           189719764 kB\nSReclaimable:   153074116 kB\nSUnreclaim:     36645648 kB\nKernelStack:      234128 kB\nPageTables:      1843868 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    251978524 kB\nCommitted_AS:   328621140 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      398860 kB\nVmallocChunk:          0 kB\nPercpu:           167488 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:  33687552 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      229232 kB\nDirectMap2M:     6537216 kB\nDirectMap1G:    455081984 kB\n",
+    "affinity_cpus": 16,
+    "dependencies": {
+      "setuptools": "84.2.1",
+      "pytest": "9.1.1"
+    },
+    "git_revision": "810d89e32a846d280f0cd619b8222ba7368c8d27",
+    "git_dirty": true
+  },
+  "cases": [
+    {
+      "records": 1000,
+      "scenario": "single",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.17832496901974082,
+        "peak_tree_rss_bytes": 34250752,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/generate-1000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.026951703941449523,
+          "cram_conversion_seconds": 0.014320119051262736,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 4646,
+          "cram_bytes": 2267
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 0.46941667911596596,
+        "peak_tree_rss_bytes": 46514176,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 0.055869965,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 0.055869965,
+          "render_seconds": 0.20959496900000002,
+          "html_bytes": 1968566,
+          "peak_process_rss_bytes": 49868800
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 0.4900836681481451,
+        "peak_tree_rss_bytes": 34164736,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/validate-bam.log",
+        "eligible_records": 1000,
+        "embedded_rows": 1000,
+        "memberships": 1000,
+        "dom_elements": 16558,
+        "html_sha256": "7d0cc3e01a77df8abad05dd890dfa0e02adbd4388bee14fcff00211800445327"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 3.0713685089722276,
+        "peak_tree_rss_bytes": 694472704,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/bam.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 142.74083499999983,
+            "expand": 166.99574599999983,
+            "next_page": 161.42820499999993,
+            "previous_page": 157.5343150000001,
+            "mapping_unique": 115.71284600000035,
+            "mapping_all": 152.20238599999993,
+            "support_filter": 130.36388799999986,
+            "support_all": 136.47215099999994,
+            "pairing": 193.87940200000003,
+            "single_layout": 120.5601829999996
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 401.57770800000003,
+          "inventory": {
+            "rows": 1000,
+            "memberships": 1000,
+            "hash": 3942703301,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 16558,
+          "memory_loaded": {
+            "Documents": 4,
+            "Nodes": 29822,
+            "JSHeapUsedSize": 3301616,
+            "JSHeapTotalSize": 8527872,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 29822,
+              "jsEventListeners": 1026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 4,
+            "Nodes": 31509,
+            "JSHeapUsedSize": 6682792,
+            "JSHeapTotalSize": 15847424,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 31509,
+              "jsEventListeners": 1039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 1000,
+      "scenario": "single",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.17832496901974082,
+        "peak_tree_rss_bytes": 34250752,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/generate-1000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.026951703941449523,
+          "cram_conversion_seconds": 0.014320119051262736,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 4646,
+          "cram_bytes": 2267
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 0.5214808019809425,
+        "peak_tree_rss_bytes": 43474944,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 0.072142492,
+          "reference_validation_seconds": 0.0057019570000000006,
+          "extraction_without_reference_validation_seconds": 0.066440535,
+          "render_seconds": 0.22604800800000002,
+          "html_bytes": 1921567,
+          "peak_process_rss_bytes": 50409472
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 0.39716186514124274,
+        "peak_tree_rss_bytes": 33902592,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/validate-cram.log",
+        "eligible_records": 1000,
+        "embedded_rows": 1000,
+        "memberships": 1000,
+        "dom_elements": 16358,
+        "html_sha256": "c9b5dfd44830ef9f9fba3aa894959345978e223679d9997a5c6b719b8217cd8c"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 3.01825301698409,
+        "peak_tree_rss_bytes": 691105792,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-1000/cram.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 127.62581799999998,
+            "expand": 181.02710100000013,
+            "next_page": 211.36816299999987,
+            "previous_page": 177.46260299999994,
+            "mapping_unique": 183.18365500000004,
+            "mapping_all": 138.0688399999999,
+            "support_filter": 194.2149840000002,
+            "support_all": 132.76356099999975,
+            "pairing": 132.96942799999988,
+            "single_layout": 134.14808099999982
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 316.63951999999995,
+          "inventory": {
+            "rows": 1000,
+            "memberships": 1000,
+            "hash": 3942703301,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 16358,
+          "memory_loaded": {
+            "Documents": 4,
+            "Nodes": 29622,
+            "JSHeapUsedSize": 2794276,
+            "JSHeapTotalSize": 7933952,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 29622,
+              "jsEventListeners": 1026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 4,
+            "Nodes": 31309,
+            "JSHeapUsedSize": 6966480,
+            "JSHeapTotalSize": 15024128,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 31309,
+              "jsEventListeners": 1039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 1000,
+      "scenario": "multiple",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.17591167893260717,
+        "peak_tree_rss_bytes": 35409920,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/generate-1000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.023936341051012278,
+          "cram_conversion_seconds": 0.019026247086003423,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 5236,
+          "cram_bytes": 2959
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 0.8370952301193029,
+        "peak_tree_rss_bytes": 59727872,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 0.12230660400000001,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 0.12230660400000001,
+          "render_seconds": 0.500119002,
+          "html_bytes": 4506225,
+          "peak_process_rss_bytes": 63315968
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 0.6291746750939637,
+        "peak_tree_rss_bytes": 40263680,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/validate-bam.log",
+        "eligible_records": 1000,
+        "embedded_rows": 1998,
+        "memberships": 2998,
+        "dom_elements": 35121,
+        "html_sha256": "f9aca9e93b8dffb22702c704fd7cc54cbe321512db205271d78d461320915c56"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 3.547090483829379,
+        "peak_tree_rss_bytes": 720297984,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/bam.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 175.22736900000018,
+            "expand": 171.374779,
+            "next_page": 214.63044100000002,
+            "previous_page": 132.5871279999999,
+            "mapping_unique": 132.56108799999993,
+            "mapping_all": 284.5117610000002,
+            "support_filter": 146.08455600000025,
+            "support_all": 166.61105199999975,
+            "pairing": 221.0816890000001,
+            "single_layout": 125.84928000000036,
+            "select_rare": 99.5817649999999,
+            "rare_defining_support": 166.36130999999978
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 491.573809,
+          "inventory": {
+            "rows": 1998,
+            "memberships": 2998,
+            "hash": 1282464252,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 35122,
+          "memory_loaded": {
+            "Documents": 4,
+            "Nodes": 61534,
+            "JSHeapUsedSize": 5450724,
+            "JSHeapTotalSize": 10706944,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 61534,
+              "jsEventListeners": 2030
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 63049,
+            "JSHeapUsedSize": 7556164,
+            "JSHeapTotalSize": 15515648,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 63049,
+              "jsEventListeners": 2043
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 1000,
+      "scenario": "multiple",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.17591167893260717,
+        "peak_tree_rss_bytes": 35409920,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/generate-1000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.023936341051012278,
+          "cram_conversion_seconds": 0.019026247086003423,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 5236,
+          "cram_bytes": 2959
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 0.9137893400620669,
+        "peak_tree_rss_bytes": 55668736,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 0.15930566300000001,
+          "reference_validation_seconds": 0.006120205,
+          "extraction_without_reference_validation_seconds": 0.15318545800000002,
+          "render_seconds": 0.5295752770000001,
+          "html_bytes": 4411702,
+          "peak_process_rss_bytes": 59105280
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 0.5744131789542735,
+        "peak_tree_rss_bytes": 40329216,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/validate-cram.log",
+        "eligible_records": 1000,
+        "embedded_rows": 1998,
+        "memberships": 2998,
+        "dom_elements": 34723,
+        "html_sha256": "eb8acdc9ad5b9d76a68b9e5f62094534226d282ad816f899d03d63ef093a1812"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 3.138561083935201,
+        "peak_tree_rss_bytes": 711688192,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-1000/cram.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 162.61109299999998,
+            "expand": 166.121619,
+            "next_page": 169.3845980000001,
+            "previous_page": 164.87717299999986,
+            "mapping_unique": 133.61258199999997,
+            "mapping_all": 144.52346399999988,
+            "support_filter": 187.15731400000004,
+            "support_all": 132.19356599999992,
+            "pairing": 134.50293899999997,
+            "single_layout": 147.78078199999982,
+            "select_rare": 82.831819,
+            "rare_defining_support": 164.92562499999985
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 407.50568,
+          "inventory": {
+            "rows": 1998,
+            "memberships": 2998,
+            "hash": 1282464252,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 34724,
+          "memory_loaded": {
+            "Documents": 4,
+            "Nodes": 61136,
+            "JSHeapUsedSize": 5346540,
+            "JSHeapTotalSize": 10432512,
+            "dom_counters": {
+              "documents": 4,
+              "nodes": 61136,
+              "jsEventListeners": 2030
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 62597,
+            "JSHeapUsedSize": 7966056,
+            "JSHeapTotalSize": 15515648,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 62597,
+              "jsEventListeners": 2043
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 10000,
+      "scenario": "single",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.35126168886199594,
+        "peak_tree_rss_bytes": 43491328,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/generate-10000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.12743545905686915,
+          "cram_conversion_seconds": 0.08253647107630968,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 43321,
+          "cram_bytes": 8655
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 2.8033237750642,
+        "peak_tree_rss_bytes": 180445184,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 0.5831347760000001,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 0.5831347760000001,
+          "render_seconds": 2.018603192,
+          "html_bytes": 19442066,
+          "peak_process_rss_bytes": 181428224
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 2.1343150881584734,
+        "peak_tree_rss_bytes": 43479040,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/validate-bam.log",
+        "eligible_records": 10000,
+        "embedded_rows": 10000,
+        "memberships": 10000,
+        "dom_elements": 164158,
+        "html_sha256": "d1b50092a05de3b4abaf7b51a9ddfefb02a988bd7e5f97831a810d4dccdd5b71"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 14.059820960042998,
+        "peak_tree_rss_bytes": 1008390144,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/bam.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 401.1441500000001,
+            "expand": 740.0013129999998,
+            "next_page": 844.5612699999992,
+            "previous_page": 983.7061290000001,
+            "mapping_unique": 1612.3041359999997,
+            "mapping_all": 1002.735811999999,
+            "support_filter": 1129.8418110000002,
+            "support_all": 976.4637899999998,
+            "pairing": 1165.6176149999992,
+            "single_layout": 1410.1353719999988
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 2031.0838629999998,
+          "inventory": {
+            "rows": 10000,
+            "memberships": 10000,
+            "hash": 1935911609,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 164158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 294410,
+            "JSHeapUsedSize": 18465272,
+            "JSHeapTotalSize": 29048832,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 294410,
+              "jsEventListeners": 10026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 304682,
+            "JSHeapUsedSize": 11278864,
+            "JSHeapTotalSize": 57024512,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 304682,
+              "jsEventListeners": 10039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 10000,
+      "scenario": "single",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.35126168886199594,
+        "peak_tree_rss_bytes": 43491328,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/generate-10000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.12743545905686915,
+          "cram_conversion_seconds": 0.08253647107630968,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 43321,
+          "cram_bytes": 8655
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 2.8219900040421635,
+        "peak_tree_rss_bytes": 172802048,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 0.6518464930000001,
+          "reference_validation_seconds": 0.007731459,
+          "extraction_without_reference_validation_seconds": 0.644115034,
+          "render_seconds": 1.918383916,
+          "html_bytes": 18972067,
+          "peak_process_rss_bytes": 179552256
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 2.205039676045999,
+        "peak_tree_rss_bytes": 43458560,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/validate-cram.log",
+        "eligible_records": 10000,
+        "embedded_rows": 10000,
+        "memberships": 10000,
+        "dom_elements": 162158,
+        "html_sha256": "fed7ca2b41e5e250fba9c51c25e5b8898f10a663cce4b2e305108a49a68490d1"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 14.598933201050386,
+        "peak_tree_rss_bytes": 1026510848,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-10000/cram.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 525.1101119999998,
+            "expand": 834.1757969999999,
+            "next_page": 824.414401,
+            "previous_page": 1066.170201,
+            "mapping_unique": 1732.194276000001,
+            "mapping_all": 864.150748,
+            "support_filter": 1136.7693659999986,
+            "support_all": 1509.8539450000007,
+            "pairing": 1249.2617630000004,
+            "single_layout": 980.7253189999992
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 1995.116828,
+          "inventory": {
+            "rows": 10000,
+            "memberships": 10000,
+            "hash": 1935911609,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 162158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 292410,
+            "JSHeapUsedSize": 20207780,
+            "JSHeapTotalSize": 30126080,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 292410,
+              "jsEventListeners": 10026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 302790,
+            "JSHeapUsedSize": 20619396,
+            "JSHeapTotalSize": 90206208,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 302790,
+              "jsEventListeners": 10039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 10000,
+      "scenario": "multiple",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.42911041690967977,
+        "peak_tree_rss_bytes": 48939008,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/generate-10000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.1657311429735273,
+          "cram_conversion_seconds": 0.10312172607518733,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 47496,
+          "cram_bytes": 14802
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 7.078924675006419,
+        "peak_tree_rss_bytes": 255733760,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 1.4779389870000001,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 1.4779389870000001,
+          "render_seconds": 5.36424603,
+          "html_bytes": 44765017,
+          "peak_process_rss_bytes": 259035136
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 4.724430279806256,
+        "peak_tree_rss_bytes": 45547520,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/validate-bam.log",
+        "eligible_records": 10000,
+        "embedded_rows": 19998,
+        "memberships": 29998,
+        "dom_elements": 348321,
+        "html_sha256": "7dd04f2c1a71c022883740138f089634477faba6ef6f359be6b09a67678ad99a"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 20.733999356860295,
+        "peak_tree_rss_bytes": 1280757760,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/bam.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 920.4834260000007,
+            "expand": 983.8756550000007,
+            "next_page": 1072.3554990000002,
+            "previous_page": 916.6250240000008,
+            "mapping_unique": 1115.3633549999995,
+            "mapping_all": 1165.6933479999989,
+            "support_filter": 1837.1400889999986,
+            "support_all": 1196.4861409999994,
+            "pairing": 2414.197833,
+            "single_layout": 1066.1932349999988,
+            "select_rare": 434.1459369999975,
+            "rare_defining_support": 1450.7952300000034
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 3497.030579,
+          "inventory": {
+            "rows": 19998,
+            "memberships": 29998,
+            "hash": 224136480,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 348322,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 608751,
+            "JSHeapUsedSize": 35678484,
+            "JSHeapTotalSize": 46940160,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 608751,
+              "jsEventListeners": 20030
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 619087,
+            "JSHeapUsedSize": 42625444,
+            "JSHeapTotalSize": 100868096,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 619087,
+              "jsEventListeners": 20043
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 10000,
+      "scenario": "multiple",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 0.42911041690967977,
+        "peak_tree_rss_bytes": 48939008,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/generate-10000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.1657311429735273,
+          "cram_conversion_seconds": 0.10312172607518733,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 47496,
+          "cram_bytes": 14802
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 7.1519279489293694,
+        "peak_tree_rss_bytes": 246796288,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 1.5264374790000002,
+          "reference_validation_seconds": 0.005903766,
+          "extraction_without_reference_validation_seconds": 1.520533713,
+          "render_seconds": 5.269623199000001,
+          "html_bytes": 43815494,
+          "peak_process_rss_bytes": 255942656
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 4.5675897628534585,
+        "peak_tree_rss_bytes": 47099904,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/validate-cram.log",
+        "eligible_records": 10000,
+        "embedded_rows": 19998,
+        "memberships": 29998,
+        "dom_elements": 344323,
+        "html_sha256": "411abbb21c0a64bbad8e2269569d4f8ab00699f030be07f02ddf3766c8a52d8f"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 22.358486420940608,
+        "peak_tree_rss_bytes": 1366523904,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-10000/cram.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 945.8130019999999,
+            "expand": 1114.9871650000005,
+            "next_page": 1790.3736130000016,
+            "previous_page": 1032.2067439999992,
+            "mapping_unique": 1167.7935340000004,
+            "mapping_all": 2187.7367360000007,
+            "support_filter": 1026.1967569999997,
+            "support_all": 1085.6545629999982,
+            "pairing": 1312.2325810000002,
+            "single_layout": 1218.0870560000003,
+            "select_rare": 637.6112300000023,
+            "rare_defining_support": 1942.1176580000028
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 3865.814593,
+          "inventory": {
+            "rows": 19998,
+            "memberships": 29998,
+            "hash": 224136480,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 344324,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 604753,
+            "JSHeapUsedSize": 31478812,
+            "JSHeapTotalSize": 55074816,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 604753,
+              "jsEventListeners": 20030
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 615251,
+            "JSHeapUsedSize": 53165760,
+            "JSHeapTotalSize": 115298304,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 615251,
+              "jsEventListeners": 20043
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 50000,
+      "scenario": "single",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.0446073410566896,
+        "peak_tree_rss_bytes": 44494848,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/generate-50000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.6355404758360237,
+          "cram_conversion_seconds": 0.2366089839488268,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 215987,
+          "cram_bytes": 41847
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 14.343904385110363,
+        "peak_tree_rss_bytes": 726487040,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 3.130462203,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 3.130462203,
+          "render_seconds": 10.908912483,
+          "html_bytes": 97182066,
+          "peak_process_rss_bytes": 730406912
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 11.415101438062266,
+        "peak_tree_rss_bytes": 54677504,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/validate-bam.log",
+        "eligible_records": 50000,
+        "embedded_rows": 50000,
+        "memberships": 50000,
+        "dom_elements": 820158,
+        "html_sha256": "12f9f66ba2fc7c7f22e7391bf671f993e7113907e6334ebd2a95446c56018f19"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 74.32451058807783,
+        "peak_tree_rss_bytes": 2494345216,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/bam.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 2103.4439699999966,
+            "expand": 3115.6683809999995,
+            "next_page": 4224.488201,
+            "previous_page": 4484.537801999999,
+            "mapping_unique": 4907.022926999998,
+            "mapping_all": 8511.416719999994,
+            "support_filter": 7173.545911000001,
+            "support_all": 5915.010952000004,
+            "pairing": 8667.711620000002,
+            "single_layout": 6181.598795000013
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 11275.460374,
+          "inventory": {
+            "rows": 50000,
+            "memberships": 50000,
+            "hash": 4263282841,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 820158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 1470389,
+            "JSHeapUsedSize": 60539820,
+            "JSHeapTotalSize": 100892672,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 1470389,
+              "jsEventListeners": 50026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 1520736,
+            "JSHeapUsedSize": 84594272,
+            "JSHeapTotalSize": 136138752,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 1520736,
+              "jsEventListeners": 50039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 50000,
+      "scenario": "single",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.0446073410566896,
+        "peak_tree_rss_bytes": 44494848,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/generate-50000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.6355404758360237,
+          "cram_conversion_seconds": 0.2366089839488268,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 215987,
+          "cram_bytes": 41847
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 13.817387799033895,
+        "peak_tree_rss_bytes": 708251648,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 3.808194276,
+          "reference_validation_seconds": 0.0064223940000000005,
+          "extraction_without_reference_validation_seconds": 3.801771882,
+          "render_seconds": 9.674173861,
+          "html_bytes": 94832067,
+          "peak_process_rss_bytes": 717398016
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 11.11216997494921,
+        "peak_tree_rss_bytes": 55808000,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/validate-cram.log",
+        "eligible_records": 50000,
+        "embedded_rows": 50000,
+        "memberships": 50000,
+        "dom_elements": 810158,
+        "html_sha256": "383825334dc0b57ccd45dd75669cd94d05902fee745643310e8184dc71e1fa0e"
+      },
+      "browser": {
+        "status": "passed",
+        "wall_seconds": 64.43582505709492,
+        "peak_tree_rss_bytes": 2305978368,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-50000/cram.browser.log",
+        "metrics": {
+          "status": "passed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 2343.362101999999,
+            "expand": 3198.9787909999977,
+            "next_page": 4166.878524,
+            "previous_page": 3999.2456939999975,
+            "mapping_unique": 5930.708678999996,
+            "mapping_all": 4402.563716999997,
+            "support_filter": 5615.270328000006,
+            "support_all": 6463.767239000001,
+            "pairing": 5059.862276,
+            "single_layout": 6657.638669
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 10526.857719000001,
+          "inventory": {
+            "rows": 50000,
+            "memberships": 50000,
+            "hash": 4263282841,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 810158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 1460400,
+            "JSHeapUsedSize": 68775592,
+            "JSHeapTotalSize": 102576128,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 1460400,
+              "jsEventListeners": 50026
+            }
+          },
+          "memory_after_interactions": {
+            "Documents": 1,
+            "Nodes": 1510790,
+            "JSHeapUsedSize": 54958516,
+            "JSHeapTotalSize": 120410112,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 1510790,
+              "jsEventListeners": 50039
+            }
+          }
+        }
+      }
+    },
+    {
+      "records": 50000,
+      "scenario": "multiple",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.04240677296184,
+        "peak_tree_rss_bytes": 53616640,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/generate-50000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.5543207819573581,
+          "cram_conversion_seconds": 0.30814613797701895,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 234926,
+          "cram_bytes": 69043
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 36.65400107786991,
+        "peak_tree_rss_bytes": 1144569856,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 6.57495575,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 6.57495575,
+          "render_seconds": 29.691977048000002,
+          "html_bytes": 223853009,
+          "peak_process_rss_bytes": 1152888832
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 22.925031626829877,
+        "peak_tree_rss_bytes": 71000064,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/validate-bam.log",
+        "eligible_records": 50000,
+        "embedded_rows": 99998,
+        "memberships": 149998,
+        "dom_elements": 1740321,
+        "html_sha256": "ff0bbd691e70518b2b915f003c611947bdced6140d728b66f31f0a09e843983d"
+      },
+      "browser": {
+        "status": "failed",
+        "wall_seconds": 68.24502974306233,
+        "peak_tree_rss_bytes": 3457826816,
+        "exit_code": 1,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/bam.browser.log",
+        "metrics": {
+          "status": "failed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 4189.144030999996,
+            "expand": 3186.5379750000066,
+            "next_page": 4974.492659000003,
+            "previous_page": 5248.653717000001,
+            "mapping_unique": 5333.940091999997,
+            "mapping_all": 10654.185545999993
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 25184.888157,
+          "inventory": {
+            "rows": 99998,
+            "memberships": 149998,
+            "hash": 3660688204,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 1740322,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 3040714,
+            "JSHeapUsedSize": 137800464,
+            "JSHeapTotalSize": 183975936,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 3040714,
+              "jsEventListeners": 100030
+            }
+          },
+          "current_check": "mapping_all",
+          "error": "AssertionError [ERR_ASSERTION]: mapping_all exceeded 10000 ms\n    at interaction (/faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:87:14)\n    at async /faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:104:5"
+        }
+      }
+    },
+    {
+      "records": 50000,
+      "scenario": "multiple",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.04240677296184,
+        "peak_tree_rss_bytes": 53616640,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/generate-50000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.5543207819573581,
+          "cram_conversion_seconds": 0.30814613797701895,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 234926,
+          "cram_bytes": 69043
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 36.553847232833505,
+        "peak_tree_rss_bytes": 1120440320,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 6.658826784,
+          "reference_validation_seconds": 0.004133661,
+          "extraction_without_reference_validation_seconds": 6.654693123,
+          "render_seconds": 29.444105653,
+          "html_bytes": 219103486,
+          "peak_process_rss_bytes": 1132953600
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 20.96845575910993,
+        "peak_tree_rss_bytes": 69787648,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/validate-cram.log",
+        "eligible_records": 50000,
+        "embedded_rows": 99998,
+        "memberships": 149998,
+        "dom_elements": 1720323,
+        "html_sha256": "493c19caeb2157b67d5b6e0b6fc285c8c5f09a07810ae6474ea26225bcaa0f90"
+      },
+      "browser": {
+        "status": "failed",
+        "wall_seconds": 71.99162473878823,
+        "peak_tree_rss_bytes": 3443748864,
+        "exit_code": 1,
+        "log": "/tmp/sjsift-53-recorded/multiple-50000/cram.browser.log",
+        "metrics": {
+          "status": "failed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 4442.412487000001,
+            "expand": 3428.573467999995,
+            "next_page": 5558.057647000001,
+            "previous_page": 5481.228492000002,
+            "mapping_unique": 5617.998643999999,
+            "mapping_all": 12528.310456
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 25278.460907,
+          "inventory": {
+            "rows": 99998,
+            "memberships": 149998,
+            "hash": 3660688204,
+            "rare": 2,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)",
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction1 unique + 1 multi2chr1:501\u2013600 (+)shared300 unique + 100 multi400chr1:221\u2013320 (+)abundant800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multi300 unique + 100 multiNot configuredVariant and reference support",
+              "rarechr1 \u00b7 +1 unique + 1 multi300 unique + 100 multi800 unique + 200 multiVariant and reference support"
+            ]
+          },
+          "dom_elements": 1720324,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 3020716,
+            "JSHeapUsedSize": 132213868,
+            "JSHeapTotalSize": 183742464,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 3020716,
+              "jsEventListeners": 100030
+            }
+          },
+          "current_check": "mapping_all",
+          "error": "AssertionError [ERR_ASSERTION]: mapping_all exceeded 10000 ms\n    at interaction (/faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:87:14)\n    at async /faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:104:5"
+        }
+      }
+    },
+    {
+      "records": 100000,
+      "scenario": "single",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.5115569529589266,
+        "peak_tree_rss_bytes": 45309952,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/generate-100000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.9857946559786797,
+          "cram_conversion_seconds": 0.3686381939332932,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 431583,
+          "cram_bytes": 83344
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 27.059005512855947,
+        "peak_tree_rss_bytes": 1475952640,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/report-bam.log",
+        "metrics": {
+          "extraction_seconds": 6.219246346,
+          "reference_validation_seconds": 0,
+          "extraction_without_reference_validation_seconds": 6.219246346,
+          "render_seconds": 20.47688132,
+          "html_bytes": 194357066,
+          "peak_process_rss_bytes": 1477787648
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 19.989664019085467,
+        "peak_tree_rss_bytes": 67747840,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/validate-bam.log",
+        "eligible_records": 100000,
+        "embedded_rows": 100000,
+        "memberships": 100000,
+        "dom_elements": 1640158,
+        "html_sha256": "b20ee538521bf3f284a887928505de834daf7259e9ebfb7ceedeff914a8a569d"
+      },
+      "browser": {
+        "status": "failed",
+        "wall_seconds": 86.9369028431829,
+        "peak_tree_rss_bytes": 4078014464,
+        "exit_code": 1,
+        "log": "/tmp/sjsift-53-recorded/single-100000/bam.browser.log",
+        "metrics": {
+          "status": "failed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 4736.687166,
+            "expand": 5894.263687999999,
+            "next_page": 8542.089571000004,
+            "previous_page": 8148.859263999999,
+            "mapping_unique": 9869.697868000003,
+            "mapping_all": 14691.072138999996
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 24664.965026,
+          "inventory": {
+            "rows": 100000,
+            "memberships": 100000,
+            "hash": 1893337841,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 1640158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 2940399,
+            "JSHeapUsedSize": 116093884,
+            "JSHeapTotalSize": 174104576,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 2940399,
+              "jsEventListeners": 100026
+            }
+          },
+          "current_check": "mapping_all",
+          "error": "AssertionError [ERR_ASSERTION]: mapping_all exceeded 10000 ms\n    at interaction (/faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:87:14)\n    at async /faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:104:5"
+        }
+      }
+    },
+    {
+      "records": 100000,
+      "scenario": "single",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.5115569529589266,
+        "peak_tree_rss_bytes": 45309952,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/generate-100000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 0.9857946559786797,
+          "cram_conversion_seconds": 0.3686381939332932,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 431583,
+          "cram_bytes": 83344
+        }
+      },
+      "report": {
+        "status": "passed",
+        "wall_seconds": 26.298042233800516,
+        "peak_tree_rss_bytes": 1411141632,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/report-cram.log",
+        "metrics": {
+          "extraction_seconds": 5.88397034,
+          "reference_validation_seconds": 0.004040836,
+          "extraction_without_reference_validation_seconds": 5.879929504000001,
+          "render_seconds": 19.992046647000002,
+          "html_bytes": 189657067,
+          "peak_process_rss_bytes": 1422372864
+        }
+      },
+      "validation": {
+        "status": "passed",
+        "wall_seconds": 20.138702363939956,
+        "peak_tree_rss_bytes": 67706880,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/single-100000/validate-cram.log",
+        "eligible_records": 100000,
+        "embedded_rows": 100000,
+        "memberships": 100000,
+        "dom_elements": 1620158,
+        "html_sha256": "84ecaa2367217dbe049a083014108ff687c4f3c04037a8016cd2f0be776d65a8"
+      },
+      "browser": {
+        "status": "failed",
+        "wall_seconds": 87.41277549508959,
+        "peak_tree_rss_bytes": 4043784192,
+        "exit_code": 1,
+        "log": "/tmp/sjsift-53-recorded/single-100000/cram.browser.log",
+        "metrics": {
+          "status": "failed",
+          "node": "v24.18.0",
+          "playwright": "1.64.1",
+          "interactions_ms": {
+            "select_abundant": 4467.256014999999,
+            "expand": 5916.597401999999,
+            "next_page": 9030.591638999998,
+            "previous_page": 8851.078797000002,
+            "mapping_unique": 9426.814156999993,
+            "mapping_all": 14321.371477000008
+          },
+          "errors": [],
+          "chromium": "156.0.8078.4",
+          "load_ms": 24567.846501,
+          "inventory": {
+            "rows": 100000,
+            "memberships": 100000,
+            "hash": 1893337841,
+            "rare": 0,
+            "support": [
+              "JunctionSupportTotalCoordinates (1-based inclusive intron)Defining junction800 unique + 200 multi1000chr1:101\u2013200 (+)"
+            ],
+            "overview": [
+              "abundantchr1 \u00b7 +800 unique + 200 multiVariant support observed; no reference context configured"
+            ]
+          },
+          "dom_elements": 1620158,
+          "memory_loaded": {
+            "Documents": 1,
+            "Nodes": 2920399,
+            "JSHeapUsedSize": 125190132,
+            "JSHeapTotalSize": 177807360,
+            "dom_counters": {
+              "documents": 1,
+              "nodes": 2920399,
+              "jsEventListeners": 100026
+            }
+          },
+          "current_check": "mapping_all",
+          "error": "AssertionError [ERR_ASSERTION]: mapping_all exceeded 10000 ms\n    at interaction (/faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:87:14)\n    at async /faststorage/project/MomaDiagnosticsHg38/WORKSPACES/michaelk/develop/sjsift/benchmarks/capacity/browser.cjs:104:5"
+        }
+      }
+    },
+    {
+      "records": 100000,
+      "scenario": "multiple",
+      "format": "bam",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.890006047906354,
+        "peak_tree_rss_bytes": 53960704,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-100000/generate-100000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 1.284115324029699,
+          "cram_conversion_seconds": 0.4468588458839804,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 470800,
+          "cram_bytes": 133637
+        }
+      },
+      "report": {
+        "status": "memory_limit",
+        "wall_seconds": 75.2783780421596,
+        "peak_tree_rss_bytes": 2168750080,
+        "exit_code": -9,
+        "log": "/tmp/sjsift-53-recorded/multiple-100000/report-bam.log"
+      },
+      "validation": {
+        "status": "incomplete"
+      },
+      "browser": {
+        "status": "incomplete"
+      }
+    },
+    {
+      "records": 100000,
+      "scenario": "multiple",
+      "format": "cram",
+      "generation": {
+        "status": "passed",
+        "wall_seconds": 1.890006047906354,
+        "peak_tree_rss_bytes": 53960704,
+        "exit_code": 0,
+        "log": "/tmp/sjsift-53-recorded/multiple-100000/generate-100000.log",
+        "metrics": {
+          "bam_and_inputs_seconds": 1.284115324029699,
+          "cram_conversion_seconds": 0.4468588458839804,
+          "reference_bases": 1000000,
+          "reference_bytes": 1012506,
+          "bam_bytes": 470800,
+          "cram_bytes": 133637
+        }
+      },
+      "report": {
+        "status": "memory_limit",
+        "wall_seconds": 75.33292356599122,
+        "peak_tree_rss_bytes": 2158075904,
+        "exit_code": -9,
+        "log": "/tmp/sjsift-53-recorded/multiple-100000/report-cram.log"
+      },
+      "validation": {
+        "status": "incomplete"
+      },
+      "browser": {
+        "status": "incomplete"
+      }
+    }
+  ],
+  "largest_complete_records": 10000
+}

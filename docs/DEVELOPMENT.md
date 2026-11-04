@@ -311,3 +311,11 @@ Run `python -m pytest -q tests/test_star_interop.py` against an installed packag
 The test compares exact TSV output and offline HTML evidence for BAM and CRAM.
 Routine CI uses the committed fixtures without STAR or external reference access.
 These fixtures test interoperability, not biological or clinical validity.
+
+### Capacity measurements
+
+The opt-in [capacity benchmark](../benchmarks/capacity/README.md) measures indexed
+BAM and explicit-reference CRAM generation, retained HTML evidence, and local
+Chromium interactions at declared time/memory limits. It remains outside the
+fast suite and required CI. [Recorded capacity](CAPACITY.md) distinguishes fully
+tested workloads from failures and larger unvalidated workloads.
