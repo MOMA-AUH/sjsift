@@ -98,7 +98,8 @@ def test_star_output_through_installed_cli_preserves_support_and_memberships(tmp
     assert main.read_bytes() == (FIXTURES / "expected-main.tsv").read_bytes()
     assert context.read_bytes() == (FIXTURES / "expected-context.tsv").read_bytes()
     data = json.loads(provenance.read_text())
-    assert data["alignment"]["eligible_junction_memberships"] == 10
+    # Ten displayed records have fifteen memberships across defining/reference groups.
+    assert data["alignment"]["eligible_junction_memberships"] == 15
     assert data["alignment"]["format"] == format.upper()
     text = html.read_text()
     parsed = Report(text)
