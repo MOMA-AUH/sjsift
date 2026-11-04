@@ -130,7 +130,12 @@ are blue, same-donor reads teal, and same-acceptor reads purple. Custom referenc
 roles each have their own color. Unique records use solid blocks and multimapping
 records use hatching. Unknown multiplicity, secondary, supplementary,
 duplicate-marked, and QC-failure records share a muted-gray style that overrides
-the support color and hatching. Hover or keyboard/click inspection explains the
+the support color and hatching. The mapping-class legend uses reserved neutral
+charcoal examples for solid and hatched blocks. These apply to every junction
+color. No standard or custom junction-support color uses these neutral shades.
+The muted-gray legend example matches the actual override. Text labels explain
+these distinctions without requiring color or JavaScript.
+Hover or keyboard/click inspection explains the
 specific properties. Transcript-strand evidence does not change this styling.
 Shared records appear once, using their first matching group in catalog order
 (variant first) as the base color unless muted. The support filter and accessible

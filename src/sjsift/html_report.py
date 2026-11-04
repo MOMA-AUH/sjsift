@@ -17,6 +17,7 @@ _ROLE_LABELS = {"same_donor": "Same donor", "same_acceptor": "Same acceptor"}
 
 
 def _support_colors(roles):
+    # Keep support colors chromatic: achromatic mapping examples belong to the legend.
     colors = {None: "#3159ad", "same_donor": "#168375", "same_acceptor": "#9950a5"}
     for index, role in enumerate(sorted(set(roles) - colors.keys())):
         colors[role] = f"hsl({(30 + index * 137.508) % 360:.3f}, 60%, 40%)"
@@ -536,10 +537,14 @@ def _combined_pileup(index: int, result: VariantSupport, evidence: AlignmentEvid
         f'<section class="alignment-group" id="pileup-v{index}"><h3>Read support</h3>'
         '<p>Displayed alignments may include records not counted in STAR junction support. '
         'Both mates may be shown separately in record view.</p>'
-        '<p class="read-legend"><span><i class="legend-solid" aria-hidden="true"></i>Unique</span> '
-        '<span><i class="legend-hatched" aria-hidden="true"></i>Multimapping</span> '
+        '<p class="read-legend">Junction color identifies support membership; '
+        'solid or hatched blocks identify mapping class. '
+        'Neutral legend examples apply to every junction color.<br>'
+        '<span><i class="legend-solid" aria-hidden="true"></i>Unique (solid blocks)</span> '
+        '<span><i class="legend-hatched" aria-hidden="true"></i>Multimapping (hatched blocks)</span> '
         '<span><i class="legend-muted" aria-hidden="true"></i>Unknown multiplicity or flagged '
-        '(secondary, supplementary, duplicate, QC failure)</span></p>'
+        '(secondary, supplementary, duplicate, QC failure). '
+        'Muted gray overrides support color and hatching.</span></p>'
         '<div class="read-controls" hidden><span>Show reads</span><select class="read-filter" aria-label="Mapping class">'
         '<option value="all" selected>All</option><option value="unique">Unique</option></select>'
         '<select class="read-pairs" aria-label="Read layout">'

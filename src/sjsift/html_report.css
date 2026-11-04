@@ -134,7 +134,8 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .read-end-reverse::after { right: 100%; clip-path: polygon(100% 0, 0 50%, 100% 100%); }
 .read-legend { font-size: .8rem; color: var(--muted); }
 .read-legend > span { display: inline-block; margin-right: .8rem; }
-.read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; background-color: #3159ad; }
+/* Achromatic mapping examples are reserved for the legend, never support colors. */
+.read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; background-color: #444; }
 .read-legend .legend-muted { background: #92989e; }
 .read-pair { position: relative; margin: 6px 0; padding: 3px 0; border-radius: 3px; background: #f0f2f5; }
 .read-pair::before, .read-pair::after { content: ""; position: absolute; top: 0; bottom: 0; width: 5px;
