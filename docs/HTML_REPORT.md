@@ -135,6 +135,10 @@ charcoal examples for solid and hatched blocks. These apply to every junction
 color. No standard or custom junction-support color uses these neutral shades.
 The muted-gray legend example matches the actual override. Text labels explain
 these distinctions without requiring color or JavaScript.
+The legend also shows soft clipping as gold blocks and hard clipping as gold
+ticks. Soft clips are unaligned read bases: their displayed lengths do not add
+reference-aligned bases or junction support. Unknown-multiplicity or flagged
+records show soft clips in muted gray while preserving their block geometry.
 Hover or keyboard/click inspection explains the
 specific properties. Transcript-strand evidence does not change this styling.
 Shared records appear once, using their first matching group in catalog order

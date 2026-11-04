@@ -122,7 +122,7 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .op-D { top: 7px; height: 2px; background: #be4646; }
 .op-I, .op-H, .op-P { width: 3px !important; top: 1px; height: 14px; transform: translateX(-50%); z-index: 1; }
 .op-I { background: #8b62b1; }
-.op-S, .op-H { background: #b88630; }
+.op-S, .op-H, .legend-soft-clip, .legend-hard-clip { background: #b88630; }
 .op-P { background: #aaa; }
 .read-hatched :is(.op-M, .op-equal, .op-X), .legend-hatched {
   background-image: repeating-linear-gradient(135deg, transparent 0 3px, #ffffffa6 3px 5px);
@@ -135,8 +135,10 @@ footer { margin-top: 26px; font-size: 12px; color: #586778; }
 .read-legend { font-size: .8rem; color: var(--muted); }
 .read-legend > span { display: inline-block; margin-right: .8rem; }
 /* Achromatic mapping examples are reserved for the legend, never support colors. */
-.read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; background-color: #444; }
+.read-legend i { display: inline-block; width: 24px; height: 10px; margin-right: .25rem; vertical-align: middle; }
+.read-legend :is(.legend-solid, .legend-hatched) { background-color: #444; }
 .read-legend .legend-muted { background: #92989e; }
+.read-legend .legend-hard-clip { width: 3px; height: 14px; }
 .read-pair { position: relative; margin: 6px 0; padding: 3px 0; border-radius: 3px; background: #f0f2f5; }
 .read-pair::before, .read-pair::after { content: ""; position: absolute; top: 0; bottom: 0; width: 5px;
   border: 2px solid #778698; pointer-events: none; }

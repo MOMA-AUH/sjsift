@@ -71,7 +71,8 @@ def mapping_legend_report(destination):
                                            ("custom A", 701), ("custom B", 901)))
     variant = replace(CATALOG.variants[0], reference_junctions=references)
     catalog = replace(CATALOG, variants=(variant,))
-    reads = [record(f"{start}-{name}", start=start - 21, flag=flag, tags=tags)
+    reads = [record(f"{start}-{name}", start=start - 21, cigar="3H10S20M100N20M15S2H",
+                    flag=flag, tags=tags)
              for start in (101, 301, 501, 701, 901)
              for name, flag, tags in (("unique", 0, {"NH": 1}), ("multi", 0, {"NH": 2}),
                                       ("unknown", 0, {}), ("secondary", 256, {"NH": 2}),

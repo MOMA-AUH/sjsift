@@ -10,7 +10,7 @@ const {chromium} = require("playwright");
       // Static report text and computed rendering must work without JavaScript.
       const legendPage = await browser.newPage({javaScriptEnabled: false, viewport: {width: 1400, height: 1000}});
       await legendPage.goto(pathToFileURL(process.argv[4]).href + "#variant-0");
-      const styles = await legendPage.locator(".read-legend i").evaluateAll(nodes => nodes.map(node => ({
+      const styles = await legendPage.locator(".read-legend :is(.legend-solid, .legend-hatched, .legend-muted)").evaluateAll(nodes => nodes.map(node => ({
         color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
       })));
       assert.equal(styles.length, 3);
@@ -23,6 +23,23 @@ const {chromium} = require("playwright");
       assert.equal(styles[2].color, "rgb(146, 152, 158)");
       assert.equal(styles[2].pattern, "none");
       assert.notEqual(styles[0].color, styles[2].color);
+      const softExample = legendPage.locator(".legend-soft-clip");
+      const hardExample = legendPage.locator(".legend-hard-clip");
+      assert.equal(await softExample.isVisible(), true);
+      assert.equal(await hardExample.isVisible(), true);
+      const clips = await legendPage.locator(".read-legend :is(.legend-soft-clip, .legend-hard-clip)").evaluateAll(nodes => nodes.map(node => ({
+        color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
+        height: node.getBoundingClientRect().height, width: node.getBoundingClientRect().width,
+      })));
+      assert.deepEqual(clips, [
+        {color: "rgb(184, 134, 48)", pattern: "none", height: 10, width: 24},
+        {color: "rgb(184, 134, 48)", pattern: "none", height: 14, width: 3},
+      ]);
+      const legendText = await legendPage.locator(".read-legend").innerText();
+      assert.match(legendText, /Soft clipping \(gold blocks\)/);
+      assert.match(legendText, /Hard clipping \(gold ticks\)/);
+      assert.match(legendText, /unaligned read bases.*do not represent additional reference-aligned bases or junction support/);
+      assert.match(legendText, /unknown-multiplicity or flagged records.*muted gray.*geometry preserved/);
       const arcs = await legendPage.locator(".junction-arc").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).stroke));
       const bars = await legendPage.locator(".variant-detail .unique-support").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
       assert.equal(new Set(arcs).size, 5);
@@ -32,6 +49,32 @@ const {chromium} = require("playwright");
       for (let bucket = 0; bucket < 5; bucket++) {
         const rows = legendPage.locator(`.read-row[data-bucket="${bucket}"]`);
         assert.equal(await rows.count(), 7);
+        const clipRows = await rows.evaluateAll(nodes => nodes.map(node => ({
+          muted: node.classList.contains("read-muted"),
+          operations: [...node.querySelectorAll(".cigar-op")].map(op => ({
+            color: getComputedStyle(op).backgroundColor, pattern: getComputedStyle(op).backgroundImage,
+            height: op.getBoundingClientRect().height, width: op.getBoundingClientRect().width,
+            left: op.getBoundingClientRect().left, right: op.getBoundingClientRect().right,
+          })),
+        })));
+        for (const row of clipRows) {
+          const [hardLeft, softLeft, alignedLeft, gap, alignedRight, softRight, hardRight] = row.operations;
+          for (const soft of [softLeft, softRight]) {
+            assert.equal(soft.color, row.muted ? styles[2].color : clips[0].color);
+            assert.equal(soft.pattern, "none");
+            assert.equal(soft.height, clips[0].height);
+          }
+          // The fixture has 10S20M100N20M15S: clips retain lengths and adjacency.
+          assert.ok(Math.abs(softLeft.width - alignedLeft.width / 2) < .1);
+          assert.ok(Math.abs(softRight.width - alignedRight.width * .75) < .1);
+          assert.ok(Math.abs(softLeft.right - alignedLeft.left) < .1);
+          assert.ok(Math.abs(softRight.left - alignedRight.right) < .1);
+          for (const hard of [hardLeft, hardRight]) {
+            assert.equal(hard.color, row.muted ? styles[2].color : clips[1].color);
+            assert.equal(hard.width, clips[1].width);
+            assert.equal(hard.height, clips[1].height);
+          }
+        }
         for (const [kind, pattern] of [["solid", "none"], ["hatched", styles[1].pattern], ["muted", "none"]]) {
           const blocks = await legendPage.locator(`.read-row[data-bucket="${bucket}"].read-${kind} .op-M`).evaluateAll(nodes => nodes.map(node => ({
             color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,

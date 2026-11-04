@@ -40,6 +40,18 @@ def test_mapping_legend_explains_patterns_and_muted_override_without_javascript(
     assert "Muted gray overrides support color and hatching." in text
 
 
+def test_clipping_legend_explains_unaligned_bases_and_muted_geometry_without_javascript(tmp_path):
+    reads = [record("clipped", cigar="3H10S20M100N20M15S2H", tags={"NH": 1}),
+             record("unknown", cigar="10S20M100N20M15S"),
+             record("flagged", cigar="10S20M100N20M15S", flag=256, tags={"NH": 1})]
+    evidence = extract_evidence(CATALOG, bam(tmp_path, reads))
+    text = " ".join(Document(render(CATALOG, evidence)).text)
+    assert "Soft clipping (gold blocks)" in text
+    assert "Hard clipping (gold ticks)" in text
+    assert "Soft clips are unaligned read bases; their displayed lengths do not represent additional reference-aligned bases or junction support." in text
+    assert "On unknown-multiplicity or flagged records, soft clips are muted gray with their block geometry preserved." in text
+
+
 @pytest.mark.parametrize("nh,flag,style,reason", [
     (1, 0, "solid", "unique"),
     (2, 0, "hatched", "multimapping"),
