@@ -1,5 +1,6 @@
 """Installed CLI interoperability with unmodified, pinned STAR output."""
 import csv
+import json
 from html.parser import HTMLParser
 from pathlib import Path
 import subprocess
@@ -84,16 +85,21 @@ def test_star_output_through_installed_cli_preserves_support_and_memberships(tmp
     main = tmp_path / "main.tsv"
     context = tmp_path / "context.tsv"
     html = tmp_path / "report.html"
+    provenance = tmp_path / "run.json"
     command = Path(sysconfig.get_path("scripts")) / "sjsift"
     result = subprocess.run([
         str(command), "--sample-name", "STAR interoperability", "--junctions", str(FIXTURES / "SJ.out.tab"),
         "--definitions", str(FIXTURES / "catalog.toml"), "--alignment", str(alignment),
-        "--output", str(main), "--context-output", str(context), "--html-output", str(html), *options,
+        "--output", str(main), "--context-output", str(context), "--html-output", str(html),
+        "--provenance-output", str(provenance), *options,
     ], capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     assert result.stdout == "" and result.stderr == ""
     assert main.read_bytes() == (FIXTURES / "expected-main.tsv").read_bytes()
     assert context.read_bytes() == (FIXTURES / "expected-context.tsv").read_bytes()
+    data = json.loads(provenance.read_text())
+    assert data["alignment"]["eligible_junction_memberships"] == 10
+    assert data["alignment"]["format"] == format.upper()
     text = html.read_text()
     parsed = Report(text)
     assert sorted(parsed.overview) == [("0", "1", "1"), ("1", "0", "0"), ("2", "2", "2"), ("3", "0", "1"), ("4", "0", "1")]

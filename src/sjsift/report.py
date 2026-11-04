@@ -108,6 +108,8 @@ def write_reports(
     sample_name: str = "",
     compatibility_warning: bool = False,
     alignment_evidence: AlignmentEvidence | None = None,
+    provenance_output_path: Path | None = None,
+    provenance_json: str | None = None,
 ) -> None:
     """Create requested reports exclusively; remove new files if any output fails.
 
@@ -124,6 +126,8 @@ def write_reports(
             compatibility_warning=compatibility_warning,
             alignment_evidence=alignment_evidence,
         )))
+    if provenance_output_path is not None:
+        writers.append((provenance_output_path, lambda assembly, rows, stream: stream.write(provenance_json)))
     writers = [(path, writer) for path, writer in writers if path is not None]
     result_rows = tuple(results)
     created_paths: list[Path] = []
@@ -132,7 +136,7 @@ def write_reports(
     try:
         paths = [path.resolve() for path, _ in writers]
         if len(set(paths)) != len(paths):
-            raise ReportError("main, context, and HTML output paths must differ")
+            raise ReportError("main, context, HTML, and provenance output paths must differ")
         with ExitStack() as stack:
             streams = []
             for path, writer in writers:

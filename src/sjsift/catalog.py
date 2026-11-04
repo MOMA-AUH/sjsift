@@ -66,6 +66,7 @@ class Catalog:
 
     genome_assembly: str
     variants: tuple[VariantDefinition, ...]
+    schema_version: int = 3
 
 
 def _fail(path: Path, message: str) -> NoReturn:
