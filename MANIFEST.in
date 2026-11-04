@@ -1,0 +1,8 @@
+recursive-include tests *.py *.sh *.cjs
+recursive-include definitions *.toml
+include docs/curation/gencode-v49-exons.tsv
+include docs/DEVELOPMENT.md
+include conda-recipe/meta.yaml
+include conda-recipe/build.sh
+include .github/workflows/ci.yml
+include .github/workflows/publish.yml

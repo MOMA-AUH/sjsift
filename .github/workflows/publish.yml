@@ -31,6 +31,8 @@ jobs:
       - run: python -m pytest
       - run: python -m build
       - run: python -m twine check dist/*
+      - name: Build, install, and test the extracted source distribution
+        run: bash tests/check_sdist.sh dist/*.tar.gz
       - name: Smoke-test wheel in a clean environment
         run: |
           python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
