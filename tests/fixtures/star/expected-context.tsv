@@ -1,0 +1,5 @@
+variant_id	genome_assembly	context_role	chromosome	intron_start	intron_end	strand	unique_support	multimapping_support	total_support
+minus	STAR-synthetic	adjacent	minus	341	440	-	1	0	1
+plus	STAR-synthetic	adjacent	plus	341	440	+	2	0	2
+multi-secondary	STAR-synthetic	adjacent	multiB	341	440	+	0	1	1
+multi-primary	STAR-synthetic	adjacent	multiA	341	440	+	0	1	1

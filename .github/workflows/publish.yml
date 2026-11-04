@@ -47,6 +47,7 @@ jobs:
             --output "$RUNNER_TEMP/sjsift-smoke.tsv" \
             --html-output "$RUNNER_TEMP/sjsift-smoke.html"
           PATH="$RUNNER_TEMP/sjsift-wheel-test/bin:$PATH" "$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/installed_alignment_smoke.py
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pytest -q tests/test_star_interop.py
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
