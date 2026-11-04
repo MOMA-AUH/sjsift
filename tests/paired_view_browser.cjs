@@ -1,14 +1,44 @@
-/* Optional real-browser validation; see paired_view_browser.py. */
+/* Required offline browser validation; see docs/DEVELOPMENT.md. */
 const assert = require("node:assert/strict");
 const {pathToFileURL} = require("node:url");
+const fs = require("node:fs");
+const path = require("node:path");
+const {checkOverview, snapshotEvidence} = require("./overview_browser.cjs");
 const {chromium} = require("playwright");
 
 (async () => {
   const browser = await chromium.launch({headless: true});
+  const contexts = [];
+  const errors = [];
+  const requests = [];
+  const destination = path.dirname(process.argv[2]);
+  const allowed = new Set(process.argv.slice(2).map(file => pathToFileURL(file).href));
+  async function newPage(javaScriptEnabled = true) {
+    const context = await browser.newContext({javaScriptEnabled, serviceWorkers: "block",
+      viewport: {width: 1400, height: 1000}});
+    contexts.push(context);
+    await context.tracing.start({screenshots: true, snapshots: true, sources: true});
+    context.on("request", request => {
+      requests.push(request.url());
+      if (!allowed.has(request.url().split("#")[0]) || !request.isNavigationRequest())
+        errors.push(`Unexpected resource request: ${request.url()}`);
+    });
+    await context.route(/^(https?|wss?):/, route => {
+      errors.push(`External request blocked: ${route.request().url()}`);
+      return route.abort();
+    });
+    context.on("page", page => {
+      page.on("pageerror", error => errors.push(error.stack || error.message));
+      page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+      page.on("websocket", socket => errors.push(`Unexpected WebSocket: ${socket.url()}`));
+      page.setDefaultTimeout(5000);
+    });
+    return context.newPage();
+  }
   try {
     if (process.argv[4]) {
       // Static report text and computed rendering must work without JavaScript.
-      const legendPage = await browser.newPage({javaScriptEnabled: false, viewport: {width: 1400, height: 1000}});
+      const legendPage = await newPage(false);
       await legendPage.goto(pathToFileURL(process.argv[4]).href + "#variant-0");
       const styles = await legendPage.locator(".read-legend :is(.legend-solid, .legend-hatched, .legend-muted)").evaluateAll(nodes => nodes.map(node => ({
         color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
@@ -86,12 +116,9 @@ const {chromium} = require("playwright");
       await legendPage.locator(".read-legend").screenshot({path: process.argv[4] + ".png"});
       await legendPage.close();
     }
-    const page = await browser.newPage({viewport: {width: 1400, height: 1000}});
-    const errors = [];
-    const requests = [];
-    page.on("pageerror", error => errors.push(error.message));
-    page.on("request", request => requests.push(request.url()));
+    const page = await newPage();
     await page.goto(pathToFileURL(process.argv[2]).href + "#variant-0");
+    const originalEvidence = await snapshotEvidence(page);
     const group = page.locator(".alignment-group");
     assert.equal(await group.locator(".read-controls select").count(), 3);
     assert.deepEqual(await group.getByRole("combobox", {name: "Mapping class"}).locator("option").allTextContents(), ["All", "Unique"]);
@@ -231,6 +258,7 @@ const {chromium} = require("playwright");
     assert.ok(brackets.every(bracket => bracket.rightGap >= 8 && bracket.rightGap <= 12 && bracket.rightBorder > 0));
     assert.ok(new Set(brackets.map(bracket => Math.round(bracket.left))).size > 1);
     await page.screenshot({path: process.argv[2] + ".png", fullPage: true});
+    assert.deepEqual(await snapshotEvidence(page), originalEvidence);
     // Shared physical records retain role-specific strand labels after either
     // support filter, in both catalog orders and both layout modes.
     if (process.argv[3]) {
@@ -238,6 +266,7 @@ const {chromium} = require("playwright");
       for (const index of [0, 1]) {
         await page.goto(pathToFileURL(process.argv[3]).href + `#variant-${index}`);
         const shared = page.locator(`#pileup-v${index}`);
+        const sharedEvidence = await snapshotEvidence(page);
         const counts = await page.locator(`#variant-${index} table`).innerText();
         for (const layout of ["single", "pairs"]) {
           await shared.locator(".read-pairs").selectOption(layout);
@@ -256,12 +285,26 @@ const {chromium} = require("playwright");
           }
         }
         assert.equal(await page.locator(`#variant-${index} table`).innerText(), counts);
+        assert.deepEqual(await snapshotEvidence(page), sharedEvidence);
       }
     }
+    await checkOverview(await newPage(), await newPage(false), process.argv[5]);
     assert.ok(requests.every(url => url.startsWith("file:")));
     assert.deepEqual(errors, []);
-    console.log("Paired-view browser checks passed.");
+    console.log("Offline report browser checks passed.");
+  } catch (error) {
+    for (const [index, context] of contexts.entries()) {
+      for (const [number, page] of context.pages().entries()) {
+        await page.screenshot({path: path.join(destination, `failure-${index}-${number}.png`), fullPage: true}).catch(() => {});
+        fs.writeFileSync(path.join(destination, `failure-${index}-${number}.html`), await page.content().catch(() => ""));
+      }
+    }
+    throw error;
   } finally {
+    fs.writeFileSync(path.join(destination, "browser-events.json"), JSON.stringify({errors, requests}, null, 2));
+    for (const [index, context] of contexts.entries()) {
+      await context.tracing.stop({path: path.join(destination, `trace-${index}.zip`)});
+    }
     await browser.close();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });

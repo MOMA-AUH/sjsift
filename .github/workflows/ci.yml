@@ -54,7 +54,7 @@ jobs:
       - name: Install and smoke-test wheel in a clean environment
         run: |
           python -m venv "$RUNNER_TEMP/sjsift-wheel-test"
-          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install dist/*.whl
+          "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -m pip install dist/*.whl pytest
           "$RUNNER_TEMP/sjsift-wheel-test/bin/python" -c "import sjsift"
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --help
           "$RUNNER_TEMP/sjsift-wheel-test/bin/sjsift" --version
@@ -65,6 +65,23 @@ jobs:
             --output "$RUNNER_TEMP/sjsift-smoke.tsv" \
             --html-output "$RUNNER_TEMP/sjsift-smoke.html"
           PATH="$RUNNER_TEMP/sjsift-wheel-test/bin:$PATH" "$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/installed_alignment_smoke.py
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+      - name: Install browser test tooling
+        run: |
+          npm ci --prefix tests
+          tests/node_modules/.bin/playwright install --with-deps chromium
+      - name: Exercise offline reports from the installed candidate wheel
+        run: '"$RUNNER_TEMP/sjsift-wheel-test/bin/python" tests/paired_view_browser.py "$RUNNER_TEMP/browser-diagnostics"'
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: browser-diagnostics
+          path: ${{ runner.temp }}/browser-diagnostics/
+          if-no-files-found: ignore
 
   conda:
     name: conda

@@ -1,7 +1,8 @@
-"""Generate a real report and exercise it with the optional Playwright check.
+"""Generate real offline reports and exercise them with Chromium.
 
 Run with PYTHONPATH=src:tests and NODE_PATH pointing to an installation of
-playwright. No browser dependencies are needed by the normal pytest suite.
+playwright, or install the pinned tools with npm ci --prefix tests.
+No browser dependencies are needed by the normal pytest suite.
 """
 from dataclasses import replace
 import io
@@ -88,9 +89,27 @@ def mapping_legend_report(destination):
     return path
 
 
+def overview_report(destination):
+    # Catalog order differs from support order; include a tie, counts beyond
+    # JavaScript's safe integer range, and a zero-support variant.
+    variants = tuple(replace(CATALOG.variants[0], identifier=name)
+                     for name in ("Alpha", "Zero", "Beta", "Large", "Larger"))
+    catalog = replace(CATALOG, variants=variants)
+    evidence = extract_evidence(catalog, bam(destination, mates("overview-pair"), name="overview.bam"))
+    output = io.StringIO()
+    write_html("synthetic", tuple(VariantSupport(variant, unique, multi, ())
+               for variant, (unique, multi) in zip(variants, ((8, 2), (0, 0), (8, 3),
+                   (9007199254740992, 0), (9007199254740993, 0)))), output,
+               alignment_evidence=evidence, junctions_name="synthetic.SJ.out.tab")
+    path = destination / "overview.html"
+    path.write_text(output.getvalue())
+    return path
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1])
     path = report(destination)
     shared = shared_strand_report(destination)
     legend = mapping_legend_report(destination)
-    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path), str(shared), str(legend)], check=True)
+    overview = overview_report(destination)
+    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path), str(shared), str(legend), str(overview)], check=True)
