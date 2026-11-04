@@ -76,6 +76,7 @@ class AlignmentEvidence:
     groups: dict[str, JunctionEvidence]
     provenance: dict[str, str]
     sample_name: str | None = None
+    metadata: dict = field(default_factory=dict)
 
 
 def _geometry(read: pysam.AlignedSegment) -> tuple[CigarOperation, ...]:
@@ -235,10 +236,25 @@ def _extract_evidence(
         header = stream.header.to_dict()
         provenance = _validate_header(catalog, header)
         sample_name, selected_read_groups = _select_sample(header, sample_name)
+        samples = {group["SM"] for group in header.get("RG", []) if group.get("SM", "").strip()}
+        metadata = {
+            "basename": path.name,
+            "format": "CRAM" if reference_path else "BAM",
+            "index_basename": index_path.name,
+            "dependencies": {"pysam": pysam.__version__, "htslib": pysam.__samtools_version__},
+            "sample_selection": {
+                "policy": "selected_sample_read_groups" if selected_read_groups is not None else "all_read_groups",
+                "header_sample_count": len(samples),
+                "selected_sample_in_header": sample_name in samples,
+            },
+            "assurance": {"sample": provenance["Sample assurance"], "assembly": provenance["Assembly assurance"]},
+            "reference": None,
+        }
         if selected_read_groups is not None:
             provenance["Read selection"] = "Only read groups belonging to the selected sample; unassigned records excluded"
         if reference_path:
-            provenance.update(_validate_reference(header, reference_path))
+            reference_provenance, metadata["reference"] = _validate_reference(header, reference_path)
+            provenance.update(reference_provenance)
         for _, junction in targets:
             if junction.chromosome not in stream.references:
                 raise AlignmentError(f"missing contig {junction.chromosome!r}")
@@ -295,7 +311,7 @@ def _extract_evidence(
         )
     provenance.update({"Alignment file": path.name, "Format": "CRAM" if reference_path else "BAM", "pysam": pysam.__version__,
                        "HTSlib": pysam.__samtools_version__, "Index": index_path.name})
-    return AlignmentEvidence(groups, provenance, sample_name)
+    return AlignmentEvidence(groups, provenance, sample_name, metadata)
 
 
 def _select_sample(header, requested):
@@ -389,12 +405,26 @@ def _validate_reference(header, path):
                 if digest.hexdigest() != sequence["M5"].lower():
                     raise AlignmentError(f"reference M5 checksum disagrees for {name!r}")
                 checked += 1
-    return {
+    provenance = {
         "Reference FASTA": path.name,
         "Reference index": path.name + ".fai",
         "Reference assurance": f"Local contig names/lengths checked; {checked} of {len(header.get('SQ', []))} header M5 checksums verified. Missing M5 limits sequence assurance; decoded slice checks remain enabled. STAR assembly remains unverified.",
         "Reference access": "Explicit local FASTA only; inherited REF_PATH/REF_CACHE isolated; no remote reference lookup",
     }
+    indexes = [path.name + ".fai"]
+    with path.open("rb") as stream:
+        if stream.read(2) == b"\x1f\x8b":
+            indexes.append(path.name + ".gzi")
+    metadata = {
+        "basename": path.name,
+        "index_basenames": indexes,
+        "checks": {"contig_names": True, "contig_lengths": True, "full_sequences_read": True,
+                   "header_m5_checked": checked, "header_contigs": len(header.get("SQ", [])),
+                   "decoded_slice_checks": True},
+        "access": "explicit_local_only",
+        "assurance": provenance["Reference assurance"],
+    }
+    return provenance, metadata
 
 
 def extract_evidence(

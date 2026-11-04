@@ -84,6 +84,15 @@ version 3 catalog schema and interpretation.
 Run `sjsift --help` for the complete command-line reference. Existing output
 files are never overwritten.
 
+## Run provenance
+
+Add `--provenance-output sample.provenance.json` to save the resolved sample,
+software version, catalog identity, exact catalog/STAR SHA-256 fingerprints,
+compatibility warnings, and available alignment assurance. Both TSV formats
+remain unchanged. The optional JSON works with TSV-only and HTML runs.
+See the [schema and usage guide](docs/PROVENANCE.md) for retained metadata,
+deterministic output, and compatibility rules.
+
 ## HTML report
 
 Add `--html-output` to create a single offline HTML file alongside the TSVs:

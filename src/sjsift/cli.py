@@ -9,6 +9,7 @@ from . import __version__
 from .alignment_evidence import AlignmentError, extract_evidence
 from .catalog import CatalogError, load_catalog
 from .quantify import QuantifyError, quantify
+from .provenance import COMPATIBILITY_WARNING, render_provenance
 from .report import ReportError, write_reports
 
 
@@ -58,6 +59,7 @@ def _parser() -> argparse.ArgumentParser:
         help="write an offline HTML overview and variant details to PATH",
     )
     parser.add_argument("--alignment", metavar="PATH", help="local indexed coordinate-sorted BAM or CRAM for HTML read previews")
+    parser.add_argument("--provenance-output", metavar="PATH", help="write versioned run provenance JSON to PATH")
     parser.add_argument("--alignment-index", metavar="PATH", help="explicit local BAM/CRAM index (otherwise discovered)")
     parser.add_argument("--reference", metavar="PATH", help="explicit local indexed FASTA, required for CRAM; remote reference lookup is disabled")
     parser.add_argument(
@@ -98,6 +100,19 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             parser.error(str(error))
         if evidence.sample_name is None:
             parser.error("--sample-name is required: alignment header has no sample names to infer")
+    sample_name = evidence.sample_name if evidence else arguments.sample_name
+    provenance_json = None
+    if arguments.provenance_output is not None:
+        try:
+            provenance_json = render_provenance(
+                catalog, Path(arguments.definitions), Path(arguments.junctions),
+                sample_name=sample_name,
+                sample_source="alignment_header" if arguments.sample_name is None else "explicit",
+                compatibility_warning=quantification.compatibility_warning,
+                alignment_evidence=evidence,
+            )
+        except OSError as error:
+            parser.error(f"cannot fingerprint provenance inputs: {error}")
     try:
         write_reports(
             catalog.genome_assembly,
@@ -110,15 +125,15 @@ def _run(parser: argparse.ArgumentParser, arguments: argparse.Namespace) -> int:
             definitions_name=Path(arguments.definitions).name,
             compatibility_warning=quantification.compatibility_warning,
             alignment_evidence=evidence,
-            sample_name=evidence.sample_name if evidence else arguments.sample_name,
+            sample_name=sample_name,
+            provenance_output_path=Path(arguments.provenance_output) if arguments.provenance_output is not None else None,
+            provenance_json=provenance_json,
         )
     except ReportError as error:
         parser.error(str(error))
     if quantification.compatibility_warning:
         print(
-            f"sjsift: warning: {arguments.junctions}: no catalog chromosome "
-            "identifiers found; check genome assembly and chromosome naming "
-            "compatibility",
+            f"sjsift: warning: {arguments.junctions}: {COMPATIBILITY_WARNING['message']}",
             file=sys.stderr,
         )
     return 0
