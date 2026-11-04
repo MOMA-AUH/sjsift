@@ -65,8 +65,31 @@ def shared_strand_report(destination):
     return path
 
 
+def mapping_legend_report(destination):
+    references = tuple(ReferenceJunction(role, "chr1", start, start + 99, "+", annotation=ANNOTATION)
+                       for role, start in (("same_donor", 301), ("same_acceptor", 501),
+                                           ("custom A", 701), ("custom B", 901)))
+    variant = replace(CATALOG.variants[0], reference_junctions=references)
+    catalog = replace(CATALOG, variants=(variant,))
+    reads = [record(f"{start}-{name}", start=start - 21, flag=flag, tags=tags)
+             for start in (101, 301, 501, 701, 901)
+             for name, flag, tags in (("unique", 0, {"NH": 1}), ("multi", 0, {"NH": 2}),
+                                      ("unknown", 0, {}), ("secondary", 256, {"NH": 2}),
+                                      ("supplementary", 2048, {"NH": 1}),
+                                      ("duplicate", 1024, {"NH": 2}), ("qc", 512, {"NH": 1}))]
+    evidence = extract_evidence(catalog, bam(destination, reads, name="legend.bam"))
+    output = io.StringIO()
+    write_html("synthetic", (VariantSupport(variant, 8, 2, tuple(
+        ReferenceJunctionSupport(reference, 20, 3) for reference in references
+    )),), output, alignment_evidence=evidence)
+    path = destination / "mapping-legend.html"
+    path.write_text(output.getvalue())
+    return path
+
+
 if __name__ == "__main__":
     destination = Path(sys.argv[1])
     path = report(destination)
     shared = shared_strand_report(destination)
-    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path), str(shared)], check=True)
+    legend = mapping_legend_report(destination)
+    subprocess.run(["node", str(Path(__file__).with_suffix(".cjs")), str(path), str(shared), str(legend)], check=True)

@@ -5,6 +5,7 @@ import pytest
 
 from alignment_fixtures import CATALOG, bam, cram, fasta, record
 from sjsift.alignment_evidence import extract_evidence
+from test_html_report import Document
 from test_read_inspection import render
 
 
@@ -25,6 +26,18 @@ class Reads(HTMLParser):
             self.summaries.append(attrs)
         if "cigar-op" in classes:
             self.operations.append(attrs)
+
+
+def test_mapping_legend_explains_patterns_and_muted_override_without_javascript(tmp_path):
+    evidence = extract_evidence(CATALOG, bam(tmp_path, [record(tags={"NH": 1})]))
+    document = Document(render(CATALOG, evidence))
+    text = " ".join(document.text)
+    assert "Unique (solid blocks)" in text
+    assert "Multimapping (hatched blocks)" in text
+    assert "Junction color identifies support membership; solid or hatched blocks identify mapping class." in text
+    assert "Neutral legend examples apply to every junction color." in text
+    assert "Unknown multiplicity or flagged (secondary, supplementary, duplicate, QC failure)" in text
+    assert "Muted gray overrides support color and hatching." in text
 
 
 @pytest.mark.parametrize("nh,flag,style,reason", [

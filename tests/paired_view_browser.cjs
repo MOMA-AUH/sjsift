@@ -6,6 +6,43 @@ const {chromium} = require("playwright");
 (async () => {
   const browser = await chromium.launch({headless: true});
   try {
+    if (process.argv[4]) {
+      // Static report text and computed rendering must work without JavaScript.
+      const legendPage = await browser.newPage({javaScriptEnabled: false, viewport: {width: 1400, height: 1000}});
+      await legendPage.goto(pathToFileURL(process.argv[4]).href + "#variant-0");
+      const styles = await legendPage.locator(".read-legend i").evaluateAll(nodes => nodes.map(node => ({
+        color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
+      })));
+      assert.equal(styles.length, 3);
+      const channels = styles[0].color.match(/\d+/g).map(Number);
+      assert.equal(channels[0], channels[1], "Mapping legend must be achromatic");
+      assert.equal(channels[1], channels[2], "Mapping legend must be achromatic");
+      assert.equal(styles[1].color, styles[0].color);
+      assert.equal(styles[0].pattern, "none");
+      assert.match(styles[1].pattern, /repeating-linear-gradient/);
+      assert.equal(styles[2].color, "rgb(146, 152, 158)");
+      assert.equal(styles[2].pattern, "none");
+      assert.notEqual(styles[0].color, styles[2].color);
+      const arcs = await legendPage.locator(".junction-arc").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).stroke));
+      const bars = await legendPage.locator(".variant-detail .unique-support").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
+      assert.equal(new Set(arcs).size, 5);
+      assert.deepEqual(new Set(arcs), new Set(bars));
+      assert.deepEqual(bars.slice(0, 3), ["rgb(49, 89, 173)", "rgb(22, 131, 117)", "rgb(153, 80, 165)"]);
+      for (const color of bars) assert.ok(!styles.some(style => style.color === color));
+      for (let bucket = 0; bucket < 5; bucket++) {
+        const rows = legendPage.locator(`.read-row[data-bucket="${bucket}"]`);
+        assert.equal(await rows.count(), 7);
+        for (const [kind, pattern] of [["solid", "none"], ["hatched", styles[1].pattern], ["muted", "none"]]) {
+          const blocks = await legendPage.locator(`.read-row[data-bucket="${bucket}"].read-${kind} .op-M`).evaluateAll(nodes => nodes.map(node => ({
+            color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
+          })));
+          assert.ok(blocks.length > 0);
+          assert.ok(blocks.every(block => block.color === (kind === "muted" ? styles[2].color : bars[bucket]) && block.pattern === pattern));
+        }
+      }
+      await legendPage.locator(".read-legend").screenshot({path: process.argv[4] + ".png"});
+      await legendPage.close();
+    }
     const page = await browser.newPage({viewport: {width: 1400, height: 1000}});
     const errors = [];
     const requests = [];
