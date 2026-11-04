@@ -17,6 +17,11 @@ async function snapshotEvidence(page) {
 
 async function checkOverview(page, staticPage, file) {
   const url = pathToFileURL(file).href;
+  async function waitForView(id) {
+    await page.waitForURL(url + "#" + id);
+    // Hash navigation completes before the hashchange handler renders the view.
+    await page.locator("#" + id).waitFor({state: "visible"});
+  }
   await page.goto(url);
   const evidence = await snapshotEvidence(page);
   assert.equal(evidence.reads.length, 10);
@@ -35,25 +40,25 @@ async function checkOverview(page, staticPage, file) {
   await page.getByRole("combobox", {name: "Order", exact: true}).selectOption("support");
   assert.deepEqual(await names(), ["Larger", "Large", "Beta", "Alpha"]);
   await page.getByRole("link", {name: "Larger", exact: true}).click();
-  await page.waitForURL(url + "#variant-4");
+  await waitForView("variant-4");
   assert.equal(await page.locator("#variant-4").isVisible(), true);
   assert.equal(await page.locator("#previous").isDisabled(), true);
   await page.locator("#next").click();
-  await page.waitForURL(url + "#variant-3");
+  await waitForView("variant-3");
   await page.goBack();
-  await page.waitForURL(url + "#variant-4");
+  await waitForView("variant-4");
   assert.equal(await page.locator("#variant-4").isVisible(), true);
   await page.goForward();
-  await page.waitForURL(url + "#variant-3");
+  await waitForView("variant-3");
   assert.equal(await page.locator("#variant-3").isVisible(), true);
   await page.locator("#variant-picker").selectOption("0");
-  await page.waitForURL(url + "#variant-0");
+  await waitForView("variant-0");
   assert.equal(await page.locator("#next").isDisabled(), true);
   await page.locator("#previous").click();
-  await page.waitForURL(url + "#variant-2");
+  await waitForView("variant-2");
   assert.equal(await page.locator("#variant-2").isVisible(), true);
   await page.getByRole("link", {name: "All variants"}).click();
-  await page.waitForURL(url + "#overview");
+  await waitForView("overview");
   assert.deepEqual(await names(), ["Larger", "Large", "Beta", "Alpha"]);
   await page.getByRole("checkbox", {name: "Show only variants with support"}).uncheck();
   await page.getByRole("combobox", {name: "Order", exact: true}).selectOption("catalog");
