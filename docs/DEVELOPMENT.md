@@ -302,3 +302,12 @@ CRAM tests use synthetic local indexed FASTA, including a loopback HTTP listener
 that detects actual HTSlib reference requests. The listener's positive control
 makes a local request; sjsift must make none. No external reference service is
 used by this test.
+
+### STAR interoperability fixtures
+
+The [STAR fixture inventory](../tests/fixtures/star/README.md) documents a tiny
+reference, paired reads, pinned STAR invocation, and independent expected results.
+Run `python -m pytest -q tests/test_star_interop.py` against an installed package.
+The test compares exact TSV output and offline HTML evidence for BAM and CRAM.
+Routine CI uses the committed fixtures without STAR or external reference access.
+These fixtures test interoperability, not biological or clinical validity.

@@ -1,4 +1,5 @@
 recursive-include tests *.py *.sh *.cjs *.json
+recursive-include tests/fixtures/star *.md *.toml *.tsv *.tab *.bam *.bai *.fa *.fai *.fastq *.out
 prune tests/node_modules
 recursive-include definitions *.toml
 include docs/curation/gencode-v49-exons.tsv

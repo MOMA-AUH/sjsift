@@ -1,0 +1,102 @@
+schema_version = 3
+genome_assembly = "STAR-synthetic"
+
+[[variants]]
+id = "minus"
+chromosome = "minus"
+intron_start = 201
+intron_end = 300
+strand = "-"
+reference_transcript = "synthetic-minus"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants.reference_junctions]]
+role = "adjacent"
+chromosome = "minus"
+intron_start = 341
+intron_end = 440
+strand = "-"
+reference_transcript = "synthetic-minus"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants]]
+id = "unsupported"
+chromosome = "plus"
+intron_start = 201
+intron_end = 440
+strand = "+"
+reference_transcript = "synthetic-plus"
+donor_exon = "1"
+acceptor_exon = "3"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+reference_junctions = []
+
+[[variants]]
+id = "plus"
+chromosome = "plus"
+intron_start = 201
+intron_end = 300
+strand = "+"
+reference_transcript = "synthetic-plus"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants.reference_junctions]]
+role = "adjacent"
+chromosome = "plus"
+intron_start = 341
+intron_end = 440
+strand = "+"
+reference_transcript = "synthetic-plus"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants]]
+id = "multi-secondary"
+chromosome = "multiB"
+intron_start = 201
+intron_end = 300
+strand = "+"
+reference_transcript = "synthetic-multiB"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants.reference_junctions]]
+role = "adjacent"
+chromosome = "multiB"
+intron_start = 341
+intron_end = 440
+strand = "+"
+reference_transcript = "synthetic-multiB"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants]]
+id = "multi-primary"
+chromosome = "multiA"
+intron_start = 201
+intron_end = 300
+strand = "+"
+reference_transcript = "synthetic-multiA"
+donor_exon = "1"
+acceptor_exon = "2"
+annotation_source = "Deterministic interoperability fixture, not biological validation"
+
+[[variants.reference_junctions]]
+role = "adjacent"
+chromosome = "multiA"
+intron_start = 341
+intron_end = 440
+strand = "+"
+reference_transcript = "synthetic-multiA"
+donor_exon = "2"
+acceptor_exon = "3"
+annotation_source = "Deterministic interoperability fixture, not biological validation"

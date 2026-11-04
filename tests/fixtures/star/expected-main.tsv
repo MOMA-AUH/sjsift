@@ -1,0 +1,6 @@
+variant_id	genome_assembly	chromosome	intron_start	intron_end	strand	unique_support	multimapping_support	total_support
+minus	STAR-synthetic	minus	201	300	-	1	0	1
+unsupported	STAR-synthetic	plus	201	440	+	0	0	0
+plus	STAR-synthetic	plus	201	300	+	2	0	2
+multi-secondary	STAR-synthetic	multiB	201	300	+	0	1	1
+multi-primary	STAR-synthetic	multiA	201	300	+	0	1	1
