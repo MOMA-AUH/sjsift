@@ -22,6 +22,9 @@ def main():
             assert "skip\tsynthetic\tchr1\t101\t200\t+\t8\t2\t10" in result.stdout
             results.append(result.stdout)
             text = output.read_text()
+            assert "<style>" in text and "<script>" in text
+            assert "<script src=" not in text and 'rel="stylesheet"' not in text
+            assert "connect-src 'none'" in text
             assert "installed-smoke" in text
             assert text.count('<li class="read-row') == 1
             assert "CIGAR: 20M100N20M" in text

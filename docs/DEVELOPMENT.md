@@ -25,6 +25,26 @@ python -m twine check dist/*
 
 Generated environments, build directories, coverage data, and distributions remain untracked.
 
+### Testing a source distribution
+
+Source distributions include the automated tests, their shared fixture helper,
+the reference catalog, curation evidence, and release-policy inputs. On Linux,
+run the same archive check used by CI and release validation:
+
+```bash
+tar -xzf sjsift-0.2.2.tar.gz
+bash sjsift-0.2.2/tests/check_sdist.sh sjsift-0.2.2.tar.gz
+```
+
+The check extracts the archive into a temporary directory, builds a wheel from
+that copy, and installs it with test dependencies in a fresh virtual environment.
+It verifies the installed import location, runs the full suite, and exercises
+the CLI, offline HTML assets, BAM evidence, and explicit-reference CRAM evidence.
+It needs Python 3.11 or newer, dependency-index access, and permission to open a
+loopback listener for the CRAM test. It clears checkout import overrides and
+does not use an editable installation. The reference catalog remains an explicit
+`--definitions` input. The temporary environment and outputs are removed on exit.
+
 ## Repository structure
 
 ```text
