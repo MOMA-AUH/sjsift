@@ -23,12 +23,16 @@ The recommended way to install **sjsift** is via
 [conda](https://docs.conda.io/), using the `MOMA-AUH` channel:
 
 ```bash
-conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift
+conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift=1.0.0
 ```
 
-sjsift v0.2.2 requires Python 3.11 or newer and installs
+sjsift v1.0.0 requires Python 3.11 or newer and installs
 `pysam>=0.24.0,<0.25` as a normal runtime dependency for alignment evidence.
 Pair published packages with the catalog from their matching Git tag.
+See the [v1.0.0 release notes](docs/releases/v1.0.0.md) for changes, migration,
+and the tested environment and capacity. These examples target v1.0.0 after
+publication. Until then, build from this checkout or use a published version
+with its matching tagged catalog.
 
 ## Usage
 
@@ -37,7 +41,7 @@ use the reference GRCh38 catalog from this repository:
 
 ```bash
 curl -L \
-  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v0.2.2/definitions/grch38.toml \
+  https://raw.githubusercontent.com/MOMA-AUH/sjsift/v1.0.0/definitions/grch38.toml \
   -o grch38.toml
 
 sjsift \
@@ -162,11 +166,12 @@ definitions for six EGFR variants (`EGFRvII`, `EGFRvIIb`, `EGFRvIII`,
 `EGFRvIIIb`, `EGFRvIVa`, and `EGFRvIVb`), `METex14`, `METex7-8`, `ARv7`,
 `ARv567es`, six BRAF exon-deletion junctions, and `FGFR2-E18-C3`.
 
-The v0.2.2 catalog uses schema version 3.
-Schemas 1 and 2 are rejected. Pre-1.0 releases, including
-patch releases, do not promise backward compatibility.
-The [stable v1 compatibility contract](docs/COMPATIBILITY.md) takes effect with
-v1.0.0. It does not add guarantees to existing pre-v1 releases.
+The v1.0.0 catalog uses schema version 3.
+Schemas 1 and 2 are rejected. The
+[stable v1 compatibility contract](docs/COMPATIBILITY.md) protects documented
+invocations and pinned schema-3 inputs from v1.0.0 throughout v1.
+Existing pre-v1 releases retain their historical policy: no backward
+compatibility guarantee, including in patch releases.
 sjsift v0.2.0 users should retain the catalog from the
 [`v0.2.0` tag](https://github.com/MOMA-AUH/sjsift/blob/v0.2.0/definitions/grch38.toml).
 sjsift v0.1.3 supports only schema version 1; its compatible catalog remains

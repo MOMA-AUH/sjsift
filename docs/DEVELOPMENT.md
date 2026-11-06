@@ -32,8 +32,8 @@ the reference catalog, curation evidence, and release-policy inputs. On Linux,
 run the same archive check used by CI and release validation:
 
 ```bash
-tar -xzf sjsift-0.2.2.tar.gz
-bash sjsift-0.2.2/tests/check_sdist.sh sjsift-0.2.2.tar.gz
+tar -xzf sjsift-1.0.0.tar.gz
+bash sjsift-1.0.0/tests/check_sdist.sh sjsift-1.0.0.tar.gz
 ```
 
 The check extracts the archive into a temporary directory, builds a wheel from
@@ -255,8 +255,15 @@ These ruleset and merge settings cannot be enforced solely by files committed to
 Use semantic versions and `vMAJOR.MINOR.PATCH` Git tags, following skua's release convention.
 
 Complete the [compatibility review](#compatibility-review) in every release PR
-before tagging. The stable contract takes effect with v1.0.0. Pre-v1 releases
-retain their existing policy until then.
+before tagging. The stable contract applies from v1.0.0. Existing v0.x releases
+retain their historical pre-1.0 policy. The
+[v1.0.0 release notes](releases/v1.0.0.md) record the first stable baseline.
+
+Release preparation, candidate validation, and publication are separate steps.
+For v1.0.0, complete [candidate validation (#74)](https://github.com/MOMA-AUH/sjsift/issues/74)
+on the intended protected `master` source before starting
+[publication (#75)](https://github.com/MOMA-AUH/sjsift/issues/75).
+The preparation PR creates no tag and uploads no package.
 
 1. On a release branch, update the version in `pyproject.toml`, `src/sjsift/__init__.py`, and the Jinja `version` value in `conda-recipe/meta.yaml`, and update user-facing documentation. Run the existing version-agreement checks in `tests/test_release.py` and `tests/test_cli.py`; add or update release tests when release behavior changes.
 2. Open and squash-merge the release pull request after all required checks pass. Do not tag a release-branch commit: the tag must identify the resulting protected-`master` commit.
@@ -265,8 +272,8 @@ retain their existing policy until then.
    ```bash
    git switch master
    git pull --ff-only origin master
-   git tag -a v0.2.2 -m "Release v0.2.2"
-   git push origin v0.2.2
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin v1.0.0
    ```
 
 4. The tag-triggered publish workflow checks that the tag matches `pyproject.toml`, rebuilds and tests the Python distributions and conda package from that exact checkout, runs the same Chromium checks against the installed candidate wheel, and retains both artifact sets plus browser diagnostics in GitHub Actions.
@@ -278,7 +285,7 @@ Before tagging, use **Actions → Publish Conda Package → Run workflow** on `m
 After publication, verify the intended user installation path in a clean environment:
 
 ```bash
-conda create --name sjsift-check --channel conda-forge --channel bioconda MOMA-AUH::sjsift
+conda create --name sjsift-check --channel conda-forge --channel bioconda MOMA-AUH::sjsift=1.0.0
 conda run --name sjsift-check sjsift --version
 ```
 

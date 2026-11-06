@@ -31,6 +31,15 @@ filesystem cleanup are outside this guarantee.
 
 ## Schema version 1
 
+This is the schema-1 baseline protected from sjsift v1.0.0.
+Provenance first appeared after the published v0.2.2 release. Before v1, its
+unreleased schema 1 replaced assurance prose with the structured facts below.
+Those pre-release revisions did not change a previously published stable format.
+Consumers of development snapshots must use `sample_selection`,
+`assembly_checks`, and CRAM `reference.checks` instead of the removed
+`star_assurance`, alignment `assurance`, and reference `assurance` fields.
+These checks do not prove the STAR file's sample identity or genome assembly.
+
 The root is a JSON object. All fields below are present unless their description
 states a condition. Names refer to basenames: filenames without directory paths.
 Integers are JSON numbers with no fractional part. SHA-256 values contain 64
