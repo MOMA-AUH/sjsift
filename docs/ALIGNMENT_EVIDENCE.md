@@ -184,7 +184,7 @@ increasing genomic coordinates, independent of alignment orientation and
 transcript strand. Matching coordinates line up across all rows. M, = and X are
 aligned blocks; thin N lines are splice gaps; red D lines are deletions; purple I
 marks are insertions; gold S blocks show soft clipping at actual length, gold H
-ticks mark hard clipping, and gray P is padding. Muted records override all of
+diamonds mark hard clipping, and gray P is padding. Muted records override all of
 these operation colors with gray; their distinct geometry remains inspectable.
 The terminal aligned block has a pointed end showing alignment direction:
 right for forward, left for reverse. A fixed-size arrowhead extends six pixels
