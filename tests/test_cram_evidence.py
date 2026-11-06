@@ -33,7 +33,8 @@ def test_equivalent_cram_preserves_all_bam_evidence_without_downsampling(tmp_pat
         assert len(group.records) == sum(group.eligible.values())
     assert actual.provenance["Format"] == "CRAM"
     assert actual.provenance["Reference FASTA"] == "reference.fa"
-    assert "M5" in actual.provenance["Reference assurance"]
+    assert actual.metadata["reference"]["checks"]["header_m5_checked"] == 1
+    assert not any("assurance" in key.lower() for key in actual.provenance)
 
 
 @pytest.mark.parametrize("mode", ["external", "embedded", "no_ref"])
@@ -111,7 +112,7 @@ def test_bgzip_reference_requires_existing_gzi_and_supports_real_decoding(tmp_pa
     assert not Path(str(compressed) + ".gzi").exists()
 
 
-def test_missing_m5_discloses_limited_assurance_and_still_requires_local_reference(tmp_path):
+def test_missing_m5_reports_zero_checks_and_still_requires_local_reference(tmp_path):
     ref = fasta(tmp_path)
     source = bam(tmp_path, [record()])
     path = tmp_path / "no-reference.cram"
@@ -121,8 +122,9 @@ def test_missing_m5_discloses_limited_assurance_and_still_requires_local_referen
                 output.write(read)
     pysam.index(str(path))
     result = extract_evidence(CATALOG, path, reference_path=ref)
-    assert "0 of 1 header M5" in result.provenance["Reference assurance"]
-    assert "Missing M5 limits" in result.provenance["Reference assurance"]
+    checks = result.metadata["reference"]["checks"]
+    assert checks["header_m5_checked"] == 0
+    assert checks["header_contigs"] == 1
 
 
 def test_remote_reference_environment_is_isolated_and_restored(tmp_path, monkeypatch):

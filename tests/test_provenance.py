@@ -33,6 +33,8 @@ def test_tsv_only_provenance_identifies_inputs_and_is_deterministic(tmp_path):
     assert documents[0] == documents[1]
     data = json.loads(documents[0])
     assert data["schema_version"] == 1
+    assert next(iter(data)) == "schema_version"
+    assert next(iter(data["catalog"])) == "schema_version"
     assert data["sample"] == {"name": "patient α", "source": "explicit"}
     assert data["software"]["name"] == "sjsift"
     assert data["software"]["version"] == invoke("--version").stdout.strip().split()[1]
@@ -46,7 +48,7 @@ def test_tsv_only_provenance_identifies_inputs_and_is_deterministic(tmp_path):
     assert data["star_input"]["fingerprint_scope"] == "exact_file_bytes"
     assert data["warnings"] == []
     assert data["alignment"] == {"status": "not_requested"}
-    assert data["star_assurance"] == {"sample_identity": "unverified", "genome_assembly": "unverified"}
+    assert b"assurance" not in documents[0]
     assert str(tmp_path).encode() not in documents[0]
 
 
@@ -84,7 +86,7 @@ def test_compressed_fingerprints_and_warnings_preserve_all_existing_reports(tmp_
 
 @pytest.mark.parametrize("kind", ["BAM", "CRAM"])
 @pytest.mark.parametrize("eligible", [False, True])
-def test_alignment_provenance_reports_assurance_without_record_or_header_payloads(tmp_path, kind, eligible):
+def test_alignment_provenance_reports_checks_without_record_or_header_payloads(tmp_path, kind, eligible):
     args = cli_inputs(tmp_path, sample_name=None)
     header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000, "AS": "synthetic"}],
               "RG": [{"ID": "lane", "SM": "inferred patient"}],
@@ -106,7 +108,9 @@ def test_alignment_provenance_reports_assurance_without_record_or_header_payload
         assert result.returncode == 0, result.stderr
         documents.append(sidecar.read_bytes())
     assert documents[0] == documents[1]
+    assert b"assurance" not in documents[0]
     data = json.loads(documents[0])
+    assert next(iter(data)) == "schema_version"
     assert data["sample"] == {"name": "inferred patient", "source": "alignment_header"}
     alignment = data["alignment"]
     assert alignment["status"] == "requested"
@@ -114,11 +118,12 @@ def test_alignment_provenance_reports_assurance_without_record_or_header_payload
     assert alignment["format"] == kind
     assert alignment["basename"] == reads.name and alignment["index_basename"] == "custom.index"
     assert alignment["sample_selection"] == {"policy": "all_read_groups", "header_sample_count": 1,
-                                             "selected_sample_in_header": True}
+                                             "selected_sample_in_header": True,
+                                             "header_read_group_count": 1, "read_groups_without_sample": 0}
     assert set(alignment["dependencies"]) == {"pysam", "htslib"}
     assert all(alignment["dependencies"].values())
-    assert "STAR sample identity cannot be verified" in alignment["assurance"]["sample"]
-    assert "Available assembly labels agree" in alignment["assurance"]["assembly"]
+    assert alignment["assembly_checks"] == {"required_contigs": 1, "labeled_contigs": 1,
+                                            "labels_match_catalog": True}
     if kind == "BAM":
         assert alignment["reference"] is None
     else:
@@ -128,14 +133,13 @@ def test_alignment_provenance_reports_assurance_without_record_or_header_payload
         assert reference["checks"] == {"contig_names": True, "contig_lengths": True, "full_sequences_read": True,
                                       "header_m5_checked": 1, "header_contigs": 1, "decoded_slice_checks": True}
         assert reference["access"] == "explicit_local_only"
-        assert "STAR assembly remains unverified" in reference["assurance"]
     for private in (str(tmp_path), "SECRET", "ACGTACGTACGT", "IIIIIIIIIIII", "AAAAAAAAAAAA", "/private/"):
         assert private.encode() not in documents[0]
     assert "sha256" not in json.dumps(alignment)
 
 
 @pytest.mark.parametrize("samples", [[], ["chosen"], ["chosen", "other"]])
-def test_explicit_sample_selection_and_missing_assembly_assurance(tmp_path, samples):
+def test_explicit_sample_selection_and_missing_assembly_labels(tmp_path, samples):
     args = cli_inputs(tmp_path, sample_name="chosen")
     groups = [{"ID": name, "SM": name} for name in samples]
     reads = [record("unassigned")]
@@ -149,9 +153,12 @@ def test_explicit_sample_selection_and_missing_assembly_assurance(tmp_path, samp
     selection = data["alignment"]["sample_selection"]
     assert selection["header_sample_count"] == len(samples)
     assert selection["selected_sample_in_header"] == bool(samples)
+    assert selection["header_read_group_count"] == len(samples)
+    assert selection["read_groups_without_sample"] == 0
     assert selection["policy"] == ("selected_sample_read_groups" if len(samples) > 1 else "all_read_groups")
     assert data["alignment"]["eligible_junction_memberships"] == (1 if len(samples) > 1 else 1 + len(samples))
-    assert data["alignment"]["assurance"]["assembly"].startswith("Assembly unverified:")
+    assert data["alignment"]["assembly_checks"] == {"required_contigs": 1, "labeled_contigs": 0,
+                                                   "labels_match_catalog": None}
 
 
 def test_cram_provenance_records_compressed_reference_indexes_and_missing_m5(tmp_path):
@@ -175,7 +182,6 @@ def test_cram_provenance_records_compressed_reference_indexes_and_missing_m5(tmp
     assert metadata["index_basenames"] == ["reference.fa.gz.fai", "reference.fa.gz.gzi"]
     assert metadata["checks"]["header_m5_checked"] == 0
     assert metadata["checks"]["header_contigs"] == 1
-    assert "Missing M5 limits sequence assurance" in metadata["assurance"]
 
 
 @pytest.mark.parametrize("failure", ["existing", "missing_parent", "input_alias", "directory"])

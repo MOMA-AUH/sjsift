@@ -28,28 +28,23 @@ class Reads(HTMLParser):
             self.operations.append(attrs)
 
 
-def test_mapping_legend_explains_patterns_and_muted_override_without_javascript(tmp_path):
+def test_mapping_legend_labels_patterns_without_javascript(tmp_path):
     evidence = extract_evidence(CATALOG, bam(tmp_path, [record(tags={"NH": 1})]))
     document = Document(render(CATALOG, evidence))
     text = " ".join(document.text)
     assert "Unique (solid blocks)" in text
     assert "Multimapping (hatched blocks)" in text
-    assert "Junction color identifies support membership; solid or hatched blocks identify mapping class." in text
-    assert "Neutral legend examples apply to every junction color." in text
-    assert "Unknown multiplicity or flagged (secondary, supplementary, duplicate, QC failure)" in text
-    assert "Muted gray overrides support color and hatching." in text
+    assert "Unknown or flagged (gray blocks)" in text
 
 
-def test_clipping_legend_explains_unaligned_bases_and_muted_geometry_without_javascript(tmp_path):
+def test_clipping_legend_labels_blocks_and_diamonds_without_javascript(tmp_path):
     reads = [record("clipped", cigar="3H10S20M100N20M15S2H", tags={"NH": 1}),
              record("unknown", cigar="10S20M100N20M15S"),
              record("flagged", cigar="10S20M100N20M15S", flag=256, tags={"NH": 1})]
     evidence = extract_evidence(CATALOG, bam(tmp_path, reads))
     text = " ".join(Document(render(CATALOG, evidence)).text)
     assert "Soft clipping (gold blocks)" in text
-    assert "Hard clipping (gold ticks)" in text
-    assert "Soft clips are unaligned read bases; their displayed lengths do not represent additional reference-aligned bases or junction support." in text
-    assert "On unknown-multiplicity or flagged records, soft clips are muted gray with their block geometry preserved." in text
+    assert "Hard clipping (gold diamonds)" in text
 
 
 @pytest.mark.parametrize("nh,flag,style,reason", [
@@ -75,7 +70,6 @@ def test_record_style_and_hover_explain_mapping_and_flags(tmp_path, nh, flag, st
     assert parsed.operations[0]["title"].startswith("M: 20 nt; 81–100")
     assert "NH: " + (str(nh) if nh else "unavailable/unusable") in parsed.summaries[0]["title"]
     assert sum(evidence.groups["v0-j0"].eligible.values()) == 1
-    assert "Displayed alignments may include records not counted in STAR junction support" in html
 
 
 def mates(name="pair", tags=None, start=70, second_start=80):

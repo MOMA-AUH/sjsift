@@ -136,7 +136,7 @@ color. No standard or custom junction-support color uses these neutral shades.
 The muted-gray legend example matches the actual override. Text labels explain
 these distinctions without requiring color or JavaScript.
 The legend also shows soft clipping as gold blocks and hard clipping as gold
-ticks. Soft clips are unaligned read bases: their displayed lengths do not add
+diamonds. Soft clips are unaligned read bases: their displayed lengths do not add
 reference-aligned bases or junction support. Unknown-multiplicity or flagged
 records show soft clips in muted gray while preserving their block geometry.
 Hover or keyboard/click inspection explains the
@@ -203,7 +203,8 @@ Pair brackets leave room for the arrowheads.
 Deletions, insertions and clipping have distinct marks with exact lengths and
 coordinate tooltips. Soft clips are gold blocks extending from the alignment ends
 at the same width per base as aligned blocks, with space for their full lengths.
-They have no assigned reference coordinates. Hard clips remain gold ticks.
+They have no assigned reference coordinates. Hard clips use fixed-size gold diamonds
+to distinguish them from short soft clips.
 Muted records use gray for every operation while retaining these distinct shapes.
 References on other chromosomes have separate axes
 within the figure. Click a read, or focus it and press Enter, to open

@@ -36,8 +36,7 @@ def render_provenance(
     Inputs must remain unchanged during a run. Fingerprints cover the exact
     file bytes, including the gzip wrapper when STAR input is compressed.
     """
-    catalog_input = _fingerprint(definitions_path)
-    catalog_input["schema_version"] = catalog.schema_version
+    catalog_input = {"schema_version": catalog.schema_version, **_fingerprint(definitions_path)}
     star_input = _fingerprint(junctions_path)
     with junctions_path.open("rb") as stream:
         star_input["compression"] = "gzip" if stream.read(2) == b"\x1f\x8b" else "none"
@@ -48,16 +47,15 @@ def render_provenance(
         "genome_assembly": catalog.genome_assembly,
         "catalog": catalog_input,
         "star_input": star_input,
-        "star_assurance": {"sample_identity": "unverified", "genome_assembly": "unverified"},
         "warnings": [COMPATIBILITY_WARNING] if compatibility_warning else [],
         "alignment": {"status": "not_requested"},
     }
     if alignment_evidence is not None:
         document["alignment"] = {
-            **alignment_evidence.metadata,
             "status": "requested",
+            **alignment_evidence.metadata,
             "eligible_junction_memberships": sum(
                 sum(group.eligible.values()) for group in alignment_evidence.groups.values()
             ),
         }
-    return json.dumps(document, sort_keys=True, indent=2, ensure_ascii=True, allow_nan=False) + "\n"
+    return json.dumps(document, indent=2, ensure_ascii=True, allow_nan=False) + "\n"

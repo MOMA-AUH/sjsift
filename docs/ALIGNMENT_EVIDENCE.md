@@ -30,7 +30,7 @@ format. No alignment or reference index is built automatically.
 All alignment-header contigs must exist at exactly the declared length in the
 FASTA. Their sequence is read in bounded chunks and checked against any available
 header M5 checksum before regional extraction; this can require reading the full
-reference once. Missing M5 checksums limit sequence assurance.
+reference once. Contigs without M5 checksums have no header checksum to compare.
 HTSlib's CRAM slice checks remain enabled. Pysam's bundled header/EOF check
 rejects a missing CRAM end marker, which regional decoding alone can merely warn
 about; this does not require an external samtools executable. A missing or invalid reference/index,
