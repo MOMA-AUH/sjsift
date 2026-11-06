@@ -95,7 +95,75 @@ class ReportInventory(HTMLParser):
             self.pairs[(self.variant, self.pair)].append(identity)
 
 
-def inspect(inputs, report):
+def inspect_metadata(provenance, inputs, catalog, header, format, sample_name):
+    """Compare structured facts with the invocation, raw header, and local FASTA."""
+    assert provenance['schema_version'] == 1
+    assert provenance['genome_assembly'] == catalog['genome_assembly']
+    assert provenance['catalog']['sha256'] == sha256(inputs / 'catalog.toml')
+    assert provenance['star_input']['sha256'] == sha256(inputs / 'sample.SJ.out.tab')
+    groups = header.get('RG', [])
+    samples = {group['SM'] for group in groups if group.get('SM', '').strip()}
+    # Readiness inputs have at most one sample; the raw inventory includes all RGs.
+    assert len(samples) <= 1, 'readiness audit requires single-sample alignments'
+    if sample_name is None:
+        assert len(samples) == 1, 'pass the report invocation\'s --sample-name to the audit'
+        sample_name = next(iter(samples))
+        sample_source = 'alignment_header'
+    else:
+        assert not samples or sample_name in samples
+        sample_source = 'explicit'
+    assert provenance['sample']['name'] == sample_name
+    assert provenance['sample']['source'] == sample_source
+    alignment = provenance['alignment']
+    assert alignment['status'] == 'requested'
+    assert alignment['format'] == format.upper()
+    assert alignment['basename'] == f'reads.{format}'
+    expected_selection = {
+        'policy': 'all_read_groups',
+        'header_sample_count': len(samples),
+        'selected_sample_in_header': sample_name in samples,
+        'header_read_group_count': len(groups),
+        'read_groups_without_sample': sum(not group.get('SM', '').strip() for group in groups),
+    }
+    for key, expected in expected_selection.items():
+        assert alignment['sample_selection'][key] == expected, f'sample_selection.{key}'
+    required = {row['chromosome'] for variant in catalog['variants']
+                for row in [variant, *variant['reference_junctions']]}
+    labels = [sq['AS'] for sq in header['SQ'] if sq['SN'] in required and sq.get('AS')]
+    assert all(label == catalog['genome_assembly'] for label in labels)
+    expected_assembly = {
+        'required_contigs': len(required), 'labeled_contigs': len(labels),
+        'labels_match_catalog': True if labels else None,
+    }
+    for key, expected in expected_assembly.items():
+        assert alignment['assembly_checks'][key] == expected, f'assembly_checks.{key}'
+    if format == 'bam':
+        assert alignment['reference'] is None
+        return
+    reference = alignment['reference']
+    assert reference['basename'] == 'reference.fa'
+    assert reference['index_basenames'] == ['reference.fa.fai']
+    assert reference['access'] == 'explicit_local_only'
+    checked = 0
+    with pysam.FastaFile(str(inputs / 'reference.fa')) as fasta:
+        for sq in header['SQ']:
+            assert fasta.get_reference_length(sq['SN']) == sq['LN']
+            digest = hashlib.md5()
+            for start in range(0, sq['LN'], 1024 * 1024):
+                digest.update(fasta.fetch(sq['SN'], start, min(start + 1024 * 1024, sq['LN'])).upper().encode('ascii'))
+            if sq.get('M5'):
+                assert digest.hexdigest() == sq['M5'].lower(), 'CRAM M5 differs from local FASTA'
+                checked += 1
+    expected_checks = {
+        'contig_names': True, 'contig_lengths': True, 'full_sequences_read': True,
+        'header_contigs': len(header['SQ']), 'header_m5_checked': checked,
+        'decoded_slice_checks': True,
+    }
+    for key, expected in expected_checks.items():
+        assert reference['checks'][key] == expected, f'reference.checks.{key}'
+
+
+def inspect(inputs, report, format='bam', sample_name=None):
     catalog_path = inputs / 'catalog.toml'
     catalog = tomllib.loads(catalog_path.read_text())
     variants = catalog['variants']
@@ -148,6 +216,7 @@ def inspect(inputs, report):
     example_keys = set()
     coordinate_targets = {(c, start, end) for c, start, end, _ in targets}
     with pysam.AlignmentFile(str(inputs / 'reads.bam'), 'rb') as source:
+        bam_header = source.header.to_dict()
         dictionary = [(r, n) for r, n in zip(source.references, source.lengths)]
         for read in source:
             if read.is_unmapped:
@@ -216,6 +285,7 @@ def inspect(inputs, report):
     with pysam.AlignmentFile(str(inputs / 'reads.cram'), 'rc',
                              reference_filename=str(inputs / 'reference.fa')) as cram:
         assert list(zip(cram.references, cram.lengths)) == dictionary, 'CRAM sequence dictionary differs from BAM'
+        cram_header = cram.header.to_dict()
     html = ReportInventory(report / 'report.html')
     assert html.records == inventory, 'embedded physical identities/classes/memberships differ from raw CIGAR inventory'
     assert html.statuses == row_statuses, 'per-membership strand labels disagree'
@@ -232,15 +302,9 @@ def inspect(inputs, report):
         assert len(mate_coordinates[a]) == len(mate_coordinates[b]) == 1, 'ambiguous physical pair'
         assert mate_coordinates[a][0] == (b.chromosome, b.start) and mate_coordinates[b][0] == (a.chromosome, a.start), 'nonreciprocal mate coordinates'
     provenance = json.loads((report / 'provenance.json').read_text())
-    assert provenance['schema_version'] == 1
-    assert provenance['catalog']['sha256'] == sha256(catalog_path)
-    assert provenance['star_input']['sha256'] == sha256(inputs / 'sample.SJ.out.tab')
+    inspect_metadata(provenance, inputs, catalog,
+                     cram_header if format == 'cram' else bam_header, format, sample_name)
     assert provenance['alignment']['eligible_junction_memberships'] == sum(membership_counts.values())
-    assert provenance['star_assurance'] == {'genome_assembly': 'unverified', 'sample_identity': 'unverified'}
-    if provenance['alignment']['format'] == 'CRAM':
-        checks = provenance['alignment']['reference']['checks']
-        assert checks['header_contigs'] == checks['header_m5_checked'] == len(dictionary)
-        assert checks['full_sequences_read'] and checks['decoded_slice_checks']
     for row in observed:
         vi = next(i for i, v in enumerate(variants) if v['id'] == row['variant'])
         bucket = 0 if row['role'] == 'defining' else next(i + 1 for i, r in enumerate(variants[vi]['reference_junctions']) if r['role'] == row['role'])
@@ -266,8 +330,10 @@ def main():
     parser.add_argument('inputs', type=Path)
     parser.add_argument('report', type=Path)
     parser.add_argument('output', type=Path)
+    parser.add_argument('--format', choices=['bam', 'cram'], default='bam')
+    parser.add_argument('--sample-name', help='the explicit sample name used for report generation')
     args = parser.parse_args()
-    args.output.write_text(json.dumps(inspect(args.inputs, args.report), indent=2) + '\n')
+    args.output.write_text(json.dumps(inspect(args.inputs, args.report, args.format, args.sample_name), indent=2) + '\n')
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ for sample in "${samples[@]}"; do
       report "$inputs" "$output" --format "$format"
     "$python" benchmarks/readiness/measure.py --seconds "$audit_seconds" --memory-mib 2048 \
       "$root/$sample-$format-audit-stage.json" -- "$python" benchmarks/readiness/audit_evidence.py \
-      "$inputs" "$output" "$root/$sample-$format-inventory.json"
+      "$inputs" "$output" "$root/$sample-$format-inventory.json" --format "$format"
   done
   cmp "$root/$sample-bam-report/main.tsv" "$root/$sample-cram-report/main.tsv"
   cmp "$root/$sample-bam-report/context.tsv" "$root/$sample-cram-report/context.tsv"

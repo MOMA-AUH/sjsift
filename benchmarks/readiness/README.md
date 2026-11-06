@@ -108,12 +108,22 @@ python benchmarks/readiness/audit_evidence.py /tmp/audit/inputs \
 ```
 
 Repeat report profiling and inspection with `--format cram` and new destinations.
+Pass the format to both scripts; the inspector checks it against provenance.
+If the report used `--sample-name`, pass the same option to the inspector and
+sensitivity check. Otherwise they independently infer the one header sample.
+Readiness inputs must contain at most one distinct header sample; this inventory
+does not implement selection among multiple samples.
 The inspector scans the complete original BAM for an independent inventory for both formats.
 Its full-public-run scan has a 300-second budget. This audit budget is separate from
 the unchanged 120-second report-generation budget.
 Compare both TSV files byte for byte between formats and against a TSV-only run.
-The inspector also checks provenance schema, input hashes, membership counts, and
-full-reference assurance. It does not compare alignment counts with STAR support.
+The inspector also checks provenance schema, input hashes, membership counts,
+sample-selection facts, assembly-label comparisons, and CRAM reference checks.
+Expected metadata comes from the invocation, catalog, alignment header, and local
+FASTA. CRAM M5 checksums are independently compared with complete local sequences;
+the expected checked count is the number of available header M5 values.
+BAM must report no reference object. These facts do not establish the anonymous
+STAR input's sample identity or assembly. The inspector does not compare alignment counts with STAR support.
 Those counts have different meanings.
 
 ## Offline browser validation
@@ -154,11 +164,25 @@ python benchmarks/readiness/check_audit.py /tmp/audit/controls-inputs \
 
 It first requires the unmodified report to pass. It then alters a STAR count,
 removes a physical record, changes a pair association, substitutes a same-name mate,
-and changes the provenance schema.
+changes the provenance schema, and corrupts the header sample count in structured
+sample-selection metadata.
 Each altered report must fail an audit assertion. The restored report must pass.
 Mutations use temporary copies and preserve the original reports.
 The mate substitution keeps the old name/class/membership key unchanged.
 The audit must distinguish the mates through coordinates, CIGAR, flags, and mapping metadata.
+
+The small installed-CLI regression uses the committed STAR output and temporary
+CRAM conversions. It requires neither STAR nor downloaded data:
+
+```bash
+python -m pytest -q tests/test_readiness_audit.py tests/test_star_interop.py
+```
+
+On 2026-11-06, the new regression first reproduced `KeyError: 'star_assurance'`
+for BAM and CRAM. After the schema-1 repair, all six targeted cases passed,
+including explicit sample names, inferred header samples, missing/partial assembly
+labels, six rejected mutations, and unmodified/restored reports. This is tooling
+regression evidence; the historical public-data readiness record is unchanged.
 
 ## Published channel comparison
 
