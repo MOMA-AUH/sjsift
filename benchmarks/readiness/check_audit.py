@@ -16,20 +16,24 @@ def main():
     parser.add_argument('inputs', type=Path)
     parser.add_argument('report', type=Path)
     parser.add_argument('output', type=Path)
+    parser.add_argument('--format', choices=['bam', 'cram'], default='bam')
+    parser.add_argument('--sample-name', help='the explicit sample name used for report generation')
     args = parser.parse_args()
     if args.output.exists():
         parser.error('output already exists')
     original_html = (args.report / 'report.html').read_text()
     rows = re.findall(r'<li class="read-row.*?</li>', original_html, re.S)
-    first = next(row for row in rows if '; read 1,' in row)
+    first = next(row for row in rows if '; read 1,' in row and 'data-pair="' in row)
     name = re.search(r'title="([^;]+);', first)[1]
-    second = next(row for row in rows if f'title="{name};' in row and '; read 2,' in row)
-    # Both mates have the same legacy name/class/membership key. The physical
-    # identity comparison must distinguish them even when that weak key cannot.
+    pair_id = re.search(r'data-pair="([^"]+)"', first)[1]
+    second = next(row for row in rows if f'title="{name};' in row and '; read 2,' in row
+                  and f'data-pair="{pair_id}"' in row)
+    # Substitute the mate's physical record while retaining the replaced row's
+    # legacy name/class/membership key, even when their memberships differ.
+    substitute = first
     for attribute in ['data-mapping', 'data-support']:
         pattern = rf'{attribute}="([^"]*)"'
-        assert re.search(pattern, first)[1] == re.search(pattern, second)[1]
-    pair_id = re.search(r'data-pair="([^"]+)"', first)[1]
+        substitute = re.sub(pattern, lambda match: re.search(pattern, second)[0], substitute, count=1)
     other_pair_id = next(re.search(r'data-pair="([^"]+)"', row)[1] for row in rows
                          if 'data-pair="' in row and re.search(r'data-pair="([^"]*)"', row)[1] not in ['', pair_id])
     wrong_pair = first.replace(f'data-pair="{pair_id}"', f'data-pair="{other_pair_id}"', 1)
@@ -40,13 +44,16 @@ def main():
     buffer = io.StringIO()
     csv.writer(buffer, delimiter='\t', lineterminator='\n').writerows(table)
     provenance = json.loads((args.report / 'provenance.json').read_text())
+    wrong_selection = json.loads(json.dumps(provenance))
+    wrong_selection['alignment']['sample_selection']['header_sample_count'] += 1
     provenance['schema_version'] = 2
     mutations = {
         'wrong_star_count': ('main.tsv', buffer.getvalue()),
         'missing_physical_record': ('report.html', original_html.replace(first, '', 1)),
         'wrong_pair_association': ('report.html', original_html.replace(first, wrong_pair, 1)),
-        'same_name_mate_substitution': ('report.html', original_html.replace(second, first, 1)),
+        'same_name_mate_substitution': ('report.html', original_html.replace(second, substitute, 1)),
         'wrong_provenance_schema': ('provenance.json', json.dumps(provenance)),
+        'wrong_sample_selection': ('provenance.json', json.dumps(wrong_selection)),
     }
     results = {}
     with tempfile.TemporaryDirectory(prefix='sjsift-audit-check-') as temporary:
@@ -54,7 +61,9 @@ def main():
         report = root / 'report'
         def audit():
             return subprocess.run([sys.executable, str(Path(__file__).with_name('audit_evidence.py')),
-                str(args.inputs.resolve()), str(report), str(root / 'inventory.json')],
+                str(args.inputs.resolve()), str(report), str(root / 'inventory.json'),
+                '--format', args.format,
+                *(['--sample-name', args.sample_name] if args.sample_name is not None else [])],
                 capture_output=True, text=True)
         shutil.copytree(args.report, report)
         baseline = audit()
