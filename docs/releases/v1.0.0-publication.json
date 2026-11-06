@@ -1,0 +1,332 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-11-06T20:55:06.569001+00:00",
+  "repository": "MOMA-AUH/sjsift",
+  "release": "v1.0.0",
+  "source_commit": "5d27885b3be936e0a0966083b4e098e0118fb4ef",
+  "annotated_tag_object": "72c968aaa76011dc70495c0d441967ddea5e1c47",
+  "final_source_ci": "https://github.com/MOMA-AUH/sjsift/actions/runs/42236213545",
+  "candidate_readiness": "https://github.com/MOMA-AUH/sjsift/blob/5d27885b3be936e0a0966083b4e098e0118fb4ef/docs/releases/v1.0.0-readiness.md",
+  "publication_dry_run": "https://github.com/MOMA-AUH/sjsift/actions/runs/42228845058",
+  "tag_workflow": {
+    "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "Build And Test Conda Package",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T20:46:01Z",
+        "completedAt": "2026-11-06T20:48:38Z",
+        "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/job/128144432413"
+      },
+      {
+        "name": "Build And Test Python Distributions",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T20:46:01Z",
+        "completedAt": "2026-11-06T20:47:54Z",
+        "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/job/128144432871"
+      },
+      {
+        "name": "Publish To MOMA-AUH Anaconda",
+        "conclusion": "success",
+        "startedAt": "2026-11-06T20:48:41Z",
+        "completedAt": "2026-11-06T20:49:30Z",
+        "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/job/128145714444"
+      }
+    ]
+  },
+  "workflow_artifacts": [
+    {
+      "id": 13540061659,
+      "name": "browser-diagnostics",
+      "size_in_bytes": 3277615,
+      "digest": "sha256:29a46cf722e1572fc8bf831a36e7551999be5843582f8ca4b26ba1f93b7608f6",
+      "expires_at": "2027-02-04T20:45:59Z",
+      "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/artifacts/13540061659"
+    },
+    {
+      "id": 13538874881,
+      "name": "conda-package",
+      "size_in_bytes": 53219,
+      "digest": "sha256:9baeb9200a3e19ce7d566554ae1e192eb35dec7965da710011a7bfdfba87d7a3",
+      "expires_at": "2027-02-04T20:45:59Z",
+      "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/artifacts/13538874881"
+    },
+    {
+      "id": 13538869662,
+      "name": "python-distributions",
+      "size_in_bytes": 176002,
+      "digest": "sha256:7b2b26a64d31a6464cf5e5b252c74494f40f22e22fb39711d3277b34adf0e723",
+      "expires_at": "2027-02-04T20:45:59Z",
+      "url": "https://github.com/MOMA-AUH/sjsift/actions/runs/42291104640/artifacts/13538869662"
+    }
+  ],
+  "archive_inspection": {
+    "archives": [
+      {
+        "name": "sjsift-1.0.0-py3-none-any.whl",
+        "size_bytes": 41754,
+        "sha256": "bfce5819c2c9b0fcd25d2e6ef9c9f5110652da52d3adb0672793a4a42f197049"
+      },
+      {
+        "name": "sjsift-1.0.0.tar.gz",
+        "size_bytes": 135271,
+        "sha256": "d70bccdfa4e0af1b7466cd01f5cca50e5474e832127f113aa6e853dfae4121ca"
+      },
+      {
+        "name": "sjsift-1.0.0-py_0.conda",
+        "size_bytes": 53103,
+        "sha256": "9a79d2f4ef550bcd4bc4b6bd6701b13e5cdd5493990001cd58f52394fb9a4691"
+      }
+    ],
+    "runtime_files_matching_tag": [
+      "sjsift/__init__.py",
+      "sjsift/__main__.py",
+      "sjsift/alignment_evidence.py",
+      "sjsift/catalog.py",
+      "sjsift/cli.py",
+      "sjsift/html_report.css",
+      "sjsift/html_report.html",
+      "sjsift/html_report.js",
+      "sjsift/html_report.py",
+      "sjsift/provenance.py",
+      "sjsift/quantify.py",
+      "sjsift/report.py"
+    ],
+    "conda_index": {
+      "arch": null,
+      "build": "py_0",
+      "build_number": 0,
+      "depends": [
+        "pysam >=0.24.0,<0.25",
+        "python >=3.11"
+      ],
+      "license": "MIT",
+      "name": "sjsift",
+      "noarch": "python",
+      "platform": null,
+      "subdir": "noarch",
+      "timestamp": 1793998082649,
+      "version": "1.0.0"
+    },
+    "expected_dependencies_and_html_assets": "passed"
+  },
+  "publication": {
+    "new_upload": true,
+    "upload_time": "2026-11-06 20:49:28.111000+00:00",
+    "url": "https://conda.anaconda.org/MOMA-AUH/noarch/sjsift-1.0.0-py_0.conda",
+    "sha256": "9a79d2f4ef550bcd4bc4b6bd6701b13e5cdd5493990001cd58f52394fb9a4691",
+    "bytes": 53103,
+    "channel_download_matches_workflow": true
+  },
+  "installation": {
+    "command": "conda create --yes --prefix \"$WORK/channel-env\" --override-channels --channel conda-forge --channel bioconda MOMA-AUH::sjsift=1.0.0",
+    "conda_version": "23.7.4",
+    "metadata": {
+      "python": "3.13.18",
+      "pysam": "0.24.1",
+      "htslib": "1.24",
+      "os": "Linux",
+      "machine": "x86_64",
+      "module_path": "$WORK/channel-env/lib/python3.13/site-packages/sjsift/__init__.py",
+      "package_url": "https://conda.anaconda.org/MOMA-AUH/noarch/sjsift-1.0.0-py_0.conda",
+      "version": "1.0.0",
+      "build": "py_0",
+      "sha256": "9a79d2f4ef550bcd4bc4b6bd6701b13e5cdd5493990001cd58f52394fb9a4691",
+      "installed_runtime_sha256": {
+        "alignment_evidence.py": "884ce19036cde3ea5966e3382d1f238a1fa55c39d6d18cd7ada4c34fb754f13b",
+        "__main__.py": "bec005c931676bff1766547415a93aa42ba1f43dcb53a34862493623d4d6eb26",
+        "html_report.html": "49a5294f8b623809c38121c2b82ed388f09489908ea78c93b46cc5782e717c47",
+        "provenance.py": "1b0eac07cc2145223fa2bb70e1fb76e3189d0e9b85fcd01ddf373495e98ca7ec",
+        "quantify.py": "94117de33d88030d93ff9b36afb7965981bde095b2337114570c0310d616786f",
+        "report.py": "bd90fcee048755e2e149e1f19c145c18d7f5d59eea1cc7f274f6d0a9f5bc9315",
+        "html_report.js": "b7b07082efce610d2466caef7a49bba39d2aca25d046d4b9397f1aef86461e6e",
+        "catalog.py": "8fc9a6aa7cb9cf3915c26cd2a21c7b981014389983f010c35907110309559b42",
+        "__init__.py": "829f5155dc692eb5000e2ae9bb24641ba06c9bd47d72442e6452894c548827e5",
+        "html_report.css": "51d77d378e1746f968d43f8ab680315999698f7a69f003789acf8ee69d1cc05c",
+        "html_report.py": "579e87824c1fa0e137334d1775e447dc3f64ef040f18ac37d59061131bd0f760",
+        "cli.py": "e65d14132a231d14ac448afdb5868e20def371bd79fc2e94b6632cfa3ef1da92"
+      },
+      "conda_metadata_sha256": "6f758c6277a2aa71e388aebcf0ebe7ccc5dd2841e961c899a6c8eeb6d25f128e"
+    },
+    "package_unchanged_after_test_tooling_and_checks": true,
+    "explicit_dependencies": [
+      "# This file may be used to create an environment using:",
+      "# $ conda create --name <env> --file <this file>",
+      "# platform: linux-64",
+      "@EXPLICIT",
+      "https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.10.23-hbd8a1cb_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libgomp-16.2.0-he0feb66_7.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.2-h25fd6f3_3.conda",
+      "https://conda.anaconda.org/conda-forge/noarch/python_abi-3.13-9_cp313.conda",
+      "https://conda.anaconda.org/conda-forge/noarch/tzdata-2026e-h5d301ff_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_7.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.46.1-default_hbd61a6d_103.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libgcc-16.2.0-ha9f2e26_7.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_10.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/c-ares-1.34.9-hebe6cf0_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/keyutils-1.6.3-h7cc23a3_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.25-hd45a770_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libev-4.33-h280c20c_3.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.9.0-hd2095e1_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libffi-3.7.0-h81df57d_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/liblzma-5.8.3-hb03c661_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libmpdec-4.0.0-hb03c661_2.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libpython-3.13.18-hd51c5da_100_cp313.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libstdcxx-16.2.0-h934c35e_7.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libuuid-2.42.4-hcfc3c73_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.6-hdb14827_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/openssl-3.6.5-h781a0a9_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h1df4ec4_4.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/icu-79.1-py314hb486520_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20260512-pl5321h373387f_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.71.0-hc5e5977_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libssh2-1.11.1-h6154650_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/readline-8.3-hd6e31c0_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/krb5-1.22.2-hbc21106_2.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libpsl-0.23.1-h7fe8442_2.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libsqlite-3.54.1-hf739112_1.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/libcurl-8.23.0-ha042cf0_0.conda",
+      "https://conda.anaconda.org/conda-forge/linux-64/python-3.13.18-hf47f18c_100_cp313.conda",
+      "https://conda.anaconda.org/conda-forge/noarch/pip-26.2.2-pyh145f28c_2.conda",
+      "https://conda.anaconda.org/bioconda/linux-64/pysam-0.24.1-py313h4b224ce_0.conda",
+      "https://conda.anaconda.org/MOMA-AUH/noarch/sjsift-1.0.0-py_0.conda"
+    ]
+  },
+  "checks": [
+    {
+      "name": "help",
+      "command": [
+        "$WORK/channel-env/bin/sjsift",
+        "--help"
+      ],
+      "started_utc": "2026-11-06T20:52:55.531250+00:00",
+      "seconds": 0.549,
+      "exit_status": 0,
+      "log": "logs/help.log",
+      "log_sha256": "8a32d53effa6b9bb8253013e846b80325e8cc9b77dbc25b74458aedd9eb0cf93"
+    },
+    {
+      "name": "version",
+      "command": [
+        "$WORK/channel-env/bin/sjsift",
+        "--version"
+      ],
+      "started_utc": "2026-11-06T20:52:56.082017+00:00",
+      "seconds": 0.579,
+      "exit_status": 0,
+      "log": "logs/version.log",
+      "log_sha256": "e3c7c05eac82e7731438ed91e3da3c4008b7c212c641f6ff9506fc2d63c2d93e"
+    },
+    {
+      "name": "tagged-catalog",
+      "command": [
+        "$WORK/channel-env/bin/python",
+        "$WORK/check_catalog.py"
+      ],
+      "started_utc": "2026-11-06T20:52:56.662519+00:00",
+      "seconds": 1.536,
+      "exit_status": 0,
+      "log": "logs/tagged-catalog.log",
+      "log_sha256": "4e71b22858e62ef7cb1a91faf0e0f67b62e21041e5b44d5fed9f0dc7dcdc1bf7"
+    },
+    {
+      "name": "installed-alignment-smoke",
+      "command": [
+        "$WORK/channel-env/bin/python",
+        "tests/installed_alignment_smoke.py"
+      ],
+      "started_utc": "2026-11-06T20:52:58.200867+00:00",
+      "seconds": 1.767,
+      "exit_status": 0,
+      "log": "logs/installed-alignment-smoke.log",
+      "log_sha256": "a4692ab7e0fbdacc2daa9ad3bee659d77ec14d6f0c6cb69e9279ab629c2d8ffc"
+    },
+    {
+      "name": "committed-star-fixtures",
+      "command": [
+        "$WORK/channel-env/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_star_interop.py"
+      ],
+      "started_utc": "2026-11-06T20:52:59.969928+00:00",
+      "seconds": 2.393,
+      "exit_status": 0,
+      "log": "logs/committed-star-fixtures.log",
+      "log_sha256": "bc793e6f847ffd16aaf35cda092c40ff8a9c9bceb34bbcc48e2cd5ca53848f08"
+    },
+    {
+      "name": "full-installed-suite",
+      "command": [
+        "$WORK/channel-env/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "started_utc": "2026-11-06T20:53:02.364566+00:00",
+      "seconds": 111.14,
+      "exit_status": 0,
+      "log": "logs/full-installed-suite.log",
+      "log_sha256": "bae0b4a824631fc16ebca658b165e6d36298fe4ea90f785568f57b2323a14865"
+    },
+    {
+      "name": "offline-browser",
+      "command": [
+        "$WORK/channel-env/bin/python",
+        "tests/paired_view_browser.py",
+        "$WORK/published-browser"
+      ],
+      "started_utc": "2026-11-06T20:54:53.505693+00:00",
+      "seconds": 6.479,
+      "exit_status": 0,
+      "log": "logs/offline-browser.log",
+      "log_sha256": "da3a7206b50e378ffd1fe8762730060d93ab85867cdc1903b9eeb3e57d2642fa"
+    }
+  ],
+  "reproduction_helpers": {
+    "check_catalog.py": "\"\"\"Check published CLI against independent TSV expectations from tagged TOML.\"\"\"\nimport csv\nimport hashlib\nimport io\nimport json\nfrom pathlib import Path\nimport subprocess\nimport sys\nimport tomllib\n\nroot = Path(__file__).resolve().parent\ncatalog = root / 'assets/grch38-v1.0.0.toml'\noutput = root / 'catalog-check'\noutput.mkdir()\ndata = tomllib.loads(catalog.read_text())\nkeys = ('chromosome', 'intron_start', 'intron_end', 'strand')\nsupports = {}\nfor variant in data['variants']:\n    for junction in [variant, *variant.get('reference_junctions', [])]:\n        key = tuple(junction[k] for k in keys)\n        if key not in supports:\n            index = len(supports)\n            supports[key] = (0, 0) if index % 5 == 0 else (index + 1, index % 3)\nstar = output / 'synthetic.SJ.out.tab'\nstar.write_text(''.join('\\t'.join(map(str, [*key[:3], {'+': 1, '-': 2}[key[3]], 1, 0, *value, 50])) + '\\n' for key, value in reversed(supports.items()) if sum(value)))\ncommand = [str(Path(sys.executable).parent / 'sjsift'), '--sample-name', 'publication-synthetic', '--definitions', str(catalog), '--junctions', str(star)]\nsubprocess.run([*command, '--output', str(output/'main.tsv'), '--context-output', str(output/'context.tsv'), '--html-output', str(output/'report.html'), '--provenance-output', str(output/'provenance.json')], check=True)\nheader = ['variant_id', 'genome_assembly', *keys, 'unique_support', 'multimapping_support', 'total_support']\nexpected_main = [header]\nexpected_context = [[*header[:2], 'context_role', *header[2:]]]\nfor v in data['variants']:\n    key = tuple(v[k] for k in keys)\n    counts = supports[key]\n    expected_main.append([v['id'], data['genome_assembly'], *key, *counts, sum(counts)])\n    for reference in v.get('reference_junctions', []):\n        key = tuple(reference[k] for k in keys)\n        counts = supports[key]\n        expected_context.append([v['id'], data['genome_assembly'], reference['role'], *key, *counts, sum(counts)])\nfor name, rows in [('main', expected_main), ('context', expected_context)]:\n    stream = io.StringIO()\n    csv.writer(stream, delimiter='\\t', lineterminator='\\n').writerows(rows)\n    assert (output/f'{name}.tsv').read_bytes() == stream.getvalue().encode()\nsubprocess.run([*command, '--output', str(output/'repeat.tsv'), '--provenance-output', str(output/'repeat.json')], check=True)\nassert (output/'repeat.tsv').read_bytes() == (output/'main.tsv').read_bytes()\nassert (output/'repeat.json').read_bytes() == (output/'provenance.json').read_bytes()\np = json.loads((output/'provenance.json').read_text())\nassert p['schema_version'] == 1 and p['software']['version'] == '1.0.0'\nassert p['catalog']['sha256'] == hashlib.sha256(catalog.read_bytes()).hexdigest() == 'a532f7bf56618991d403d7b3c87fc2d398d4203695b127caab68e8874c557ba3'\nassert p['star_input']['sha256'] == hashlib.sha256(star.read_bytes()).hexdigest()\nhtml = (output/'report.html').read_text()\nassert '<style>' in html and '<script>' in html and '<script src=' not in html\nassert len(expected_main) == 18 and len(expected_context) == 33\nprint(json.dumps({'variant_rows': 17, 'reference_rows': 32, 'distinct_junctions': len(supports), 'both_tsv_bytes_and_order': 'passed', 'zero_support_rows': 'passed', 'provenance_repeat_bytes': 'passed', 'embedded_html_assets': 'passed'}))\n"
+  },
+  "test_tooling": {
+    "pytest": "9.2.0",
+    "installation": "$WORK/channel-env/bin/python -m pip install pytest",
+    "package_identity_checked_before_and_after": true
+  },
+  "execution_environment": {
+    "PYTHONPATH": "unset",
+    "PYTHONHOME": "unset",
+    "PYTHONNOUSERSITE": "1",
+    "proxy_variables": "unset for local checks",
+    "PLAYWRIGHT_BROWSERS_PATH": "$WORK/browsers",
+    "source_checkout_override": false
+  },
+  "catalog": {
+    "url": "https://raw.githubusercontent.com/MOMA-AUH/sjsift/v1.0.0/definitions/grch38.toml",
+    "sha256": "a532f7bf56618991d403d7b3c87fc2d398d4203695b127caab68e8874c557ba3",
+    "variant_rows": 17,
+    "reference_rows": 32,
+    "independent_tsv_count_order_and_zero_assertions": true,
+    "repeated_provenance_bytes_equal": true
+  },
+  "browser": {
+    "node": "24.18.0",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4",
+    "local_file_navigations": 5,
+    "unexpected_requests": 0,
+    "errors": 0,
+    "javascript_disabled_inspection": "passed"
+  },
+  "scope": {
+    "installed_suite_tests": 487,
+    "os": "Linux",
+    "kernel": "5.14.0-687.65.1.el9_8.x86_64",
+    "machine": "x86_64",
+    "inputs": "synthetic and committed STAR fixtures",
+    "public_workflow": "retained candidate audit; not repeated for publication",
+    "capacity": "Historical 10,000-record envelope retained; no new capacity claim",
+    "supported_environment": "Linux CI Python 3.11\u20133.14; pysam >=0.24.0,<0.25; no broader OS/browser matrix"
+  }
+}
