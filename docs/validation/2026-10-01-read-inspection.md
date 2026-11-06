@@ -1,5 +1,10 @@
 # Structural inspection validation — 2026-10-01
 
+This historical record describes the interface tested on 2026-10-01.
+Its sampling limits and membership display do not describe the current report.
+See the [current alignment guide](../ALIGNMENT_EVIDENCE.md) for full evidence
+retention and combined viewing.
+
 Issue #32 was checked against real synthetic indexed BAM records. The full
 Python suite passed (313 tests), JavaScript syntax passed `node --check`, and
 `git diff --check` passed. Independent standards and specification reviews

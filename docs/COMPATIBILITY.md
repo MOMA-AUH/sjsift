@@ -141,7 +141,12 @@ HTML guarantees cover observable behavior: accurate counts, separate reference
 roles, sample and input information, warnings, navigation, filters, and read
 inspection as described in the guides. Alignment selection, classification,
 membership counts, and their distinction from STAR support retain their meaning.
-All eligible alignment evidence remains embedded. Reports open through `file:`
+All eligible alignment evidence remains embedded. The combined variant figure
+shows each physical record once and retains its qualifying junction memberships.
+Support filtering and accessible labels expose shared memberships, as described
+in the [reference-context guide](REFERENCE_JUNCTION_CONTEXT.md#alignment-evidence-and-shared-membership).
+Paired viewing preserves individual records and does not reconstruct STAR support.
+Reports open through `file:`
 URLs without a server, external assets, network access, or original input files.
 Without JavaScript, counts, variant details, and native preview inspection remain
 readable. Interactive filtering and paging require JavaScript.

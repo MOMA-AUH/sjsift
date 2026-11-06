@@ -100,17 +100,34 @@ junction and keeps the main and context TSV formats unchanged.
 
 ## Alignment evidence and shared membership
 
-Optional indexed alignment input supplies separate previews for every reference
+Optional indexed BAM or CRAM input supplies one combined alignment figure per
+variant. It includes defining-junction evidence and every configured reference
 role, including custom roles and references on different contigs or strands.
-Each group reports its own STAR support, eligible and embedded alignment counts,
-strand totals and exclusions. Sampling is independent per junction and mapping
-class. A configured zero is different from no reference configuration or evidence
-not requested.
+Different chromosomes use separate axes within that figure. The support table
+keeps each junction's STAR unique and multimapping support separate.
+A configured junction with zero support differs from no reference configuration
+or alignment evidence not requested.
 
-The same physical alignment may support several selected junctions. It appears
-in every qualifying group with the same record ID and an **Also matches** list;
-read name and mate labels identify related records without collapsing them.
-Shared references and overlapping regional fetches do not count a physical
-record twice within one group. Separate records with identical visible fields
-are retained. Shared rows and reference counts must not be summed into molecule,
-template, transcript or isoform counts. See [alignment evidence](ALIGNMENT_EVIDENCE.md).
+Every eligible alignment record is embedded without sampling. The preview,
+expansion, and pagination control visibility only. A physical record that
+supports several selected junctions appears once per variant figure and retains
+each qualifying membership. Shared references and overlapping regional fetches
+do not count that record twice within one group. Separate records with
+identical visible fields remain separate.
+
+Highlighted splice lines and accessible read labels identify shared memberships.
+The junction-support filter selects records with any matching membership.
+Mapping-class filtering, support filtering, and pagination leave STAR support
+and the embedded evidence unchanged. Hover or keyboard focus exposes membership
+and strand-status labels. Click a read, or focus it and press Enter, to inspect
+its structural details. Native read inspection also works without JavaScript.
+Interactive filtering and pagination require JavaScript.
+
+Paired viewing groups safely associated mates for inspection. Each mate remains
+a separate physical record with its own memberships. Pairing does not establish
+which records contributed to STAR support. Alignment-record counts, junction
+memberships, and STAR support are different quantities. Do not sum shared
+memberships or reference support into molecule, template, transcript, or isoform
+counts. See [alignment evidence](ALIGNMENT_EVIDENCE.md#counts-identity-and-read-retention)
+for retention and pairing rules, and the [HTML guide](HTML_REPORT.md#optional-alignment-previews)
+for preview limits and controls.
