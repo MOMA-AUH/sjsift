@@ -2,6 +2,8 @@
 
 These scripts reproduce the local workflow evidence in
 [the readiness record](../../docs/RELEASE_READINESS.md).
+The [v1.0.0 candidate record](../../docs/releases/v1.0.0-readiness.md) repeats the
+affected stages and identifies the publication-disabled dry-run artifacts.
 They use an installed candidate package and the explicit reference catalog.
 They do not change application code or define a supported Python library API.
 

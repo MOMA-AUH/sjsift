@@ -1,5 +1,9 @@
 # Candidate release-readiness record
 
+For the final v1.0.0 candidate, see the separate
+[2026-11-06 readiness record](releases/v1.0.0-readiness.md).
+The observations below remain the historical evidence for their pinned artifact.
+
 This record validates candidate commit
 [`484ce57891da9446bfb5a177d6d375b9be0c2e99`](https://github.com/MOMA-AUH/sjsift/commit/484ce57891da9446bfb5a177d6d375b9be0c2e99)
 on 2026-11-04. It addresses [issue #56](https://github.com/MOMA-AUH/sjsift/issues/56).
