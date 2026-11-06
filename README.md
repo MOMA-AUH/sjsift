@@ -10,6 +10,13 @@ counts in a deterministic TSV table.
 sjsift can inspect selected alignments in an offline HTML report. It does not
 discover novel splice events or assign biological or clinical significance. Each variant has one defining junction.
 
+![MET exon 14 skipping detail with junction support counts, splice arcs, labeled exons, and colored alignment reads](docs/images/splice-view.png)
+
+*Example splice-junction view with synthetic alignment data and support counts.
+Reports are self-contained and open locally in a browser.*
+See the [HTML report guide](docs/HTML_REPORT.md) or
+[recreate this example](examples/readme-preview/README.md).
+
 ## Installation
 
 The recommended way to install **sjsift** is via
