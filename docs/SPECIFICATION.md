@@ -6,15 +6,15 @@
 
 The domain terms in [`CONTEXT.md`](../CONTEXT.md) are normative. External format behavior described below comes from STAR; all matching, validation, CLI, and reporting rules are sjsift-specific design decisions.
 
-This document describes sjsift v0.2.2,
-with annotated catalog schema 3. Schemas 1 and 2 are rejected explicitly.
-Before stable v1.0.0, backward compatibility is not guaranteed, including in
-patch releases. Use a catalog matching the installed version. The historical
-original implementation plan records the original MVP rather than current scope.
-
-The [stable v1 compatibility contract](COMPATIBILITY.md) takes effect with v1.0.0.
-It defines upgrade guarantees and breaking changes without changing the policy
-for existing pre-v1 releases.
+This document describes sjsift v1.0.0 with annotated catalog schema 3.
+Schemas 1 and 2 are rejected explicitly. Use a pinned schema-3 catalog.
+The [stable v1 compatibility contract](COMPATIBILITY.md) protects the documented
+interface from v1.0.0 throughout v1.
+Existing v0.x releases retain their historical policy: no backward compatibility
+guarantee, including in patch releases. The historical original implementation
+plan records the original MVP rather than current scope.
+The [v1.0.0 release notes](releases/v1.0.0.md) record the baseline review and
+changes since v0.2.2.
 
 The [reference-context guide](REFERENCE_JUNCTION_CONTEXT.md) explains comparator
 selection, the [curation record](REFERENCE_JUNCTION_CURATION.md) documents the

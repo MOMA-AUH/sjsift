@@ -1,7 +1,8 @@
 # Stable v1 compatibility contract
 
-This policy takes effect with sjsift v1.0.0 and covers stable v1 releases.
-It is a release requirement prepared before v1, not an announcement of a release.
+This policy applies from sjsift v1.0.0 and covers stable v1 releases.
+The [v1.0.0 release notes](releases/v1.0.0.md) record the first stable baseline
+and its review. Source preparation does not announce package availability.
 Existing v0.x releases retain their pre-1.0 policy, including possible breaking
 changes in patch releases. They acquire no retrospective guarantees.
 
