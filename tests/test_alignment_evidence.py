@@ -5,6 +5,37 @@ from alignment_fixtures import CATALOG, bam, record
 from sjsift.alignment_evidence import extract_evidence
 
 
+@pytest.mark.parametrize("read_groups,missing_samples", [
+    ([], 0),
+    ([{"ID": "lane"}], 1),
+    ([{"ID": "lane", "SM": "   "}], 1),
+    ([{"ID": "first", "SM": "sample"}, {"ID": "second"}], 1),
+    ([{"ID": "lane", "SM": "sample"}], 0),
+])
+def test_sample_selection_reports_actual_header_metadata(tmp_path, read_groups, missing_samples):
+    header = {"HD": {"SO": "coordinate"}, "SQ": [{"SN": "chr1", "LN": 2000}], "RG": read_groups}
+    evidence = extract_evidence(CATALOG, bam(tmp_path, [record()], header=header))
+    selection = evidence.metadata["sample_selection"]
+    assert selection["header_read_group_count"] == len(read_groups)
+    assert selection["read_groups_without_sample"] == missing_samples
+    assert not any("assurance" in key.lower() for key in evidence.provenance)
+
+
+def test_partial_assembly_labels_report_coverage_of_required_contigs(tmp_path):
+    from dataclasses import replace
+    catalog = replace(CATALOG, variants=(CATALOG.variants[0],
+                      replace(CATALOG.variants[0], identifier="second", chromosome="chr2")))
+    header = {"HD": {"SO": "coordinate"}, "SQ": [
+        {"SN": "chr1", "LN": 2000, "AS": "synthetic"},
+        {"SN": "chr2", "LN": 2000},
+        {"SN": "unused", "LN": 2000, "AS": "other"},
+    ]}
+    evidence = extract_evidence(catalog, bam(tmp_path, [record()], header=header))
+    assert evidence.metadata["assembly_checks"] == {
+        "required_contigs": 2, "labeled_contigs": 1, "labels_match_catalog": True,
+    }
+
+
 def test_exact_cigar_splice_counts_each_record_and_keeps_star_independent(tmp_path):
     path = bam(tmp_path, [record("exact", tags={"NH": 1, "XS": "+"}),
                           record("near", cigar="20M99N20M"),

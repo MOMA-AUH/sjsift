@@ -234,7 +234,7 @@ def _extract_evidence(
             raise AlignmentError("expected indexed BAM or CRAM")
         stream.check_index()
         header = stream.header.to_dict()
-        provenance = _validate_header(catalog, header)
+        provenance, assembly_checks = _validate_header(catalog, header)
         sample_name, selected_read_groups = _select_sample(header, sample_name)
         samples = {group["SM"] for group in header.get("RG", []) if group.get("SM", "").strip()}
         metadata = {
@@ -246,8 +246,11 @@ def _extract_evidence(
                 "policy": "selected_sample_read_groups" if selected_read_groups is not None else "all_read_groups",
                 "header_sample_count": len(samples),
                 "selected_sample_in_header": sample_name in samples,
+                "header_read_group_count": len(header.get("RG", [])),
+                "read_groups_without_sample": sum(
+                    not group.get("SM", "").strip() for group in header.get("RG", [])),
             },
-            "assurance": {"sample": provenance["Sample assurance"], "assembly": provenance["Assembly assurance"]},
+            "assembly_checks": assembly_checks,
             "reference": None,
         }
         if selected_read_groups is not None:
@@ -341,13 +344,16 @@ def _validate_header(catalog, header):
         raise AlignmentError("missing or duplicate read-group identifiers")
     samples = {r["SM"] for r in read_groups if r.get("SM", "").strip()}
     required = {j.chromosome for v in catalog.variants for j in (v, *v.reference_junctions)}
-    assemblies = {sq["AS"] for sq in header.get("SQ", []) if sq["SN"] in required and sq.get("AS")}
+    labeled = {sq["SN"]: sq["AS"] for sq in header.get("SQ", []) if sq["SN"] in required and sq.get("AS")}
+    assemblies = set(labeled.values())
     if assemblies and assemblies != {catalog.genome_assembly}:
         raise AlignmentError("alignment assembly metadata disagrees with catalog assembly")
     return {
         "Alignment samples": ", ".join(sorted(samples)) if samples else "Unavailable: no sample metadata",
-        "Sample assurance": "STAR sample identity cannot be verified; missing read-group/sample metadata may limit alignment assurance",
-        "Assembly assurance": "Available assembly labels agree; sequence equivalence and STAR assembly remain unverified" if assemblies else "Assembly unverified: contig names and bounds alone do not establish equivalence",
+    }, {
+        "required_contigs": len(required),
+        "labeled_contigs": len(labeled),
+        "labels_match_catalog": True if assemblies else None,
     }
 
 
@@ -405,10 +411,10 @@ def _validate_reference(header, path):
                 if digest.hexdigest() != sequence["M5"].lower():
                     raise AlignmentError(f"reference M5 checksum disagrees for {name!r}")
                 checked += 1
+    contigs = len(header.get("SQ", []))
     provenance = {
         "Reference FASTA": path.name,
         "Reference index": path.name + ".fai",
-        "Reference assurance": f"Local contig names/lengths checked; {checked} of {len(header.get('SQ', []))} header M5 checksums verified. Missing M5 limits sequence assurance; decoded slice checks remain enabled. STAR assembly remains unverified.",
         "Reference access": "Explicit local FASTA only; inherited REF_PATH/REF_CACHE isolated; no remote reference lookup",
     }
     indexes = [path.name + ".fai"]
@@ -419,10 +425,9 @@ def _validate_reference(header, path):
         "basename": path.name,
         "index_basenames": indexes,
         "checks": {"contig_names": True, "contig_lengths": True, "full_sequences_read": True,
-                   "header_m5_checked": checked, "header_contigs": len(header.get("SQ", [])),
+                   "header_m5_checked": checked, "header_contigs": contigs,
                    "decoded_slice_checks": True},
         "access": "explicit_local_only",
-        "assurance": provenance["Reference assurance"],
     }
     return provenance, metadata
 

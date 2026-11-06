@@ -125,7 +125,7 @@ v1.0.0. [Provenance schema 1](PROVENANCE.md) defines its fields, types, meanings
 warning codes, metadata limits, and deterministic serialization.
 Consumers must inspect `schema_version`, tolerate unknown fields, and preserve
 unknown warnings. Additive fields and warning codes are compatible.
-Existing code meanings remain stable. Readable messages and assurance prose can
+Existing code meanings remain stable. Readable messages can
 change while their structured facts retain their meaning.
 
 Field removal or a change in type or meaning requires a new JSON schema version.
@@ -220,7 +220,7 @@ refactoring tests. Update expected results only with a documented contract revie
 | Exact matching, unweighted counts, shared references, zero support, STAR row order | `tests/test_quantify.py`. |
 | Main/context headers and ordered bytes through the installed CLI | `tests/test_cli.py`, `tests/test_star_interop.py`, and independent `tests/fixtures/star/expected-main.tsv` / `expected-context.tsv`. |
 | Sample selection, alignment option dependencies, BAM/CRAM equivalence, explicit offline reference access | `tests/test_sample_name.py`, `tests/test_alignment_cli.py`, `tests/test_alignment_evidence.py`, `tests/test_cram_evidence.py`. |
-| Provenance schema 1, deterministic bytes, exact fingerprints, warning codes, assurance, output cleanup | `tests/test_provenance.py`, `tests/test_star_interop.py`, `tests/installed_alignment_smoke.py`. |
+| Provenance schema 1, deterministic bytes, exact fingerprints, warning codes, input checks, output cleanup | `tests/test_provenance.py`, `tests/test_star_interop.py`, `tests/installed_alignment_smoke.py`. |
 | HTML counts, navigation, filters, inspection, offline and JavaScript-disabled behavior | `tests/test_html_report.py`, read/pairing tests, and `tests/paired_view_browser.py` with its Chromium runners. |
 | Runtime and installed artifact compatibility | Python 3.11–3.14 CI, `tests/check_sdist.sh`, wheel/browser checks, Conda build/install checks, and `tests/test_release.py`. |
 

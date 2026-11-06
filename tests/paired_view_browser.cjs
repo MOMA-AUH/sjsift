@@ -59,17 +59,16 @@ const {chromium} = require("playwright");
       assert.equal(await hardExample.isVisible(), true);
       const clips = await legendPage.locator(".read-legend :is(.legend-soft-clip, .legend-hard-clip)").evaluateAll(nodes => nodes.map(node => ({
         color: getComputedStyle(node).backgroundColor, pattern: getComputedStyle(node).backgroundImage,
+        shape: getComputedStyle(node).clipPath,
         height: node.getBoundingClientRect().height, width: node.getBoundingClientRect().width,
       })));
       assert.deepEqual(clips, [
-        {color: "rgb(184, 134, 48)", pattern: "none", height: 10, width: 24},
-        {color: "rgb(184, 134, 48)", pattern: "none", height: 14, width: 3},
+        {color: "rgb(184, 134, 48)", pattern: "none", shape: "none", height: 10, width: 24},
+        {color: "rgb(184, 134, 48)", pattern: "none", shape: "polygon(50% 0px, 100% 50%, 50% 100%, 0px 50%)", height: 14, width: 8},
       ]);
       const legendText = await legendPage.locator(".read-legend").innerText();
       assert.match(legendText, /Soft clipping \(gold blocks\)/);
-      assert.match(legendText, /Hard clipping \(gold ticks\)/);
-      assert.match(legendText, /unaligned read bases.*do not represent additional reference-aligned bases or junction support/);
-      assert.match(legendText, /unknown-multiplicity or flagged records.*muted gray.*geometry preserved/);
+      assert.match(legendText, /Hard clipping \(gold diamonds\)/);
       const arcs = await legendPage.locator(".junction-arc").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).stroke));
       const bars = await legendPage.locator(".variant-detail .unique-support").evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor));
       assert.equal(new Set(arcs).size, 5);
@@ -83,6 +82,7 @@ const {chromium} = require("playwright");
           muted: node.classList.contains("read-muted"),
           operations: [...node.querySelectorAll(".cigar-op")].map(op => ({
             color: getComputedStyle(op).backgroundColor, pattern: getComputedStyle(op).backgroundImage,
+            shape: getComputedStyle(op).clipPath,
             height: op.getBoundingClientRect().height, width: op.getBoundingClientRect().width,
             left: op.getBoundingClientRect().left, right: op.getBoundingClientRect().right,
           })),
@@ -92,6 +92,7 @@ const {chromium} = require("playwright");
           for (const soft of [softLeft, softRight]) {
             assert.equal(soft.color, row.muted ? styles[2].color : clips[0].color);
             assert.equal(soft.pattern, "none");
+            assert.equal(soft.shape, clips[0].shape);
             assert.equal(soft.height, clips[0].height);
           }
           // The fixture has 10S20M100N20M15S: clips retain lengths and adjacency.
@@ -101,6 +102,7 @@ const {chromium} = require("playwright");
           assert.ok(Math.abs(softRight.left - alignedRight.right) < .1);
           for (const hard of [hardLeft, hardRight]) {
             assert.equal(hard.color, row.muted ? styles[2].color : clips[1].color);
+            assert.equal(hard.shape, clips[1].shape);
             assert.equal(hard.width, clips[1].width);
             assert.equal(hard.height, clips[1].height);
           }

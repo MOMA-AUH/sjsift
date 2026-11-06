@@ -21,8 +21,7 @@ conda install --channel conda-forge --channel bioconda MOMA-AUH::sjsift
 
 sjsift v0.2.2 requires Python 3.11 or newer and installs
 `pysam>=0.24.0,<0.25` as a normal runtime dependency for alignment evidence.
-Pair published packages with the catalog from their matching Git tag;
-v0.2.2 uses schema 3 and rejects schemas 1 and 2.
+Pair published packages with the catalog from their matching Git tag.
 
 ## Usage
 
@@ -88,7 +87,7 @@ files are never overwritten.
 
 Add `--provenance-output sample.provenance.json` to save the resolved sample,
 software version, catalog identity, exact catalog/STAR SHA-256 fingerprints,
-compatibility warnings, and available alignment assurance. Both TSV formats
+compatibility warnings, and alignment check results. Both TSV formats
 remain unchanged. The optional JSON works with TSV-only and HTML runs.
 See the [schema and usage guide](docs/PROVENANCE.md) for retained metadata,
 deterministic output, and compatibility rules.
